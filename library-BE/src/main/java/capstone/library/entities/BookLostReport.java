@@ -42,8 +42,8 @@ public class BookLostReport {
     @JoinColumn(name = "reported_by")
     private Account librarian;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "book_copy_id")
-//    private BookCopy bookCopy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_id")
+    private BookCopy bookCopy;
 
 }
