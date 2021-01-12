@@ -36,7 +36,7 @@ public class BookWishList {
     @JoinColumn(name = "wish_by")
     private Account borrower;
 
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "book_id")
-    //private Book book;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private Book book;
 }
