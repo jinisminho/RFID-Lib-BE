@@ -13,7 +13,7 @@ create table account(
     pin varchar(4),
 	rfid varchar(80) unique,
     avatar varchar(500),
-    isActive bool,
+    isActive bool not null,
     created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
     
@@ -24,14 +24,13 @@ create table account(
 );
 
 create table profile(
-	id int not null auto_increment,
     fullname varchar(50) not null,
     phone varchar(10) not null,
     gender varchar(1) not null,
     department varchar(50),
     
-	account_id int not null unique, /*delete cascade*/
-	primary key (id)
+	account_id int not null, /*delete cascade*/
+	primary key (account_id)
 );
 
 create table book_wishlist(
@@ -76,7 +75,7 @@ create table book_copy(
 create table book_borrowing(
 	id int not null auto_increment,
 	borrowed_at datetime not null,
-    returned_at datetime not null,
+    returned_at datetime,
     due_at date not null,
     extended_at datetime,
     extend_index int,
@@ -92,7 +91,7 @@ create table book_borrowing(
 create table extend_history(
 	id int not null auto_increment,
 	borrowed_at datetime not null,
-    extended_at datetime not null,
+    extended_at datetime,
     extend_index int,
     due_at date not null,
     

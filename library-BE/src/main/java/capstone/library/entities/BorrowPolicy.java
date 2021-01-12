@@ -13,7 +13,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "borrow_policy")
-public class BorrowPolicy {
+public class BorrowPolicy extends Audit{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
