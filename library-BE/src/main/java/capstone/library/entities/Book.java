@@ -29,6 +29,7 @@ public class Book extends Audit {
     private String isbn;
 
     @FullTextField
+//    @FullTextField(analyzer = "english")
     @Column(name = "title", nullable = false)
     private String title;
 
