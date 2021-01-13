@@ -4,7 +4,7 @@ use library_rfid;
 insert into role (id, name) values
 (1, 'ROLE_ADMIN'),
 (2, 'ROLE_LIBRARIAN'),
-(3, 'ROLE_STUDENT');
+(3, 'ROLE_PATRON');
 
 /*******/
 
