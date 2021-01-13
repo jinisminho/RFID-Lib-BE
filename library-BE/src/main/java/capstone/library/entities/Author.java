@@ -14,7 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "author")
-public class Author{
+public class Author {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class Author{
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},mappedBy = "user")
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "author")
     public Set<BookAuthor> bookAuthor;
 
 }
