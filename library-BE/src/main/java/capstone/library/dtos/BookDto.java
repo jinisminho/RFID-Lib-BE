@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -47,9 +48,9 @@ public class BookDto {
     @NotNull(message = "{book.status.notNull}")
     private String status;
 
-//    public Set<BookAuthor> bookAuthor;
-//
-//    public Set<BookCategory> bookCategory;
+    public Set<AuthorDto> author;
+
+    public Set<CategoryDto> category;
 
 
 }

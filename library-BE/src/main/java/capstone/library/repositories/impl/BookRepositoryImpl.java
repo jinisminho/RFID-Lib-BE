@@ -19,17 +19,11 @@ public class BookRepositoryImpl implements BookRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
+
     @Override
     @SuppressWarnings("unchecked")
     public List<Book> findBooks(String searchValue) {
         SearchSession searchSession = Search.session(entityManager);
-
-// Reindex all
-//        try {
-//            searchSession.massIndexer().startAndWait();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 
         SearchResult<Book> result;
 
@@ -54,5 +48,18 @@ public class BookRepositoryImpl implements BookRepository {
         List<Book> res = result.hits();
 
         return res;
+    }
+
+    @Override
+    public void reindexAll() {
+        SearchSession searchSession = Search.session(entityManager);
+
+        // Reindex all
+        try {
+            searchSession.massIndexer().startAndWait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //
     }
 }

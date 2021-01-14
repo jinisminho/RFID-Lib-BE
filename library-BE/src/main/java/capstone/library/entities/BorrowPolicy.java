@@ -17,7 +17,7 @@ public class BorrowPolicy extends Audit{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name="due_duration",nullable = false)
     private int dueDuration;

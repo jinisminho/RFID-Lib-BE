@@ -1,16 +1,12 @@
 package capstone.library.dtos;
 
-import capstone.library.entities.BookAuthor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -20,11 +16,8 @@ public class AuthorDto {
 
     private int id;
 
-    @Column(name = "name", length = 100, nullable = false)
-    @NotNull(message = "{book.isbn.notNull}")
+    @NotNull(message = "{book.name.notNull}")
+    @Length(max = 100, message = "{book.name.length}")
     private String name;
-
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "author")
-    public Set<BookAuthor> bookAuthor;
 
 }

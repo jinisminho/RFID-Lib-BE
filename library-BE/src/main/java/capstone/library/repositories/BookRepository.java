@@ -10,4 +10,6 @@ public interface BookRepository {
 
     List<Book> findBooks(String searchValue);
 
+    void reindexAll();
+
 }

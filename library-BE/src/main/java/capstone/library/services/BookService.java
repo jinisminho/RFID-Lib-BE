@@ -8,4 +8,5 @@ public interface BookService {
 
     List<BookDto> findBooks(String searchValue);
 
+    boolean reindexAll();
 }

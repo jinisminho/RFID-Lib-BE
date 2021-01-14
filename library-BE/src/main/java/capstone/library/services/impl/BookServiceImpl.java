@@ -21,4 +21,10 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findBooks(searchValue).stream().map(book -> BookMapper.INSTANCE.toDto(book)).collect(Collectors.toList());
     }
 
+    @Override
+    public boolean reindexAll() {
+        bookRepository.reindexAll();
+        return true;
+    }
+
 }
