@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/book")
+@RequestMapping("/web/book")
 public class BookController {
 
     @Autowired
     private BookService bookService;
 
-    @GetMapping()
+    @GetMapping("/search")
     public List<BookDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, Pageable pageable) {
         return bookService.findBooks(searchValue);
     }

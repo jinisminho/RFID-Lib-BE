@@ -1,34 +1,33 @@
 package capstone.library.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.Set;
 
-@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "book")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Book extends Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @KeywordField
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
 
-    @FullTextField
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -65,4 +64,9 @@ public class Book extends Audit {
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
     public Set<BookCategory> bookCategories;
 
+
+    @Override
+    public String toString() {
+        return bookAuthors.toString();
+    }
 }
