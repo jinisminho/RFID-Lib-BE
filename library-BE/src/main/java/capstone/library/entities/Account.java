@@ -13,7 +13,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "account")
-public class Account extends Audit{
+public class Account extends Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,13 +22,13 @@ public class Account extends Audit{
     @Column(name = "email", length = 100, unique = true, nullable = false)
     private String email;
 
-    @Column(name="password", length = 100, nullable = false)
+    @Column(name = "password", length = 100, nullable = false)
     private String password;
 
     @Column(name = "pin", length = 4)
     private String pin;
 
-    @Column(name="rfid", length = 80)
+    @Column(name = "rfid", length = 80)
     private String rfid;
 
     @Column(name = "avatar", length = 500)
@@ -37,13 +37,13 @@ public class Account extends Audit{
     @Column(name = "isActive", nullable = false)
     private boolean isActive;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name="created_by")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
     private Account creator;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="updated_by")
-    private  Account updater;
+    @JoinColumn(name = "updated_by")
+    private Account updater;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
