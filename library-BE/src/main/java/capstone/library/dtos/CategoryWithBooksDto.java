@@ -16,8 +16,8 @@ import java.util.Set;
 public class CategoryWithBooksDto {
     private int id;
 
-    @NotNull(message = "{book.name.notNull}")
-    @Length(max = 100, message = "{book.name.length}")
+    @NotNull(message = "{category.name.notNull}")
+    @Length(max = 100, message = "{category.name.length}")
     private String name;
 
     public Set<BookDto> books;

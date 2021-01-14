@@ -15,8 +15,8 @@ import javax.validation.constraints.NotNull;
 public class CategoryDto {
     private int id;
 
-    @NotNull(message = "{book.name.notNull}")
-    @Length(max = 100, message = "{book.name.length}")
+    @NotNull(message = "{category.name.notNull}")
+    @Length(max = 100, message = "{category.name.length}")
     private String name;
 
 }

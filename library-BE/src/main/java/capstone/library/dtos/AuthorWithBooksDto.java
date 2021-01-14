@@ -17,8 +17,8 @@ public class AuthorWithBooksDto {
 
     private int id;
 
-    @NotNull(message = "{book.name.notNull}")
-    @Length(max = 100, message = "{book.name.length}")
+    @NotNull(message = "{author.name.notNull}")
+    @Length(max = 100, message = "{author.name.length}")
     private String name;
 
     private Set<BookDto> books;
