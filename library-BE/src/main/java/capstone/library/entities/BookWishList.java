@@ -32,6 +32,9 @@ public class BookWishList {
     @Enumerated(EnumType.STRING)
     private WishListStatus status;
 
+    @Column(name = "email", length = 100, nullable = false)
+    private String email;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wish_by")
     private Account borrower;
