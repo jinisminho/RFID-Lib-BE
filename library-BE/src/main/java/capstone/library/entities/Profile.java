@@ -17,7 +17,7 @@ import javax.persistence.*;
 public class Profile {
 
     @Id
-    private int id;
+    private Integer id;
 
     @Column(name = "fullname", length = 50, nullable = false)
     private String fullName;

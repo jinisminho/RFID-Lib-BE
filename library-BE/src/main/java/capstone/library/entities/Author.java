@@ -18,12 +18,12 @@ public class Author {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "author")
-    public Set<BookAuthor> bookAuthor;
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},mappedBy = "author")
+    public Set<BookAuthor> bookAuthors;
 
 }

@@ -17,7 +17,7 @@ public class BookPosition extends Audit{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "floor", nullable = false)
     private Integer floor;

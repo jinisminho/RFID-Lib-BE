@@ -20,7 +20,7 @@ public class BookBorrowing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "borrowed_at", nullable = false)
     private LocalDateTime borrowedAt;
