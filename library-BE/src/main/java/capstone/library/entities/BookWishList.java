@@ -22,7 +22,7 @@ public class BookWishList {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreatedDate

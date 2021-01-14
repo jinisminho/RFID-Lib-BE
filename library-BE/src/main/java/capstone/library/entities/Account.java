@@ -17,7 +17,7 @@ public class Account extends Audit{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "email", length = 100, unique = true, nullable = false)
     private String email;
