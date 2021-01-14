@@ -2,16 +2,16 @@ use library_rfid;
 
 create table role(
 	id int not null auto_increment,
-	name varchar(20) not null unique,
+	name varchar(20) not null,
 	primary key (id)
 );
 
 create table account( 
 	id int not null auto_increment,
-	email varchar(100) not null unique,
+	email varchar(100) not null,
 	password varchar(100) not null,
     pin varchar(4),
-	rfid varchar(80) unique,
+	rfid varchar(80) ,
     avatar varchar(500),
     isActive bool not null,
     created_at datetime not null default now(),
@@ -58,8 +58,8 @@ create table book_lost_report(
 
 create table book_copy( 
 	id int not null auto_increment,
-    barcode varchar(100) not null unique,
-	rfid varchar(80) unique,
+    barcode varchar(100) not null ,
+	rfid varchar(80) ,
 	price double precision not null,
 	status varchar(20) not null,
     note varchar(100),
@@ -170,6 +170,11 @@ create table borrow_policy(
 	updated_at datetime not null default now() on update now(),
     primary key (id)
 );
+
+
+
+/****ADD FK****/
+
 
 alter table account
 	add constraint FK_account_role
@@ -302,3 +307,19 @@ alter table book_category
      ON DELETE CASCADE ON UPDATE CASCADE; 
 
 
+/****ADD UNIQUE KEY****/
+
+ALTER TABLE role
+ADD CONSTRAINT UK_role_name UNIQUE (name);
+
+ALTER TABLE account
+ADD CONSTRAINT UK_account_email UNIQUE (email);
+
+ALTER TABLE account
+ADD CONSTRAINT UK_account_rfid UNIQUE (rfid);
+
+ALTER TABLE book_copy
+ADD CONSTRAINT UK_bookCopy_rfid UNIQUE (rfid);
+
+ALTER TABLE book_copy
+ADD CONSTRAINT UK_bookCopy_barcode UNIQUE (barcode);

@@ -1,5 +1,7 @@
 package capstone.library.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,11 +16,14 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "book")
-public class Book extends Audit{
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
+public class Book extends Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
@@ -54,9 +59,14 @@ public class Book extends Audit{
     private String status;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
-    public Set<BookAuthor> bookAuthor;
+    public Set<BookAuthor> bookAuthors;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
-    public Set<BookCategory> bookCategory;
+    public Set<BookCategory> bookCategories;
 
+
+    @Override
+    public String toString() {
+        return bookAuthors.toString();
+    }
 }

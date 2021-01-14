@@ -17,7 +17,7 @@ public class BookCopy extends Audit{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "barcode", length = 100, nullable = false)
     private String barcode;
