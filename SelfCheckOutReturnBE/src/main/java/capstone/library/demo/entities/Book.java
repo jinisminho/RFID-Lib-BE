@@ -1,6 +1,6 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
-import capstone.library.enums.BookStatus;
+import capstone.library.demo.enums.BookStatus;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;

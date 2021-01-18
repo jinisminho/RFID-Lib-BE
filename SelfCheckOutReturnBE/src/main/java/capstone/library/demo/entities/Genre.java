@@ -1,4 +1,4 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -15,11 +15,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "author")
+@Table(name = "genre")
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class Author {
+public class Genre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,11 +28,6 @@ public class Author {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},mappedBy = "author")
-    public Set<BookAuthor> bookAuthors;
-
-    @Override
-    public String toString() {
-        return name;
-    }
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "genre")
+    public Set<BookGenre> bookGenres;
 }

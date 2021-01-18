@@ -1,6 +1,6 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
-import capstone.library.enums.BookCopyStatus;
+import capstone.library.demo.enums.BookCopyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

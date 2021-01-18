@@ -1,6 +1,6 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
-import capstone.library.enums.Gender;
+import capstone.library.demo.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

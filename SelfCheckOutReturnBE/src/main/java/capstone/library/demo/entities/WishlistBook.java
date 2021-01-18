@@ -1,6 +1,6 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
-import capstone.library.enums.WishListStatus;
+import capstone.library.demo.enums.WishListStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name = "book_wishlist")
-public class BookWishList {
+@Table(name = "wishlist_book")
+public class WishlistBook {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +28,7 @@ public class BookWishList {
     @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column(name = "status", length = 20, nullable = false)
+    @Column(name = "status", length = 30, nullable = false)
     @Enumerated(EnumType.STRING)
     private WishListStatus status;
 
