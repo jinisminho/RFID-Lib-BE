@@ -10,7 +10,6 @@ create table account(
 	id int not null auto_increment,
 	email varchar(100) not null,
 	password varchar(100) not null,
-    pin varchar(4),
 	rfid varchar(80) ,
     avatar varchar(500),
     isActive bool not null,
@@ -27,20 +26,19 @@ create table profile(
     fullname varchar(50) not null,
     phone varchar(10) not null,
     gender varchar(1) not null,
-    department varchar(50),
     
-	account_id int not null, /*delete cascade*/
+	account_id int not null,
 	primary key (account_id)
 );
 
-create table book_wishlist(
+create table wishlist_book( 
 	id int not null auto_increment,
 	created_at datetime not null default now(),
 	email varchar(100) not null,
     status varchar(20) not null,
     
     book_id int, 
-    wish_by int, /*on delete cascade*/
+    wish_by int, 
 	primary key (id)
 );
 
@@ -62,7 +60,6 @@ create table book_copy(
 	rfid varchar(80) ,
 	price double precision not null,
 	status varchar(20) not null,
-    note varchar(100),
 	created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
     
@@ -81,6 +78,7 @@ create table book_borrowing(
     extend_index int,
     overdue_fine_per_day double precision not null,
     
+    returned_by int,
     borrowed_by int,
     issued_by int,
     book_copy_id int,
@@ -110,7 +108,7 @@ create table book(
     edition int not null,
     language varchar(20),
     page_number int,
-    ddc varchar(20),
+    call_number varchar(20),
 	number_of_copy int not null,
     status varchar(20) not null,
     created_at datetime not null default now(),
@@ -118,17 +116,9 @@ create table book(
 
     created_by int,
     updated_by int,
-    position_id int,
     primary key (id)
 );
 
-create table book_position(
-	id int not null auto_increment,
-	floor int not null,
-    shelf varchar(10) not null,
-    line int not null,
-	primary key (id)
-);
 
 create table author(
 	id int not null auto_increment,
@@ -136,13 +126,13 @@ create table author(
 	primary key (id)
 );
 
-create table category(
+create table genre(
 	id int not null auto_increment,
 	name varchar(100) not null,
 	primary key (id)
 );
 
-create table book_author(/*cascade delete*/
+create table book_author(
 	id int not null auto_increment,
 	
     book_id int,
@@ -150,11 +140,11 @@ create table book_author(/*cascade delete*/
 	primary key (id)
 );
 
-create table book_category( /*cascade delete*/
+create table book_genre(
 	id int not null auto_increment,
 	
     book_id int,
-    category_id int,
+    genre_id int,
 	primary key (id)
 );
 
@@ -199,12 +189,12 @@ alter table profile
 	foreign key (account_id) references account (id)
 	ON DELETE CASCADE ON UPDATE CASCADE; 
     
-alter table book_wishlist
+alter table wishlist_book
 	add constraint FK_wishlist_book
 	foreign key (book_id) references book (id)
     ON DELETE CASCADE ON UPDATE CASCADE; 
  
-alter table book_wishlist
+alter table wishlist_book
 	add constraint FK_wishlist_account
 	foreign key (wish_by) references account (id)
     ON DELETE CASCADE ON UPDATE CASCADE; 
@@ -247,19 +237,25 @@ alter table book_copy
     ON DELETE SET NULL ON UPDATE CASCADE; 
     
 alter table book_borrowing
-	add constraint FK_borrow_account_st
+	add constraint FK_borrow_account_br
 	foreign key (borrowed_by) references account (id)
     ON DELETE SET NULL ON UPDATE CASCADE; 
     
 alter table book_borrowing
-	add constraint FK_borrow_account_li
+	add constraint FK_borrow_account_is
 	foreign key (issued_by) references account (id)
     ON DELETE SET NULL ON UPDATE CASCADE; 
     
 alter table book_borrowing
 	add constraint FK_borrow_copy
 	foreign key (book_copy_id) references book_copy (id)
+    ON DELETE SET NULL ON UPDATE CASCADE;
+
+alter table book_borrowing
+	add constraint FK_borrow_acc_rt
+	foreign key (returned_by) references account (id)
     ON DELETE SET NULL ON UPDATE CASCADE; 
+
 
 alter table extend_history
 	add constraint FK_extend_borrow
@@ -271,10 +267,6 @@ alter table extend_history
 	foreign key (issued_by) references account (id)
     ON DELETE SET NULL ON UPDATE CASCADE; 
     
-alter table book
-	add constraint FK_book_position
-	foreign key (position_id) references book_position (id)
-    ON DELETE SET NULL ON UPDATE CASCADE; 
     
 alter table book
 	add constraint FK_book_acc_create
@@ -296,14 +288,14 @@ alter table book_author
 	foreign key (author_id) references author (id)
 	ON DELETE CASCADE ON UPDATE CASCADE; 
     
-alter table book_category
-	add constraint FK_bookcate_book
+alter table book_genre
+	add constraint FK_bookgenre_book
 	foreign key (book_id) references book (id)
      ON DELETE CASCADE ON UPDATE CASCADE; 
 
-alter table book_category
-	add constraint FK_bookcate_cate
-	foreign key (category_id) references category (id)
+alter table book_genre
+	add constraint FK_bookgenre_genre
+	foreign key (genre_id) references genre (id)
      ON DELETE CASCADE ON UPDATE CASCADE; 
 
 
