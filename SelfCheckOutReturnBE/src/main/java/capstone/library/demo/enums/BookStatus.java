@@ -1,4 +1,4 @@
-package capstone.library.enums;
+package capstone.library.demo.enums;
 
 public enum  BookStatus {
     OUT_OF_CIRCULATION,

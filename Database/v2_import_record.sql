@@ -30,24 +30,18 @@ insert into profile (fullname, phone, gender, account_id) values
 ('Phan Hoang Oanh', '0916741852', 'F', 5);
 
 /*student*/
-insert into account (id, email, password, rfid, avatar, isActive, created_at, updated_at, created_by, updated_by, role_id, pin) values
-(6, 'tramphse130038@fpt.edu.vn', '123', '1234', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, '1111'),
-(7, 'hoangpmse130054@fpt.edu.vn', '123', '5678', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, '1111'),
-(8, 'kienntse130154@fpt.edu.vn', '123', '9635', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),3, 3, 3, '1111'),
-(9, 'khangndnse130148@fpt.edu.vn', '123', '7854', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', false, now(), now(),4, 4, 3, '1111');
+insert into account (id, email, password, rfid, avatar, isActive, created_at, updated_at, created_by, updated_by, role_id) values
+(6, 'tramphse130038@fpt.edu.vn', '123', '1234', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3),
+(7, 'hoangpmse130054@fpt.edu.vn', '123', '5678', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3),
+(8, 'kienntse130154@fpt.edu.vn', '123', '9635', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),3, 3, 3),
+(9, 'khangndnse130148@fpt.edu.vn', '123', '7854', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', false, now(), now(),4, 4, 3);
 
-insert into profile (fullname, phone, gender, account_id, department) values
-('Phan Hoang Tram', '0965457000', 'F', 6, 'Software Engineering'),
-('Pham Minh Hoang', '0657111000', 'M', 7, 'Software Engineering'),
-('Nguyen Trung Kien', '0948634000', 'M', 8, 'Software Engineering'),
-('Phan Hoang Oanh', '0916741000', 'M', 9, 'Software Engineering');
+insert into profile (fullname, phone, gender, account_id) values
+('Phan Hoang Tram', '0965457000', 'F', 6),
+('Pham Minh Hoang', '0657111000', 'M', 7),
+('Nguyen Trung Kien', '0948634000', 'M', 8),
+('Phan Hoang Oanh', '0916741000', 'M', 9);
 
-/********/
-insert into book_position (id, floor, shelf, line) values
-(1, 1, 'A1', 1),
-(2, 1, 'A1', 2),
-(3, 1, 'A1', 3),
-(4, 1, 'A1', 4);
 
 /********/
 
@@ -64,16 +58,16 @@ insert into author(id, name) values
 
 
 
-insert into book (id, ISBN, title, subtitle, publisher, publish_year, edition, language, page_number, ddc, number_of_copy, status, created_at, updated_at, created_by, updated_by, position_id) values
-(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '791.4372', 2, 'ACCEPTED', now(), now(), 2,2,1),
-(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '823.6', 2, 'ACCEPTED', now(), now(), 2,2,2),
-(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '811.54', 1, 'ACCEPTED', now(), now(), 2,2,1),
-(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '741.5973', 2, 'ACCEPTED', now(), now(), 2,2,1),
-(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '332.041', 3, 'ACCEPTED', now(), now(), 2,2,1),
-(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '629.450092', 2, 'ACCEPTED', now(), now(), 2,2,1);
+insert into book (id, ISBN, title, subtitle, publisher, publish_year, edition, language, page_number, call_number, number_of_copy, status, created_at, updated_at, created_by, updated_by) values
+(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '791.4372', 2, 'ACCEPTED', now(), now(), 2,2),
+(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '823.6', 2, 'ACCEPTED', now(), now(), 2,2),
+(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '811.54', 1, 'ACCEPTED', now(), now(), 2,2),
+(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '741.5973', 2, 'ACCEPTED', now(), now(), 2,2),
+(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '332.041', 3, 'ACCEPTED', now(), now(), 2,2),
+(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '629.450092', 2, 'ACCEPTED', now(), now(), 2,2);
 
 
-insert into category (id, name) values
+insert into genre (id, name) values
 (1, 'Fiction'),
 (2,'Engineering'),
 (3, 'Economics'),
@@ -90,7 +84,7 @@ insert into book_author (id, book_id, author_id) values
 (8, 5, 8),
 (9, 6, 9);
 
-insert into book_category (id, book_id, category_id) values 
+insert into book_genre (id, book_id, genre_id) values 
 (1, 1, 1),
 (2, 2, 1),
 (3, 3, 1),
@@ -101,19 +95,19 @@ insert into book_category (id, book_id, category_id) values
 
 /********/
 
-insert into book_copy (id, barcode, rfid, price, status, note, created_at, updated_at, created_by, updated_by, book_id) values
-(1, 'I0000001', '1', 23000, 'AVAILABLE', '', now(), now(), 2,2,1 ),
-(2, 'I0000002', '2', 23000, 'AVAILABLE', '', now(), now(), 2,2,1 ),
-(3, 'I0000003', '3', 23000, 'AVAILABLE', '', now(), now(), 2,2,2 ),
-(4, 'I0000004', '4', 23000, 'AVAILABLE', '', now(), now(), 2,2,2 ),
-(5, 'I0000005', '5', 23000, 'AVAILABLE', '', now(), now(), 2,2,3 ),
-(6, 'I0000006', '6', 23000, 'AVAILABLE', '', now(), now(), 2,2,4 ),
-(7, 'I0000007', '7', 23000, 'AVAILABLE', '', now(), now(), 2,2,4 ),
-(8, 'I0000008', '8', 23000, 'AVAILABLE', '', now(), now(), 2,2,5),
-(9, 'I0000009', '9', 23000, 'AVAILABLE', '', now(), now(), 2,2,5 ),
-(10, 'I0000010', '10', 23000, 'AVAILABLE', '', now(), now(), 2,2,5 ),
-(11, 'I0000011', '11', 23000, 'AVAILABLE', '', now(), now(), 2,2,6 ),
-(12, 'I0000012', '12', 23000, 'AVAILABLE', '', now(), now(), 2,2,6 );
+insert into book_copy (id, barcode, rfid, price, status, created_at, updated_at, created_by, updated_by, book_id) values
+(1, 'I0000001', '1', 23000, 'AVAILABLE', now(), now(), 2,2,1 ),
+(2, 'I0000002', '2', 23000, 'AVAILABLE', now(), now(), 2,2,1 ),
+(3, 'I0000003', '3', 23000, 'AVAILABLE', now(), now(), 2,2,2 ),
+(4, 'I0000004', '4', 23000, 'AVAILABLE', now(), now(), 2,2,2 ),
+(5, 'I0000005', '5', 23000, 'AVAILABLE', now(), now(), 2,2,3 ),
+(6, 'I0000006', '6', 23000, 'AVAILABLE', now(), now(), 2,2,4 ),
+(7, 'I0000007', '7', 23000, 'AVAILABLE', now(), now(), 2,2,4 ),
+(8, 'I0000008', '8', 23000, 'AVAILABLE', now(), now(), 2,2,5),
+(9, 'I0000009', '9', 23000, 'AVAILABLE', now(), now(), 2,2,5 ),
+(10, 'I0000010', '10', 23000, 'AVAILABLE', now(), now(), 2,2,5 ),
+(11, 'I0000011', '11', 23000, 'AVAILABLE', now(), now(), 2,2,6 ),
+(12, 'I0000012', '12', 23000, 'AVAILABLE', now(), now(), 2,2,6 );
 
 
 

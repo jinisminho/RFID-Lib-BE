@@ -1,20 +1,16 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
-import capstone.library.enums.BookStatus;
+import capstone.library.demo.enums.BookStatus;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.Set;
 
-@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,12 +26,9 @@ public class Book extends Audit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @KeywordField
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
 
-    @FullTextField
-//    @FullTextField(analyzer = "english")
     @Column(name = "title", nullable = false)
     private String title;
 

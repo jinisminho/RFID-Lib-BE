@@ -50,7 +50,7 @@ public class BookDto {
 
     public Set<AuthorDto> author;
 
-    public Set<CategoryDto> category;
+    public Set<GenreDto> genre;
 
 
 }
