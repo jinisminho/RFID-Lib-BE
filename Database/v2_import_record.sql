@@ -59,12 +59,12 @@ insert into author(id, name) values
 
 
 insert into book (id, ISBN, title, subtitle, publisher, publish_year, edition, language, page_number, call_number, number_of_copy, status, created_at, updated_at, created_by, updated_by) values
-(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '791.4372', 2, 'ACCEPTED', now(), now(), 2,2),
-(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '823.6', 2, 'ACCEPTED', now(), now(), 2,2),
-(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '811.54', 1, 'ACCEPTED', now(), now(), 2,2),
-(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '741.5973', 2, 'ACCEPTED', now(), now(), 2,2),
-(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '332.041', 3, 'ACCEPTED', now(), now(), 2,2),
-(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '629.450092', 2, 'ACCEPTED', now(), now(), 2,2);
+(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '791.4372', 2, 'IN_CIRCULATION', now(), now(), 2,2),
+(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '823.6', 2, 'IN_CIRCULATION', now(), now(), 2,2),
+(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '811.54', 1, 'IN_CIRCULATION', now(), now(), 2,2),
+(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '741.5973', 2, 'IN_CIRCULATION', now(), now(), 2,2),
+(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '332.041', 3, 'IN_CIRCULATION', now(), now(), 2,2),
+(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '629.450092', 2, 'IN_CIRCULATION', now(), now(), 2,2);
 
 
 insert into genre (id, name) values
