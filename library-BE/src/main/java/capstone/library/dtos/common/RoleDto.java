@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

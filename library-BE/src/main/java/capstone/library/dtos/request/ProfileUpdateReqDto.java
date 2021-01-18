@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.dtos.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,12 +12,10 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthorDto {
+public class ProfileUpdateReqDto {
 
-    private int id;
-
-    @NotNull(message = "{author.name.notNull}")
-    @Length(max = 100, message = "{author.name.length}")
-    private String name;
+    @NotNull(message = "{profile.phone.notNull}")
+    @Length(max = 10, message = "{profile.phone.length}")
+    private String phone;
 
 }

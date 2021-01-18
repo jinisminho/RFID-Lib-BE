@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.dtos.response;
 
 import capstone.library.enums.Gender;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileDto {
+public class ProfileResDto {
 
     private Integer id;
 
@@ -28,9 +28,5 @@ public class ProfileDto {
     @NotNull(message = "{profile.gender.notNull}")
     private Gender gender;
 
-    @NotNull(message = "{profile.department.notNull}")
-    @Length(max = 50, message = "{profile.department.length}")
-    private String department;
-
-    private ProfileAccountDto account;
+    private ProfileAccountResDto account;
 }
