@@ -1,14 +1,15 @@
 package capstone.library.services;
 
-import capstone.library.dtos.ProfileDto;
-import capstone.library.dtos.ProfileUpdateDto;
+import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.ProfileResDto;
+
 
 public interface PatronService {
 
     boolean addWishlist(Integer bookId, Integer patronId);
 
-    ProfileDto getProfile(Integer patronId);
+    ProfileResDto getProfile(Integer patronId);
 
-    boolean updateProfile(Integer patronId, ProfileUpdateDto newProfile);
+    boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile);
 
 }

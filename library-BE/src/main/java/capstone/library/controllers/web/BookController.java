@@ -1,6 +1,6 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.BookDto;
+import capstone.library.dtos.common.BookDto;
 import capstone.library.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

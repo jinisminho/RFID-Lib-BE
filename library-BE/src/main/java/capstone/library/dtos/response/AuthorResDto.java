@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.dtos.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,19 +7,17 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
-import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryWithBooksDto {
+public class AuthorResDto {
+
     private int id;
 
-    @NotNull(message = "{category.name.notNull}")
-    @Length(max = 100, message = "{category.name.length}")
+    @NotNull(message = "{author.name.notNull}")
+    @Length(max = 100, message = "{author.name.length}")
     private String name;
-
-    public Set<BookDto> books;
 
 }

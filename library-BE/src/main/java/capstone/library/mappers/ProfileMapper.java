@@ -1,6 +1,6 @@
 package capstone.library.mappers;
 
-import capstone.library.dtos.ProfileDto;
+import capstone.library.dtos.response.ProfileResDto;
 import capstone.library.entities.Profile;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -10,7 +10,7 @@ public interface ProfileMapper {
 
     ProfileMapper INSTANCE = Mappers.getMapper(ProfileMapper.class);
 
-    Profile toEntity(ProfileDto dto);
+    Profile toEntity(ProfileResDto dto);
 
-    ProfileDto toDto(Profile entity);
+    ProfileResDto toDto(Profile entity);
 }

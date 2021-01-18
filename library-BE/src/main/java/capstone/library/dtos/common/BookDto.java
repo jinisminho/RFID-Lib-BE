@@ -1,5 +1,7 @@
-package capstone.library.dtos;
+package capstone.library.dtos.common;
 
+import capstone.library.dtos.response.AuthorResDto;
+import capstone.library.dtos.response.GenreResDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,9 +50,9 @@ public class BookDto {
     @NotNull(message = "{book.status.notNull}")
     private String status;
 
-    public Set<AuthorDto> author;
+    public Set<AuthorResDto> author;
 
-    public Set<CategoryDto> category;
+    public Set<GenreResDto> genre;
 
 
 }

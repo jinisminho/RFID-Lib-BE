@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,14 +13,13 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthorWithBooksDto {
-
+public class GenreDto {
     private int id;
 
-    @NotNull(message = "{author.name.notNull}")
-    @Length(max = 100, message = "{author.name.length}")
+    @NotNull(message = "{genre.name.notNull}")
+    @Length(max = 100, message = "{genre.name.length}")
     private String name;
 
-    private Set<BookDto> books;
+    public Set<BookDto> books;
 
 }
