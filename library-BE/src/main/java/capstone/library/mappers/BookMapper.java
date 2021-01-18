@@ -5,7 +5,7 @@ import capstone.library.dtos.BookDto;
 import capstone.library.dtos.CategoryDto;
 import capstone.library.entities.Book;
 import capstone.library.entities.BookAuthor;
-import capstone.library.entities.BookCategory;
+import capstone.library.entities.BookGenre;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -30,9 +30,9 @@ public interface BookMapper {
             @Mapping(target = "id", source = "category.id"),
             @Mapping(target = "name", source = "category.name"),
     })
-    CategoryDto toCategoryDto(BookCategory entity);
+    CategoryDto toCategoryDto(BookGenre entity);
 
-    Set<CategoryDto> toCategoryDtos(Set<BookCategory> entities);
+    Set<CategoryDto> toCategoryDtos(Set<BookGenre> entities);
 
     @Mappings({
             @Mapping(target = "category", source = "bookCategories"),

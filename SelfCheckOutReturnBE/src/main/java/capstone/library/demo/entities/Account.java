@@ -1,4 +1,4 @@
-package capstone.library.entities;
+package capstone.library.demo.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

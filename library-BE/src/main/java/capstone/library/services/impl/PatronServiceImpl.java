@@ -4,7 +4,7 @@ import capstone.library.dtos.ProfileDto;
 import capstone.library.dtos.ProfileUpdateDto;
 import capstone.library.entities.Account;
 import capstone.library.entities.Book;
-import capstone.library.entities.BookWishList;
+import capstone.library.entities.WishlistBook;
 import capstone.library.entities.Profile;
 import capstone.library.enums.WishListStatus;
 import capstone.library.mappers.ProfileMapper;
@@ -36,14 +36,14 @@ public class PatronServiceImpl implements PatronService {
             return false;
         }
 
-        BookWishList wishList = new BookWishList();
+        WishlistBook wishList = new WishlistBook();
         Book book = bookJpaRepository.getBookById(bookId).orElse(null);
         Account patron = accountRepository.findById(patronId).orElse(null);
 
         if (patron != null && book != null) {
             wishList.setBook(book);
             wishList.setBorrower(patron);
-            wishList.setStatus(WishListStatus.WAITING);
+            wishList.setStatus(WishListStatus.NOT_EMAIL_YET);
             wishList.setEmail(patron.getEmail());
             wishlistRepository.save(wishList);
             return true;
