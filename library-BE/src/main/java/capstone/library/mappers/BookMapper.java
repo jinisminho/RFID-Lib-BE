@@ -2,7 +2,7 @@ package capstone.library.mappers;
 
 import capstone.library.dtos.AuthorDto;
 import capstone.library.dtos.BookDto;
-import capstone.library.dtos.CategoryDto;
+import capstone.library.dtos.GenreDto;
 import capstone.library.entities.Book;
 import capstone.library.entities.BookAuthor;
 import capstone.library.entities.BookGenre;
@@ -27,15 +27,15 @@ public interface BookMapper {
     Set<AuthorDto> toAuthorDtos(Set<BookAuthor> entities);
 
     @Mappings({
-            @Mapping(target = "id", source = "category.id"),
-            @Mapping(target = "name", source = "category.name"),
+            @Mapping(target = "id", source = "genre.id"),
+            @Mapping(target = "name", source = "genre.name"),
     })
-    CategoryDto toCategoryDto(BookGenre entity);
+    GenreDto toCategoryDto(BookGenre entity);
 
-    Set<CategoryDto> toCategoryDtos(Set<BookGenre> entities);
+    Set<GenreDto> toCategoryDtos(Set<BookGenre> entities);
 
     @Mappings({
-            @Mapping(target = "category", source = "bookCategories"),
+            @Mapping(target = "genre", source = "bookGenres"),
             @Mapping(target = "author", source = "bookAuthors")
     })
     BookDto toDto(Book entity);

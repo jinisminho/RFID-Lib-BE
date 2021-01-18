@@ -7,16 +7,19 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryDto {
+public class GenreWithBooksDto {
     private int id;
 
-    @NotNull(message = "{category.name.notNull}")
-    @Length(max = 100, message = "{category.name.length}")
+    @NotNull(message = "{genre.name.notNull}")
+    @Length(max = 100, message = "{genre.name.length}")
     private String name;
+
+    public Set<BookDto> books;
 
 }
