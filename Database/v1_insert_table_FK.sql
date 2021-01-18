@@ -35,7 +35,7 @@ create table wishlist_book(
 	id int not null auto_increment,
 	created_at datetime not null default now(),
 	email varchar(100) not null,
-    status varchar(20) not null,
+    status varchar(30) not null,
     
     book_id int, 
     wish_by int, 
@@ -59,7 +59,7 @@ create table book_copy(
     barcode varchar(100) not null ,
 	rfid varchar(80) ,
 	price double precision not null,
-	status varchar(20) not null,
+	status varchar(30) not null,
 	created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
     
@@ -76,7 +76,6 @@ create table book_borrowing(
     due_at date not null,
     extended_at datetime,
     extend_index int,
-    overdue_fine_per_day double precision not null,
     
     returned_by int,
     borrowed_by int,
@@ -108,9 +107,9 @@ create table book(
     edition int not null,
     language varchar(20),
     page_number int,
-    call_number varchar(20),
+    call_number varchar(30) not null,
 	number_of_copy int not null,
-    status varchar(20) not null,
+    status varchar(30) not null,
     created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
 
@@ -122,13 +121,13 @@ create table book(
 
 create table author(
 	id int not null auto_increment,
-	name varchar(100) not null,
+	name varchar(50) not null,
 	primary key (id)
 );
 
 create table genre(
 	id int not null auto_increment,
-	name varchar(100) not null,
+	name varchar(50) not null,
 	primary key (id)
 );
 

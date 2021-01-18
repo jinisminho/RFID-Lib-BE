@@ -1,7 +1,7 @@
 use library_rfid;
 
 create table security_deactivated_copy (
-	rfid int not null,
+	rfid varchar(80) not null,
     primary key (rfid)
 );
 

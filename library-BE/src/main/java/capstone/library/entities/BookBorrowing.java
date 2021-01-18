@@ -37,21 +37,20 @@ public class BookBorrowing {
     @Column(name = "extend_index")
     private int extendIndex;
 
-    @Column(name = "overdue_fine_per_day")
-    private double overdueFinePerDay;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowed_by")
     private Account borrower;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issued_by")
-    private Account librarian;
+    private Account issued_by;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "returned_by")
+    private Account return_by;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_copy_id")
     private BookCopy bookCopy;
-
-
 
 }

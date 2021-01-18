@@ -25,7 +25,7 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", length = 100, nullable = false)
+    @Column(name = "name", length = 50, nullable = false)
     private String name;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},mappedBy = "author")

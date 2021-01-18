@@ -1,6 +1,6 @@
 package capstone.library.enums;
 
 public enum WishListStatus {
-    WAITING,
-    READY_ON_SELF
+    NOT_EMAIL_YET,
+    EMAILED
 }

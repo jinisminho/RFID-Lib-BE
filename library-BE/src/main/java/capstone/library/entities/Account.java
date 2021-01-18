@@ -25,9 +25,6 @@ public class Account extends Audit {
     @Column(name = "password", length = 100, nullable = false)
     private String password;
 
-    @Column(name = "pin", length = 4)
-    private String pin;
-
     @Column(name = "rfid", length = 80)
     private String rfid;
 

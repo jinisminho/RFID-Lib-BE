@@ -1,5 +1,6 @@
 package capstone.library.entities;
 
+import capstone.library.enums.BookStatus;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
@@ -43,26 +44,27 @@ public class Book extends Audit {
     @Column(name = "edition", nullable = false)
     private Integer edition;
 
-    @Column(name = "language", length = 20, nullable = false)
+    @Column(name = "language", length = 20)
     private String language;
 
-    @Column(name = "page_number", nullable = false)
+    @Column(name = "page_number")
     private Integer pageNumber;
 
-    @Column(name = "ddc", length = 20, nullable = false)
-    private String ddc;
+    @Column(name = "call_number", length = 30, nullable = false)
+    private String callNumber;
 
     @Column(name = "number_of_copy", nullable = false)
     private Integer numberOfCopy;
 
-    @Column(name = "status", length = 20, nullable = false)
-    private String status;
+    @Column(name = "status", length = 30, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BookStatus status;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
     public Set<BookAuthor> bookAuthors;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
-    public Set<BookCategory> bookCategories;
+    public Set<BookGenre> bookGenres;
 
 
     @Override

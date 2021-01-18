@@ -1,5 +1,6 @@
 package capstone.library.entities;
 
+import capstone.library.enums.BookCopyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class BookCopy extends Audit{
     private Double price;
 
     @Column(name = "status", length = 20, nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private BookCopyStatus status;
 
 }

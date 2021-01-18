@@ -29,9 +29,6 @@ public class Profile {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "department", length = 50, nullable = false)
-    private String department;
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     @MapsId
