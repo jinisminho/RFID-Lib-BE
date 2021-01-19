@@ -2,6 +2,7 @@ package capstone.library.demo.services.impl;
 
 import capstone.library.demo.dtos.response.ScannedBookResponse;
 import capstone.library.demo.entities.BookCopy;
+import capstone.library.demo.exceptions.ResourceNotFoundException;
 import capstone.library.demo.repositories.BookCopyRepository;
 import capstone.library.demo.services.BookCopyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,8 @@ public class BookCopyServiceImpl implements BookCopyService {
 
     @Override
     public ScannedBookResponse searchBookByRfid(String rfid) {
-        Optional<BookCopy> copyOpt = bookCopyRepo.findByRfid(rfid);
-        if(copyOpt.isPresent()){
-            BookCopy copy = copyOpt.get();
-            return new ScannedBookResponse(rfid, copy.getBook().getTitle());
-        }else{
-            return null;
-        }
+        BookCopy copy = bookCopyRepo.findByRfid(rfid)
+                .orElseThrow(() -> new ResourceNotFoundException("Book with code: " + rfid + " not found. Please contact librarian!"));
+        return new ScannedBookResponse(rfid, copy.getBook().getTitle());
     }
 }
