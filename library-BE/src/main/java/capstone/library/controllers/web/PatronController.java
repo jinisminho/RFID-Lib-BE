@@ -2,6 +2,7 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.ExtendHistoryResDto;
 import capstone.library.dtos.response.ProfileResDto;
 import capstone.library.services.PatronService;
 import capstone.library.util.ConstantUtil;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/web/patron")
@@ -59,6 +61,31 @@ public class PatronController {
                 "Failed to update profile");
 
         return new ResponseEntity(bool ? ConstantUtil.UPDATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ApiOperation(value = "This API get extend history of 1 borrowing book by patronId, bookId")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @GetMapping("/extendHistory/{patronId}/{bookCopyId}")
+    public List<ExtendHistoryResDto> getExtendHistory(@PathVariable Integer patronId,
+                                                      @PathVariable Integer bookCopyId) {
+        return patronService.getExtendHistories(patronId, bookCopyId);
+    }
+
+    @ApiOperation(value = "This API extend due date of 1 borrowing book by patronId, bookCopyId")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @PostMapping("/extendHistory/{patronId}/{bookCopyId}")
+    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer patronId,
+                                                   @PathVariable Integer bookCopyId) {
+
+        boolean bool = patronService.addNewExtendHistory(patronId, bookCopyId);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL SERVER ERROR",
+                "Failed to Added new extended due date");
+
+        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
                 bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
