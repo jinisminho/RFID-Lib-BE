@@ -33,4 +33,9 @@ public class BookCopy extends Audit{
     @Enumerated(EnumType.STRING)
     private BookCopyStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private Book book;
+
+
 }

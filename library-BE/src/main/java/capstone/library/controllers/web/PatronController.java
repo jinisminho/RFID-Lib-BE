@@ -1,6 +1,6 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.ErrorDto;
+import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.ProfileResDto;
 import capstone.library.services.PatronService;
