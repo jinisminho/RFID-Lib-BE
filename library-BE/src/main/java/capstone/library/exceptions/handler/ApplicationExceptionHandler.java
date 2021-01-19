@@ -1,6 +1,6 @@
 package capstone.library.exceptions.handler;
 
-import capstone.library.dtos.ErrorDto;
+import capstone.library.dtos.common.ErrorDto;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import org.apache.logging.log4j.LogManager;

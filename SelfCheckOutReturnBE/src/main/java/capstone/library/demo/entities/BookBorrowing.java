@@ -37,6 +37,9 @@ public class BookBorrowing {
     @Column(name = "extend_index")
     private int extendIndex;
 
+    @Column(name = "lost_at")
+    private LocalDateTime lostAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowed_by")
     private Account borrower;
