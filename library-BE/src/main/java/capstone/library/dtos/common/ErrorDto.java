@@ -1,5 +1,4 @@
-package capstone.library.demo.exceptions;
-
+package capstone.library.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,8 +9,13 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResourceNotFoundException extends RuntimeException{
+public class ErrorDto {
+
+    private String timestamp;
+
+    private int status;
+
+    private String error;
 
     private String message;
-
 }

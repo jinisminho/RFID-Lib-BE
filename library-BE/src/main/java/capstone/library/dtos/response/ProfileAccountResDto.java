@@ -1,5 +1,6 @@
-package capstone.library.dtos;
+package capstone.library.dtos.response;
 
+import capstone.library.dtos.common.RoleDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileAccountDto {
+public class ProfileAccountResDto {
 
     private Integer id;
 

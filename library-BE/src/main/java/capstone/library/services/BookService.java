@@ -1,6 +1,6 @@
 package capstone.library.services;
 
-import capstone.library.dtos.BookDto;
+import capstone.library.dtos.common.BookDto;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.demo.dtos.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +9,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ErrorDto {
+public class ScannedBookResponse {
 
-    private String timestamp;
+    private String rfid ;
 
-    private int status;
+    private String title;
 
-    private String error;
-
-    private String message;
 }

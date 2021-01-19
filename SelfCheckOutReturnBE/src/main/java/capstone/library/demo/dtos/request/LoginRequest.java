@@ -1,4 +1,4 @@
-package capstone.library.dtos;
+package capstone.library.demo.dtos.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,12 +12,9 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthorDto {
+public class LoginRequest {
 
-    private int id;
-
-    @NotNull(message = "{author.name.notNull}")
-    @Length(max = 100, message = "{author.name.length}")
-    private String name;
-
+    @NotNull(message = "{login.rfid.notNull}")
+    @Length(max = 80, message = "{login.rfid.length}")
+    private String rfid;
 }

@@ -1,6 +1,8 @@
 package capstone.library.entities;
 
 import capstone.library.enums.BookCopyStatus;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +16,10 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "book_copy")
-public class BookCopy extends Audit{
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
+public class BookCopy extends Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +28,7 @@ public class BookCopy extends Audit{
     @Column(name = "barcode", length = 100, nullable = false)
     private String barcode;
 
-    @Column(name = "rfid", length = 80, nullable = false)
+    @Column(name = "rfid", length = 80)
     private String rfid;
 
     @Column(name = "price", nullable = false)
@@ -33,4 +38,15 @@ public class BookCopy extends Audit{
     @Enumerated(EnumType.STRING)
     private BookCopyStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private Book book;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private Account creator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private Account updater;
 }

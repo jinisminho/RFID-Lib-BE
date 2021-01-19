@@ -1,12 +1,21 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.ProfileDto;
-import capstone.library.dtos.ProfileUpdateDto;
+import capstone.library.dtos.common.ErrorDto;
+import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.ExtendHistoryResDto;
+import capstone.library.dtos.response.ProfileResDto;
 import capstone.library.services.PatronService;
+import capstone.library.util.ConstantUtil;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/web/patron")
@@ -15,26 +24,70 @@ public class PatronController {
     @Autowired
     private PatronService patronService;
 
+    @ApiOperation(value = "This API create new wishlist")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/wishlist")
     public ResponseEntity<?> addWishlist(@RequestParam(required = true, value = "bookID") Integer bookId,
                                          @RequestParam(required = true, value = "patronID") Integer patronId) {
+
         boolean bool = patronService.addWishlist(bookId, patronId);
-        return new ResponseEntity(bool ? "Added new wishlist" : "Failed to Added new wishlist",
-                bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL SERVER ERROR",
+                "Failed to Added new wishlist");
+
+        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ApiOperation(value = "This API get profile of patron by its ID")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @GetMapping("/profile/{patronId}")
-    public ProfileDto getProfile(@PathVariable Integer patronId) {
+    public ProfileResDto getProfile(@PathVariable Integer patronId) {
         return patronService.getProfile(patronId);
     }
 
+    @ApiOperation(value = "This API update profile of patron by its ID")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/profile/{patronId}")
     public ResponseEntity<?> updateProfile(@PathVariable Integer patronId,
-                                           @RequestBody(required = true) ProfileUpdateDto newProfile) {
+                                           @RequestBody(required = true) ProfileUpdateReqDto newProfile) {
         boolean bool = patronService.updateProfile(patronId, newProfile);
-        return new ResponseEntity(bool ? "Updated profile" : "Failed to update profile",
-                bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL SERVER ERROR",
+                "Failed to update profile");
+
+        return new ResponseEntity(bool ? ConstantUtil.UPDATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ApiOperation(value = "This API get extend history of 1 borrowing book by patronId, bookId")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @GetMapping("/extendHistory/{patronId}/{bookCopyId}")
+    public List<ExtendHistoryResDto> getExtendHistory(@PathVariable Integer patronId,
+                                                      @PathVariable Integer bookCopyId) {
+        return patronService.getExtendHistories(patronId, bookCopyId);
+    }
+
+    @ApiOperation(value = "This API extend due date of 1 borrowing book by patronId, bookCopyId")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @PostMapping("/extendHistory/{patronId}/{bookCopyId}")
+    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer patronId,
+                                                   @PathVariable Integer bookCopyId) {
+
+        boolean bool = patronService.addNewExtendHistory(patronId, bookCopyId);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL SERVER ERROR",
+                "Failed to Added new extended due date");
+
+        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
 }
+

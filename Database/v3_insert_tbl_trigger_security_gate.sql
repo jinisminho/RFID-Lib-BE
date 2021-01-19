@@ -12,7 +12,7 @@ create trigger TR_INSERT_BORROWING_BOOK
     for each row
 begin
 	DECLARE copy_rfid varchar(80);
-	DECLARE copy_status varchar(20);
+	DECLARE copy_status varchar(30);
     DECLARE existing_rfid_security varchar(80);
 	
     SET copy_rfid = new.rfid;
@@ -29,3 +29,4 @@ begin
 	end if;
     
 end $$
+

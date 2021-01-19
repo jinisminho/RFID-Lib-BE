@@ -36,7 +36,7 @@ public class ApplicationExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 "Resource Not Found",
                 exception.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ResponseBody
@@ -47,7 +47,7 @@ public class ApplicationExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "server error",
                 exception.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ResponseBody
@@ -61,32 +61,32 @@ public class ApplicationExceptionHandler {
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("FK_copy_book")) {
             errorDto.setMessage("Cannot delete this book because there are existing copies of this book");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("UK_role_name")) {
             errorDto.setMessage("Role's name must be unique");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("UK_account_email")) {
             errorDto.setMessage("Account's email must be unique");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("UK_account_rfid")) {
             errorDto.setMessage("Account's rfid must be unique");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("UK_bookCopy_barcode")) {
             errorDto.setMessage("Book copy's barcode must be unique");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("UK_bookCopy_rfid")) {
             errorDto.setMessage("Book copy's rfid must be unique");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }
@@ -107,9 +107,9 @@ public class ApplicationExceptionHandler {
         if (exception.getMessage() != null
                 && exception.getMessage().contains("java.time.LocalDate")) {
             errorDto.setMessage("Invalid date must has format: yyyy-mm-dd");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDto);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDto);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }
 
     @ResponseBody

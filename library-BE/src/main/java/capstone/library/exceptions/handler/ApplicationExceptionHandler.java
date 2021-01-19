@@ -1,6 +1,7 @@
 package capstone.library.exceptions.handler;
 
-import capstone.library.dtos.ErrorDto;
+import capstone.library.dtos.common.ErrorDto;
+import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,7 +94,7 @@ public class ApplicationExceptionHandler {
 
 
     /**
-     *  When user request date with wrong format yyyy-mm-dd
+     * When user request date with wrong format yyyy-mm-dd
      */
 
     @ResponseBody
@@ -130,6 +131,17 @@ public class ApplicationExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = ConstraintViolationException.class)
     public ResponseEntity handleException(ConstraintViolationException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = MissingInputException.class)
+    public ResponseEntity handleException(MissingInputException exception) {
         logger.error(exception.getMessage());
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.BAD_REQUEST.value(),
