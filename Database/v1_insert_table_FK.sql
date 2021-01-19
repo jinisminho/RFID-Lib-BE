@@ -77,6 +77,7 @@ create table book_borrowing(
     due_at date not null,
     extended_at datetime,
     extend_index int,
+    lost_at datetime,
     
     returned_by int,
     borrowed_by int,
