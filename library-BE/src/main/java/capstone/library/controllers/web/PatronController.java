@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/web/patron")
+@RequestMapping("/patron")
 public class PatronController {
 
     @Autowired
@@ -26,7 +26,7 @@ public class PatronController {
 
     @ApiOperation(value = "This API create new wishlist")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/wishlist")
+    @PostMapping("/wishlist/addWishlist")
     public ResponseEntity<?> addWishlist(@RequestParam(required = true, value = "bookID") Integer bookId,
                                          @RequestParam(required = true, value = "patronID") Integer patronId) {
 
@@ -43,14 +43,14 @@ public class PatronController {
 
     @ApiOperation(value = "This API get profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/profile/{patronId}")
+    @GetMapping("/profile/getProfile/{patronId}")
     public ProfileResDto getProfile(@PathVariable Integer patronId) {
         return patronService.getProfile(patronId);
     }
 
     @ApiOperation(value = "This API update profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/profile/{patronId}")
+    @PostMapping("/profile/updateProfile/{patronId}")
     public ResponseEntity<?> updateProfile(@PathVariable Integer patronId,
                                            @RequestBody(required = true) ProfileUpdateReqDto newProfile) {
         boolean bool = patronService.updateProfile(patronId, newProfile);
@@ -64,21 +64,21 @@ public class PatronController {
                 bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ApiOperation(value = "This API get extend history of 1 borrowing book by patronId, bookId")
+    @ApiOperation(value = "This API get extend history of 1 borrowing book by bookBorrowingId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/extendHistory/{patronId}/{bookCopyId}")
-    public List<ExtendHistoryResDto> getExtendHistory(@PathVariable Integer patronId,
-                                                      @PathVariable Integer bookCopyId) {
-        return patronService.getExtendHistories(patronId, bookCopyId);
+    @GetMapping("/extendHistory/getExtendHistories/{bookBorrowingId}")
+    public List<ExtendHistoryResDto> getExtendHistories(@PathVariable Integer bookBorrowingId) {
+        return patronService.getExtendHistories(bookBorrowingId);
     }
 
-    @ApiOperation(value = "This API extend due date of 1 borrowing book by patronId, bookCopyId")
+    @ApiOperation(value = "This API extend due date of 1 borrowing book by bookBorrowingId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/extendHistory/{patronId}/{bookCopyId}")
-    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer patronId,
-                                                   @PathVariable Integer bookCopyId) {
+    @PostMapping("/extendHistory/createExtendHistories/{bookBorrowingId}")
+    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer bookBorrowingId,
+                                                   @RequestParam(required = false, value = "librarianId") Integer librarianId,
+                                                   @RequestParam(required = false, value = "numberOfDayToPlus") Integer numberOfDayToPlus) {
 
-        boolean bool = patronService.addNewExtendHistory(patronId, bookCopyId);
+        boolean bool = patronService.addNewExtendHistory(bookBorrowingId, librarianId, numberOfDayToPlus);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

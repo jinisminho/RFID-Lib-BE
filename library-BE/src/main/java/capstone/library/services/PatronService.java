@@ -15,7 +15,7 @@ public interface PatronService {
 
     boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile);
 
-    List<ExtendHistoryResDto> getExtendHistories(Integer patronId, Integer bookCopyId);
+    List<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId);
 
-    boolean addNewExtendHistory(Integer patronId, Integer bookCopyId);
+    boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus);
 }
