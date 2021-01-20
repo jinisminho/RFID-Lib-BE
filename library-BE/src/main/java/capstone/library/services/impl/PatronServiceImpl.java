@@ -1,21 +1,25 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
 import capstone.library.dtos.response.ProfileResDto;
 import capstone.library.entities.*;
 import capstone.library.enums.WishListStatus;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.mappers.BookBorrowingMapper;
 import capstone.library.mappers.ExtendHistoryMapper;
 import capstone.library.mappers.ProfileMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,18 +91,18 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
-    public List<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId) {
+    public Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable) {
         if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
-        return extendHistoryRepository
+        return new PageImpl<>(extendHistoryRepository
                 .findAllByBookBorrowing_IdOrderByDueAtAsc(bookBorrowingRepository.findById(bookBorrowingId)
                         .orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id" + bookBorrowingId + " not found"))
-                        .getId())
+                        .getId(), pageable)
                 .stream()
                 .map(extendHistory -> ExtendHistoryMapper.INSTANCE.toDto(extendHistory))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -147,6 +151,19 @@ public class PatronServiceImpl implements PatronService {
         }
 
         return false;
+    }
+
+    @Override
+    public Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable) {
+        if (patronId == null) {
+            throw new MissingInputException("Missing input");
+        }
+
+        return new PageImpl<>(bookBorrowingRepository
+                .findAllByBorrower_Id(patronId, pageable)
+                .stream()
+                .map(bookBorrowing -> BookBorrowingMapper.INSTANCE.toDto(bookBorrowing))
+                .collect(Collectors.toList()));
     }
 
 }
