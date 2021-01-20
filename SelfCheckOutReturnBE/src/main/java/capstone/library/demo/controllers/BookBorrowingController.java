@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class BookBorrowingController {
     }
 
     @PostMapping("/return")
-    public List<BookReturnResponse> returnBook(@RequestBody List<String> bookCodeList){
+    public List<BookReturnResponse> returnBook(@RequestBody @NotNull List<String> bookCodeList){
         return bookBorrowingService.returnBook(bookCodeList);
     }
 }

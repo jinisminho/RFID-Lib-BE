@@ -1,6 +1,7 @@
 package capstone.library.demo.exceptions.handler;
 
 import capstone.library.demo.dtos.response.ErrorDto;
+import capstone.library.demo.exceptions.MissingInputException;
 import capstone.library.demo.exceptions.ResourceNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +36,17 @@ public class ApplicationExceptionHandler {
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.NOT_FOUND.value(),
                 "Resource Not Found",
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = MissingInputException.class)
+    public ResponseEntity handleException(MissingInputException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Missing Input",
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
