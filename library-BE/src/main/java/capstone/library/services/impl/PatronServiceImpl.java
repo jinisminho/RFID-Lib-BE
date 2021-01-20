@@ -106,23 +106,24 @@ public class PatronServiceImpl implements PatronService {
         if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
-        Account librarian =
-                librarianId != null
-                        ? accountRepository.findById(librarianId).orElseThrow(() -> new ResourceNotFoundException("Account", "Librarian Account with Id" + librarianId + " not found"))
-                        : null;
 
-//        ExtendHistory extendHistory = new ExtendHistory();
         BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id" + bookBorrowingId + " not found"));
 
         if (bookBorrowing != null) {
+            Account isssuedBy =
+                    librarianId != null
+                            ? accountRepository.findById(librarianId).orElseThrow(() -> new ResourceNotFoundException("Account", "Librarian Account with Id" + librarianId + " not found"))
+                            : bookBorrowing.getBorrower();
+
             ExtendHistory extendHistory = extendHistoryRepository.findFirstByBookBorrowing_IdOrderByDueAtDesc(bookBorrowing.getId())
                     .orElse(new ExtendHistory());
+
             if (bookBorrowing.getExtendIndex() == 0) {
                 extendHistory.setBorrowedAt(bookBorrowing.getBorrowedAt());
                 extendHistory.setExtendIndex(bookBorrowing.getExtendIndex());
                 extendHistory.setDueAt(bookBorrowing.getDueAt());
                 extendHistory.setBookBorrowing(bookBorrowing);
-//                extendHistory.setLibrarian(librarian);
+                extendHistory.setIssuedBy(bookBorrowing.getIssued_by());
                 extendHistory = extendHistoryRepository.saveAndFlush(extendHistory);
             }
 
@@ -133,7 +134,7 @@ public class PatronServiceImpl implements PatronService {
             newExtendHistory.setExtendIndex(extendHistory.getExtendIndex() + 1);
             newExtendHistory.setDueAt(extendHistory.getDueAt().plusDays(numberOfDayToPlus != null ? numberOfDayToPlus : 7));
             newExtendHistory.setBookBorrowing(bookBorrowing);
-            newExtendHistory.setLibrarian(librarian);
+            newExtendHistory.setIssuedBy(isssuedBy);
 
 
             bookBorrowing.setExtendedAt(newExtendHistory.getExtendedAt());

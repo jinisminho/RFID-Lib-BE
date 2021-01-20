@@ -73,7 +73,7 @@ public class PatronController {
 
     @ApiOperation(value = "This API extend due date of 1 borrowing book by bookBorrowingId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/extendHistory/createExtendHistories/{bookBorrowingId}")
+    @PostMapping("/extendHistory/createExtendHistory/{bookBorrowingId}")
     public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer bookBorrowingId,
                                                    @RequestParam(required = false, value = "librarianId") Integer librarianId,
                                                    @RequestParam(required = false, value = "numberOfDayToPlus") Integer numberOfDayToPlus) {
