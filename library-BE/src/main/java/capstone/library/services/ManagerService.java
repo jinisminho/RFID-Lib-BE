@@ -14,4 +14,6 @@ public interface ManagerService
     String deactivateLibrarian(int id, int updatorId);
 
     String activateLibrarian(int id, int updatorId);
+
+    Page<AccountBasicInfoResponseDto> searchLibrarian(Pageable pageable,String searchString);
 }

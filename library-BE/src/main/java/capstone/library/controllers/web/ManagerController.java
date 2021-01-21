@@ -10,9 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
-import javax.websocket.server.PathParam;
-
 @RestController
 @RequestMapping("/manager")
 public class ManagerController
@@ -50,5 +47,13 @@ public class ManagerController
     public String activateLibrarian(@PathVariable @ApiParam(required = true) int id, @RequestParam(value = "updaterId") int updaterId)
     {
         return managerService.activateLibrarian(id, updaterId);
+    }
+
+    /*Search Librarian by name or username*/
+    @GetMapping("/result")
+    @ApiOperation(value = "Search librarian by name or email")
+    public Page<AccountBasicInfoResponseDto> activateLibrarian(Pageable pageable, @RequestParam(value = "search_query") String searchString)
+    {
+        return managerService.searchLibrarian(pageable, searchString);
     }
 }
