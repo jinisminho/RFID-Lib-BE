@@ -88,4 +88,16 @@ public class ManagerServiceImpl implements ManagerService
     {
         return changeLibrarianStatus(id, updaterId, AccountStatusEnum.STATUS_ACTIVE.getStatus());
     }
+
+    @Override
+    public Page<AccountBasicInfoResponseDto> searchLibrarian(Pageable pageable, String searchString)
+    {
+        if (searchString.isBlank())
+        {
+            throw new InvalidRequestException("Search query must no be blank");
+        } else
+        {
+            return accountRepository.findByEmailContainsOrProfileFullNameContains(searchString, searchString, pageable).map(account -> objectMapper.convertValue(account, AccountBasicInfoResponseDto.class));
+        }
+    }
 }

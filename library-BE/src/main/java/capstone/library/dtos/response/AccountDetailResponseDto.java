@@ -1,6 +1,7 @@
 package capstone.library.dtos.response;
 
 import capstone.library.enums.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,16 +10,25 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@ApiModel("Account basic info")
-public class AccountBasicInfoResponseDto
+@ApiModel("Account detail")
+public class AccountDetailResponseDto
 {
     private int id;
 
     private String email;
 
+    @JsonIgnore
+    private String password;
+
+    private String rfid;
+
     private String avatar;
 
     private boolean isActive;
+
+    private AccountDto creator;
+
+    private AccountDto updater;
 
     private RoleDto role;
 
@@ -32,6 +42,16 @@ public class AccountBasicInfoResponseDto
         private String fullName;
 
         private String phone;
+
+        private Gender gender;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    private static class AccountDto
+    {
+        private int id;
     }
 
     @Getter
@@ -43,4 +63,3 @@ public class AccountBasicInfoResponseDto
         private String name;
     }
 }
-
