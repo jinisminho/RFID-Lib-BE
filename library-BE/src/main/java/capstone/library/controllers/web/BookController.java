@@ -1,26 +1,45 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.common.BookDto;
+import capstone.library.dtos.common.ErrorDto;
 import capstone.library.services.BookService;
+import capstone.library.util.ConstantUtil;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/web/book")
+@RequestMapping("/book")
 public class BookController {
 
     @Autowired
     private BookService bookService;
 
-    @GetMapping("/search")
-    public List<BookDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, Pageable pageable) {
-        return bookService.findBooks(searchValue);
+//    @GetMapping("/search")
+//    public Page<BookResDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, Pageable pageable) {
+//        return bookService.findBooks(searchValue);
+//    }
+
+    @ApiOperation(value = "This API add RFID tag to bookCopy by bookCopyId")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @PostMapping("/bookCopy/tagRfid/{bookCopyId}")
+    public ResponseEntity<?> tagRfidToBookCopy(@PathVariable Integer bookCopyId,
+                                               @RequestParam(required = false, value = "rfid") String rfid) {
+
+        boolean bool = bookService.tagRfidToBookCopy(bookCopyId, rfid);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL SERVER ERROR",
+                "Failed to tag a rfid to bookCopy");
+
+        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
