@@ -9,14 +9,13 @@ import capstone.library.entities.BookGenre;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
-import org.mapstruct.factory.Mappers;
 
 import java.util.Set;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface BookMapper {
 
-    BookMapper INSTANCE = Mappers.getMapper(BookMapper.class);
+//    BookMapper INSTANCE = Mappers.getMapper(BookMapper.class);
 
     @Mappings({
             @Mapping(target = "id", source = "author.id"),

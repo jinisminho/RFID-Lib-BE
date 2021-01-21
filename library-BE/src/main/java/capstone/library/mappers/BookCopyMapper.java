@@ -6,12 +6,11 @@ import capstone.library.entities.BookCopy;
 import capstone.library.entities.Profile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface BookCopyMapper {
 
-    BookCopyMapper INSTANCE = Mappers.getMapper(BookCopyMapper.class);
+//    BookCopyMapper INSTANCE = Mappers.getMapper(BookCopyMapper.class);
 
     @Mapping(target = "account", ignore = true)
     ProfileDto toProfileDto(Profile entity);

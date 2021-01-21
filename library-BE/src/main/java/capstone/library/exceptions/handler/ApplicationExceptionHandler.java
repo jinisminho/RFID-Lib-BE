@@ -171,5 +171,14 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }
 
-
+    @ResponseBody
+    @ExceptionHandler(value = CustomException.class)
+    public ResponseEntity<ErrorDto> handleException(CustomException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                exception.getHttpStatus().value(),
+                exception.getError(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

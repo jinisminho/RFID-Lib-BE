@@ -3,7 +3,7 @@ package capstone.library.services;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
-import capstone.library.dtos.response.ProfileResDto;
+import capstone.library.dtos.response.ProfileAccountResDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,7 +12,7 @@ public interface PatronService {
 
     boolean addWishlist(Integer bookId, Integer patronId);
 
-    ProfileResDto getProfile(Integer patronId);
+    ProfileAccountResDto getProfile(Integer patronId);
 
     boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile);
 

@@ -18,7 +18,9 @@ import java.util.List;
 public class BookServiceImpl implements BookService {
 
     @Autowired
-    BookCopyRepository bookCopyRepository;
+    private BookCopyRepository bookCopyRepository;
+    @Autowired
+    private BookCopyMapper bookCopyMapper;
 
     @Override
     public List<BookResDto> findBooks(String searchValue) {
@@ -34,12 +36,12 @@ public class BookServiceImpl implements BookService {
             throw new MissingInputException("Missing input");
         }
 
-        BookCopyDto bookCopy = BookCopyMapper.INSTANCE.toDto(bookCopyRepository.findById(bookCopyId)
+        BookCopyDto bookCopy = bookCopyMapper.toDto(bookCopyRepository.findById(bookCopyId)
                 .orElseThrow(() -> new ResourceNotFoundException("BookCopy", "BookCopy with id: " + bookCopyId + " not found")));
 
         if (bookCopy != null) {
             bookCopy.setRfid(rfid);
-            BookCopy result = BookCopyMapper.INSTANCE.toEntity(bookCopy);
+            BookCopy result = bookCopyMapper.toEntity(bookCopy);
             bookCopyRepository.saveAndFlush(result);
             return true;
         }

@@ -4,7 +4,7 @@ import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
-import capstone.library.dtos.response.ProfileResDto;
+import capstone.library.dtos.response.ProfileAccountResDto;
 import capstone.library.services.PatronService;
 import capstone.library.util.ApiPageable;
 import capstone.library.util.ConstantUtil;
@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 @RestController
@@ -48,7 +49,7 @@ public class PatronController {
     @ApiOperation(value = "This API get profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @GetMapping("/profile/getProfile/{patronId}")
-    public ProfileResDto getProfile(@PathVariable Integer patronId) {
+    public ProfileAccountResDto getProfile(@PathVariable Integer patronId) {
         return patronService.getProfile(patronId);
     }
 
@@ -56,7 +57,7 @@ public class PatronController {
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/profile/updateProfile/{patronId}")
     public ResponseEntity<?> updateProfile(@PathVariable Integer patronId,
-                                           @RequestBody(required = true) ProfileUpdateReqDto newProfile) {
+                                           @Valid @RequestBody(required = true) ProfileUpdateReqDto newProfile) {
         boolean bool = patronService.updateProfile(patronId, newProfile);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
@@ -101,7 +102,6 @@ public class PatronController {
     @GetMapping("/borrowingHistory/getBorrowingHistories/{patronId}")
     public Page<BookBorrowingResDto> getBorrowingHistories(@ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable,
                                                            @PathVariable Integer patronId) {
-        System.out.println(pageable);
         return patronService.getBorrowingHistories(patronId, pageable);
     }
 
