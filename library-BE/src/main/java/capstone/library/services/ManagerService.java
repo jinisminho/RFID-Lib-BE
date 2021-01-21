@@ -1,12 +1,9 @@
 package capstone.library.services;
 
 import capstone.library.dtos.response.AccountBasicInfoResponseDto;
-import capstone.library.dtos.response.AccountDetailResponseDto;
 import capstone.library.enums.RoleIdEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.Optional;
 
 public interface ManagerService
 {
