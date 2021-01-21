@@ -1,10 +1,13 @@
 package capstone.library.services;
 
-import capstone.library.dtos.common.ErrorDto;
-import capstone.library.dtos.request.CreateLibrarianRequestDto;
-import org.springframework.stereotype.Service;
+import capstone.library.dtos.response.AccountBasicInfoResponseDto;
+import capstone.library.enums.RoleIdEnum;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ManagerService
 {
-    String createLibrarian(CreateLibrarianRequestDto newLibrarian);
+    Page<AccountBasicInfoResponseDto> getAccountsByRoleId(Pageable pageable, RoleIdEnum roleIdEnum);
+
+    Page<AccountBasicInfoResponseDto> getLibrarians(Pageable pageable);
 }
