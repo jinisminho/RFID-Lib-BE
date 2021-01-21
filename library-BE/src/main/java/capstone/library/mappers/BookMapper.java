@@ -1,7 +1,7 @@
 package capstone.library.mappers;
 
-import capstone.library.dtos.common.BookDto;
 import capstone.library.dtos.response.AuthorResDto;
+import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.GenreResDto;
 import capstone.library.entities.Book;
 import capstone.library.entities.BookAuthor;
@@ -38,7 +38,7 @@ public interface BookMapper {
             @Mapping(target = "genre", source = "bookGenres"),
             @Mapping(target = "author", source = "bookAuthors")
     })
-    BookDto toDto(Book entity);
+    BookResDto toResDto(Book entity);
 
 }
 
