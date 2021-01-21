@@ -10,4 +10,8 @@ public interface ManagerService
     Page<AccountBasicInfoResponseDto> getAccountsByRoleId(Pageable pageable, RoleIdEnum roleIdEnum);
 
     Page<AccountBasicInfoResponseDto> getLibrarians(Pageable pageable);
+
+    String deactivateLibrarian(int id, int updatorId);
+
+    String activateLibrarian(int id, int updatorId);
 }

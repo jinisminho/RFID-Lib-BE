@@ -1,7 +1,9 @@
 package capstone.library.exceptions.handler;
 
 import capstone.library.dtos.common.ErrorDto;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.exceptions.UnauthorizedException;
 import capstone.library.util.ConstantUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +38,35 @@ public class ApplicationExceptionHandler {
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.NOT_FOUND.value(),
                 ConstantUtil.EXCEPTION_RESOURCE_NOT_FOUND,
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /*
+     * Is thrown when an invalid request is received
+     *   eg: request to deactivate an already inactive account
+     * */
+    @ResponseBody
+    @ExceptionHandler(value = InvalidRequestException.class)
+    public ResponseEntity<ErrorDto> handleException(InvalidRequestException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                ConstantUtil.EXCEPTION_INVALID_REQUEST,
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /*
+     * Is thrown when a user using other role's API
+     * */
+    @ResponseBody
+    @ExceptionHandler(value = UnauthorizedException.class)
+    public ResponseEntity<ErrorDto> handleException(UnauthorizedException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.UNAUTHORIZED.value(),
+                ConstantUtil.EXCEPTION_UNAUTHORIZED,
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
