@@ -1,21 +1,25 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
 import capstone.library.dtos.response.ProfileResDto;
 import capstone.library.entities.*;
 import capstone.library.enums.WishListStatus;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.mappers.BookBorrowingMapper;
 import capstone.library.mappers.ExtendHistoryMapper;
 import capstone.library.mappers.ProfileMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,38 +91,43 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
-    public List<ExtendHistoryResDto> getExtendHistories(Integer patronId, Integer bookCopyId) {
-        if (patronId == null || bookCopyId == null) {
+    public Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable) {
+        if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
-        return extendHistoryRepository
-                .findAllByBookBorrowing_IdOrderByDueAtAsc(bookBorrowingRepository.findByBorrower_IdAndAndBookCopy_Id(patronId, bookCopyId)
-                        .orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with patronId[" + patronId + "], bookCopyId[" + bookCopyId + "] not found"))
-                        .getId())
+        return new PageImpl<>(extendHistoryRepository
+                .findAllByBookBorrowing_IdOrderByDueAtAsc(bookBorrowingRepository.findById(bookBorrowingId)
+                        .orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id" + bookBorrowingId + " not found"))
+                        .getId(), pageable)
                 .stream()
                 .map(extendHistory -> ExtendHistoryMapper.INSTANCE.toDto(extendHistory))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Override
-    public boolean addNewExtendHistory(Integer patronId, Integer bookCopyId) {
-        if (bookCopyId == null || patronId == null) {
+    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus) {
+        if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
-//        ExtendHistory extendHistory = new ExtendHistory();
-        BookBorrowing bookBorrowing = bookBorrowingRepository.findByBorrower_IdAndAndBookCopy_Id(patronId, bookCopyId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with patronId[" + patronId + "], bookCopyId[" + bookCopyId + "] not found"));
+        BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id" + bookBorrowingId + " not found"));
 
         if (bookBorrowing != null) {
+            Account isssuedBy =
+                    librarianId != null
+                            ? accountRepository.findById(librarianId).orElseThrow(() -> new ResourceNotFoundException("Account", "Librarian Account with Id" + librarianId + " not found"))
+                            : bookBorrowing.getBorrower();
+
             ExtendHistory extendHistory = extendHistoryRepository.findFirstByBookBorrowing_IdOrderByDueAtDesc(bookBorrowing.getId())
                     .orElse(new ExtendHistory());
-            if (extendHistory.getId() == null) {
+
+            if (bookBorrowing.getExtendIndex() == 0) {
                 extendHistory.setBorrowedAt(bookBorrowing.getBorrowedAt());
-                extendHistory.setExtendIndex(0);
+                extendHistory.setExtendIndex(bookBorrowing.getExtendIndex());
                 extendHistory.setDueAt(bookBorrowing.getDueAt());
                 extendHistory.setBookBorrowing(bookBorrowing);
-                extendHistory.setLibrarian(bookBorrowing.getIssued_by());
+                extendHistory.setIssuedBy(bookBorrowing.getIssued_by());
                 extendHistory = extendHistoryRepository.saveAndFlush(extendHistory);
             }
 
@@ -127,9 +136,9 @@ public class PatronServiceImpl implements PatronService {
             newExtendHistory.setBorrowedAt(extendHistory.getBorrowedAt());
             newExtendHistory.setExtendedAt(LocalDateTime.now());
             newExtendHistory.setExtendIndex(extendHistory.getExtendIndex() + 1);
-            newExtendHistory.setDueAt(extendHistory.getDueAt().plusDays(7));
+            newExtendHistory.setDueAt(extendHistory.getDueAt().plusDays(numberOfDayToPlus != null ? numberOfDayToPlus : 7));
             newExtendHistory.setBookBorrowing(bookBorrowing);
-            newExtendHistory.setLibrarian(bookBorrowing.getIssued_by());
+            newExtendHistory.setIssuedBy(isssuedBy);
 
 
             bookBorrowing.setExtendedAt(newExtendHistory.getExtendedAt());
@@ -142,6 +151,19 @@ public class PatronServiceImpl implements PatronService {
         }
 
         return false;
+    }
+
+    @Override
+    public Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable) {
+        if (patronId == null) {
+            throw new MissingInputException("Missing input");
+        }
+
+        return new PageImpl<>(bookBorrowingRepository
+                .findAllByBorrower_Id(patronId, pageable)
+                .stream()
+                .map(bookBorrowing -> BookBorrowingMapper.INSTANCE.toDto(bookBorrowing))
+                .collect(Collectors.toList()));
     }
 
 }
