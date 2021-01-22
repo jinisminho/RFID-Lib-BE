@@ -27,7 +27,6 @@ public class ExtendHistoryResDto {
     @NotNull(message = "{extendHistory.borrowedAt.notNull}")
     private LocalDate dueAt;
 
-    private BookBorrowingResDto bookBorrowing;
+    private ProfileAccountResDto issuedBy;
 
-    private ProfileAccountResDto librarian;
 }

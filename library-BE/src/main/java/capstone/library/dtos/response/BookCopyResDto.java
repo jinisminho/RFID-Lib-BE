@@ -30,4 +30,6 @@ public class BookCopyResDto {
     @NotNull(message = "{bookCopy.status.notNull}")
     @Length(max = 20, message = "{bookCopy.status.length}")
     private BookCopyStatus status;
+
+    private BookResDto book;
 }

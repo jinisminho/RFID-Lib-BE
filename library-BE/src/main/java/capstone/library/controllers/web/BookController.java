@@ -25,7 +25,7 @@ public class BookController {
 //        return bookService.findBooks(searchValue);
 //    }
 
-    @ApiOperation(value = "This API add RFID tag to bookCopy by bookCopyId")
+    @ApiOperation(value = "This API add/update RFID tag to bookCopy by bookCopyId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/bookCopy/tagRfid/{bookCopyId}")
     public ResponseEntity<?> tagRfidToBookCopy(@PathVariable Integer bookCopyId,
@@ -38,7 +38,7 @@ public class BookController {
                 "INTERNAL SERVER ERROR",
                 "Failed to tag a rfid to bookCopy");
 
-        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
+        return new ResponseEntity(bool ? ConstantUtil.UPDATE_SUCCESS : error,
                 bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
