@@ -1,12 +1,14 @@
 package capstone.library.services;
 
-import capstone.library.dtos.common.BookDto;
+import capstone.library.dtos.response.BookResDto;
 
 import java.util.List;
 
 public interface BookService {
 
-    List<BookDto> findBooks(String searchValue);
+    List<BookResDto> findBooks(String searchValue);
+
+    boolean tagRfidToBookCopy(Integer bookCopyId, String rfid);
 
     boolean reindexAll();
 }

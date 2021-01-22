@@ -40,5 +40,5 @@ public class ExtendHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issued_by")
-    private Account librarian;
+    private Account issuedBy;
 }
