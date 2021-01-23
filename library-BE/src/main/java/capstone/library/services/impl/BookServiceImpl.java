@@ -6,12 +6,14 @@ import capstone.library.entities.BookCopy;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
-import capstone.library.repositories.BookCopyRepository;
 import capstone.library.mappers.BookMapper;
+import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.BookRepository;
-import capstone.library.dtos.common.BookDto;
 import capstone.library.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,16 +25,22 @@ public class BookServiceImpl implements BookService {
     @Autowired
     private BookCopyRepository bookCopyRepository;
     @Autowired
+    private BookMapper bookMapper;
+    @Autowired
     private BookCopyMapper bookCopyMapper;
     @Autowired
     private BookRepository bookRepository;
 
     @Override
-    public List<BookDto> findBooks(String searchValue) {
-        return bookRepository.findBooks(searchValue).stream().map(book -> BookMapper.INSTANCE.toDto(book)).collect(Collectors.toList());
+    public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
+        if (searchValue == null) {
+            throw new MissingInputException("Missing search value for search book");
+        }
+
+        List<BookResDto> books = bookRepository.findBooks(searchValue, pageable).stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
+
+        return new PageImpl<BookResDto>(books, pageable, books.size());
     }
-    public List<BookResDto> findBooks(String searchValue) {
-        List<BookResDto> res = new ArrayList<>();
 
     @Override
     public boolean reindexAll() {

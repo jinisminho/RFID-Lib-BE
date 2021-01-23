@@ -5,11 +5,13 @@ import capstone.library.repositories.BookRepository;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -22,30 +24,35 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Book> findBooks(String searchValue) {
+    public List<Book> findBooks(String searchValue, Pageable pageable) {
         SearchSession searchSession = Search.session(entityManager);
 
-        SearchResult<Book> result;
+        SearchResult<Book> result1, result2;
 
-        if (searchValue.length() > 3) {
-            result = searchSession.search(Book.class)
-                    .where(f -> f.match()
-                            .fields("title", "isbn")
-                            .matching(searchValue)
-                            .fuzzy()
-                    )
-                    .fetch(20);
-        } else {
-            result = searchSession.search(Book.class)
-                    .where(f -> f.match()
-                            .fields("title", "isbn")
-                            .matching(searchValue)
-                    )
-                    .fetch(20);
-        }
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int offset = page * size;
+        int limit = size;
 
+        result1 = searchSession.search(Book.class)
+                .where(f -> f.match()
+                        .fields("title", "title_2")
+                        .matching(searchValue)
+                        .analyzer("default")
+                )
+                .fetch(offset, limit);
 
-        List<Book> res = result.hits();
+        result2 = searchSession.search(Book.class)
+                .where(f -> f.match()
+                        .fields("isbn")
+                        .matching(searchValue)
+                        .analyzer("keyword")
+                )
+                .fetch(offset, limit);
+
+        List<Book> res = new ArrayList<>();
+        if (result1.total().hitCount() > 0) res.addAll(result1.hits());
+        if (result2.total().hitCount() > 0) res = result2.hits();
 
         return res;
     }

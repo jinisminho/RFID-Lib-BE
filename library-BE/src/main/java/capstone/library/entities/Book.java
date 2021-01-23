@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Norms;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
@@ -34,8 +35,8 @@ public class Book extends Audit {
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
 
-    @FullTextField
-//    @FullTextField(analyzer = "english")
+    @FullTextField(name = "title", analyzer = "my", norms = Norms.NO)
+    @FullTextField(name = "title_2", norms = Norms.NO)
     @Column(name = "title", nullable = false)
     private String title;
 
