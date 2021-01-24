@@ -5,6 +5,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -28,13 +30,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 //
 //}
 
+import java.util.Properties;
+
 @Configuration
 @EnableWebMvc
 public class AppConfig implements WebMvcConfigurer {
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:messages");
+        messageSource.setBasenames("classpath:messages","classpath:mailMessages");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
