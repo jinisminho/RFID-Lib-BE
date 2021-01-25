@@ -18,7 +18,8 @@ import javax.persistence.*;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class BookGenre {
+public class BookGenre
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

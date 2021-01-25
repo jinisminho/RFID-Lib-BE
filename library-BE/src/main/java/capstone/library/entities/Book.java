@@ -7,15 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.search.engine.backend.types.Norms;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.Set;
 
-@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,18 +20,19 @@ import java.util.Set;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class Book extends Audit {
+public class Book extends Audit
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @KeywordField
+    @Column(name = "img", length = 500)
+    private String img;
+
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
 
-    @FullTextField(name = "title", analyzer = "my", norms = Norms.NO)
-    @FullTextField(name = "title_2", norms = Norms.NO)
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -74,19 +70,10 @@ public class Book extends Audit {
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
     public Set<BookGenre> bookGenres;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
-    public Set<BookCopy> bookCopies;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by")
-    private Account creator;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "updated_by")
-    private Account updater;
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return bookAuthors.toString();
     }
 }

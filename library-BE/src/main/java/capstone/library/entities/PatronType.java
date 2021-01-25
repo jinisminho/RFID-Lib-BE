@@ -12,15 +12,15 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "role")
-public class Role
+@Table(name = "patron_type")
+public class PatronType
 {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", length = 20)
+    @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;
 
 }

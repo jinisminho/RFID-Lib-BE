@@ -1,7 +1,7 @@
 package capstone.library.entities;
 
 import capstone.library.enums.Gender;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +33,7 @@ public class Profile {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     @MapsId
-    @JsonIgnore
+    @JsonBackReference
     private Account account;
     
 }

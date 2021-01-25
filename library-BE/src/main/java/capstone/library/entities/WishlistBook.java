@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "wishlist_book")
-public class WishlistBook {
+public class WishlistBook
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
