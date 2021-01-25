@@ -15,4 +15,14 @@ public class ScannedBookResponse {
 
     private String title;
 
+    private int edition;
+
+    private String authors;
+
+    private String img;
+
+    private String subtitle;
+
+    private String group;
+
 }
