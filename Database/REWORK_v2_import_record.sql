@@ -139,10 +139,10 @@ insert into borrow_policy (	id,
 (5, 7, 4, 2, 7, 2000, now(), now(), 2, 2 ),
 (6, 7, 4, 2, 7, 2000, now(), now(), 2, 3 );
 
-insert into book_copy_position (id, floor, shelf, from_call_numer, to_call_number, book_copy_type) values
+insert into book_copy_position (id, floor, shelf, from_call_number, to_call_number, book_copy_type_id) values
 (1, 1, 'Henry', 'A1', 'B1', 1),
-(1, 1, 'Lucy', 'A1', 'B1', 2),
-(1, 1, 'Mars', 'A1', 'B1', 3);
+(2, 1, 'Lucy', 'A1', 'B1', 2),
+(3, 1, 'Mars', 'A1', 'B1', 3);
 
 
 
