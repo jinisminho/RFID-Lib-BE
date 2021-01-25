@@ -159,20 +159,21 @@ create table book_genre(
 
 create table patron_type (
 	id int not null auto_increment,
-    name varchar(100),
+    name varchar(100) not null,
+    max_borrow_number int not null,
 	primary key (id)
 );
 
 create table book_copy_type (
 	id int not null auto_increment,
-    name varchar(100),
+    name varchar(100) not null,
 	primary key (id)
 );
 
 create table borrow_policy(
 	id int not null auto_increment,
     due_duration int not null,
-    max_number_copy_borrow int not null,
+    max_borrow_number int not null,
     max_extend_time int not null,
     extend_due_duration int not null,
     overdue_fine_per_day double precision not null,

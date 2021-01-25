@@ -23,4 +23,7 @@ public class PatronType {
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;
 
+    @Column(name="max_borrow_number",nullable = false)
+    private int maxNumberCopyBorrow;
+
 }

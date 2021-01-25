@@ -6,9 +6,9 @@ insert into role (id, name) values
 (2, 'ROLE_LIBRARIAN'),
 (3, 'ROLE_PATRON');
 
-insert into patron_type (id, name) values
-(1, 'STUDENT'),
-(2, 'LECTURER');
+insert into patron_type (id, name, max_borrow_number) values
+(1, 'STUDENT', 6),
+(2, 'LECTURER', 10);
 
 insert into book_copy_type (id, name) values
 (1, 'TEXTBOOK'),
@@ -123,7 +123,7 @@ insert into book_copy (id, barcode, rfid, price, status, created_at, updated_at,
 /********/
 insert into borrow_policy (	id,
     due_duration,
-    max_number_copy_borrow,
+    max_borrow_number,
     max_extend_time,
     extend_due_duration,
     overdue_fine_per_day,
