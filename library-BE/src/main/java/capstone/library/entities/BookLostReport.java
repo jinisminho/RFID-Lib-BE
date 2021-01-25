@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "book_lost_report")
-public class BookLostReport {
+public class BookLostReport
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -26,10 +26,6 @@ public class AccountDetailResponseDto
 
     private boolean isActive;
 
-    private AccountDto creator;
-
-    private AccountDto updater;
-
     private RoleDto role;
 
     private ProfileDto profile;
@@ -44,14 +40,6 @@ public class AccountDetailResponseDto
         private String phone;
 
         private Gender gender;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    private static class AccountDto
-    {
-        private int id;
     }
 
     @Getter

@@ -19,7 +19,8 @@ import java.util.Set;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class Genre {
+public class Genre
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
