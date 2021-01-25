@@ -1,9 +1,7 @@
 package capstone.library.util;
 
-public class ConstantUtil
-{
-    private ConstantUtil()
-    {
+public class ConstantUtil {
+    private ConstantUtil() {
 
     }
 
@@ -24,4 +22,9 @@ public class ConstantUtil
     public static final String EXCEPTION_RESOURCE_NOT_FOUND = "Resource not found";
 
     public static final String EXCEPTION_VALIDATION_FAILED = "Update to database failed";
+
+    public static final String EXCEPTION_POLICY_VIOLATION = "Violated the policy";
+
+    //Other
+    public static final String PHONE_REGEXP = "^\\d{10}$";
 }

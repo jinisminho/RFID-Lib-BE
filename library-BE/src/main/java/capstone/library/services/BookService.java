@@ -1,11 +1,14 @@
 package capstone.library.services;
 
-import capstone.library.dtos.common.BookDto;
-
-import java.util.List;
+import capstone.library.dtos.response.BookResDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface BookService {
 
-    List<BookDto> findBooks(String searchValue);
+    Page<BookResDto> findBooks(String searchValue, Pageable pageable);
 
+    boolean tagRfidToBookCopy(Integer bookCopyId, String rfid);
+
+    boolean reindexAll();
 }

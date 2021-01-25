@@ -9,6 +9,7 @@ import capstone.library.demo.entities.BorrowPolicy;
 import capstone.library.demo.enums.BookCopyStatus;
 import capstone.library.demo.enums.BookReturnStatus;
 import capstone.library.demo.enums.BookStatus;
+import capstone.library.demo.exceptions.MissingInputException;
 import capstone.library.demo.exceptions.ResourceNotFoundException;
 import capstone.library.demo.repositories.AccountRepository;
 import capstone.library.demo.repositories.BookBorrowingRepository;
@@ -41,14 +42,17 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
 
     @Override
     @Transactional
-    public List<BookCheckOutResponse> checkout(int patronId, List<String> BookCodeList) {
+    public List<BookCheckOutResponse> checkout(int patronId, List<String> bookCodeList) {
+        if(bookCodeList == null){
+            throw new MissingInputException("bookCodeList in checkout function is missing");
+        }
         List<BookCheckOutResponse> rs = new ArrayList<>();
         Account patron = accountRepo.findById(patronId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron with id " + patronId + " not found"));
         BorrowPolicy policy = borrowPolicyRepo.findById(1)
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot find the policy"));
 
-        for (String code : BookCodeList){
+        for (String code : bookCodeList){
             BookCopy copy = bookCopyRepo.findByRfid(code)
                     .orElseThrow(() -> new ResourceNotFoundException("Book with rfid: " + code + " not found" ));
             BookCheckOutResponse bookResponse = new BookCheckOutResponse();

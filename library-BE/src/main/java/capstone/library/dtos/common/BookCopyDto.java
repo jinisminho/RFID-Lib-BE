@@ -1,4 +1,4 @@
-package capstone.library.dtos.response;
+package capstone.library.dtos.common;
 
 import capstone.library.enums.BookCopyStatus;
 import lombok.AllArgsConstructor;
@@ -13,8 +13,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookCopyResDto {
-
+public class BookCopyDto {
     private Integer id;
 
     @NotNull(message = "{bookCopy.barcode.notNull}")
@@ -31,5 +30,10 @@ public class BookCopyResDto {
     @Length(max = 20, message = "{bookCopy.status.length}")
     private BookCopyStatus status;
 
-    private BookResDto book;
+    private BookDto book;
+
+    private AccountDto creator;
+
+    private AccountDto updater;
+
 }

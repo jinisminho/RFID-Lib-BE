@@ -1,6 +1,7 @@
 package capstone.library.exceptions.handler;
 
 import capstone.library.dtos.common.ErrorDto;
+import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.exceptions.UnauthorizedException;
@@ -125,7 +126,7 @@ public class ApplicationExceptionHandler {
 
 
     /**
-     *  When user request date with wrong format yyyy-mm-dd
+     * When user request date with wrong format yyyy-mm-dd
      */
 
     @ResponseBody
@@ -149,7 +150,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorDto> handleException(MethodArgumentNotValidException exception) {
         StringBuilder msg = new StringBuilder();
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
-            msg.append(fieldError.getField()).append(":").append(fieldError.getDefaultMessage()).append(";");
+            msg.append(fieldError.getField()).append(": ").append(fieldError.getDefaultMessage()).append("; ");
         }
         logger.error(msg);
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
@@ -170,5 +171,14 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }
 
-
+    @ResponseBody
+    @ExceptionHandler(value = CustomException.class)
+    public ResponseEntity<ErrorDto> handleException(CustomException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                exception.getHttpStatus().value(),
+                exception.getError(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }
