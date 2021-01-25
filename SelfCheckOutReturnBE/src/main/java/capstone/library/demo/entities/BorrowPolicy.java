@@ -36,4 +36,12 @@ public class BorrowPolicy extends Audit{
 
     @Column(name = "policy_form_url")
     private String policyFormUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patron_type_id")
+    private PatronType patronType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_type_id")
+    private BookCopyType bookCopyType;
 }
