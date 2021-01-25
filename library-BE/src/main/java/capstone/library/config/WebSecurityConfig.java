@@ -1,4 +1,6 @@
 package capstone.library.config;
 
-public class WebSecurityConfig {
+public class WebSecurityConfig
+{
+
 }

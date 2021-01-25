@@ -1,21 +1,31 @@
 package capstone.library.services.impl;
 
+import capstone.library.dtos.common.BorrowPolicyDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
-import capstone.library.dtos.response.ProfileResDto;
+import capstone.library.dtos.response.ProfileAccountResDto;
 import capstone.library.entities.*;
 import capstone.library.enums.WishListStatus;
+import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.mappers.BookBorrowingMapper;
+import capstone.library.mappers.BorrowPolicyMapper;
 import capstone.library.mappers.ExtendHistoryMapper;
 import capstone.library.mappers.ProfileMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
+import capstone.library.util.ConstantUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +43,16 @@ public class PatronServiceImpl implements PatronService {
     private ExtendHistoryRepository extendHistoryRepository;
     @Autowired
     private BookBorrowingRepository bookBorrowingRepository;
+    @Autowired
+    private BorrowPolicyRespository borrowPolicyRespository;
+    @Autowired
+    private BookBorrowingMapper bookBorrowingMapper;
+    @Autowired
+    private ProfileMapper profileMapper;
+    @Autowired
+    private ExtendHistoryMapper extendHistoryMapper;
+    @Autowired
+    private BorrowPolicyMapper borrowPolicyMapper;
 
     private static final String EMAIL_DEFAULT = "test@test.com";
 
@@ -58,12 +78,12 @@ public class PatronServiceImpl implements PatronService {
         return false;
     }
 
-    public ProfileResDto getProfile(Integer patronId) {
+    public ProfileAccountResDto getProfile(Integer patronId) {
         if (patronId == null) {
             throw new MissingInputException("Missing input");
         }
 
-        return ProfileMapper.INSTANCE.toDto(profileRepository.findById(patronId)
+        return profileMapper.toResDto(profileRepository.findById(patronId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron", "Patron with id: " + patronId + " not found")));
 
     }
@@ -73,12 +93,12 @@ public class PatronServiceImpl implements PatronService {
             throw new MissingInputException("Missing input");
         }
 
-        ProfileResDto oldProfile = ProfileMapper.INSTANCE.toDto(profileRepository.findById(patronId)
+        ProfileAccountResDto oldProfile = profileMapper.toResDto(profileRepository.findById(patronId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron", "Patron with id: " + patronId + " not found")));
 
         if (oldProfile != null) {
             oldProfile.setPhone(newProfile.getPhone());
-            Profile prof = ProfileMapper.INSTANCE.toEntity(oldProfile);
+            Profile prof = profileMapper.toEntity(oldProfile);
             profileRepository.saveAndFlush(prof);
             return true;
         }
@@ -87,61 +107,104 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
-    public List<ExtendHistoryResDto> getExtendHistories(Integer patronId, Integer bookCopyId) {
-        if (patronId == null || bookCopyId == null) {
+    public Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable) {
+        if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
-        return extendHistoryRepository
-                .findAllByBookBorrowing_IdOrderByDueAtAsc(bookBorrowingRepository.findByBorrower_IdAndAndBookCopy_Id(patronId, bookCopyId)
-                        .orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with patronId[" + patronId + "], bookCopyId[" + bookCopyId + "] not found"))
-                        .getId())
+        return new PageImpl<>(extendHistoryRepository
+                .findAllByBookBorrowing_IdOrderByDueAtAsc(bookBorrowingRepository.findById(bookBorrowingId)
+                        .orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id: " + bookBorrowingId + " not found"))
+                        .getId(), pageable)
                 .stream()
-                .map(extendHistory -> ExtendHistoryMapper.INSTANCE.toDto(extendHistory))
-                .collect(Collectors.toList());
+                .map(extendHistory -> extendHistoryMapper.toResDto(extendHistory))
+                .collect(Collectors.toList()));
     }
 
     @Override
-    public boolean addNewExtendHistory(Integer patronId, Integer bookCopyId) {
-        if (bookCopyId == null || patronId == null) {
+    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus) {
+        if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
-//        ExtendHistory extendHistory = new ExtendHistory();
-        BookBorrowing bookBorrowing = bookBorrowingRepository.findByBorrower_IdAndAndBookCopy_Id(patronId, bookCopyId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with patronId[" + patronId + "], bookCopyId[" + bookCopyId + "] not found"));
+        //Get policy
+        int policyId = 1;
+        BorrowPolicyDto policy = borrowPolicyMapper.toDto(borrowPolicyRespository.findById(policyId).orElseThrow(() -> new ResourceNotFoundException("BorrowPolicy", "BorrowPolicy with Id " + policyId + " not found")));
 
+        //Find and check if bookBorrowing exists
+        BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id " + bookBorrowingId + " not found"));
+
+        //If bookBorrowing exists
         if (bookBorrowing != null) {
-            ExtendHistory extendHistory = extendHistoryRepository.findFirstByBookBorrowing_IdOrderByDueAtDesc(bookBorrowing.getId())
-                    .orElse(new ExtendHistory());
-            if (extendHistory.getId() == null) {
-                extendHistory.setBorrowedAt(bookBorrowing.getBorrowedAt());
-                extendHistory.setExtendIndex(0);
-                extendHistory.setDueAt(bookBorrowing.getDueAt());
-                extendHistory.setBookBorrowing(bookBorrowing);
-                extendHistory.setLibrarian(bookBorrowing.getIssued_by());
-                extendHistory = extendHistoryRepository.saveAndFlush(extendHistory);
+
+            //Check if it is overdue
+            if (bookBorrowing.getDueAt().isBefore(LocalDate.now())) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "The requested item is overdue");
             }
 
-            ExtendHistory newExtendHistory = new ExtendHistory();
+            //if issued by Librarian get the librarian account, if not get the patron one
+            Account isssuedBy =
+                    librarianId != null
+                            ? accountRepository.findById(librarianId).orElseThrow(() -> new ResourceNotFoundException("Account", "Librarian Account with Id " + librarianId + " not found"))
+                            : bookBorrowing.getBorrower();
 
-            newExtendHistory.setBorrowedAt(extendHistory.getBorrowedAt());
-            newExtendHistory.setExtendedAt(LocalDateTime.now());
-            newExtendHistory.setExtendIndex(extendHistory.getExtendIndex() + 1);
-            newExtendHistory.setDueAt(extendHistory.getDueAt().plusDays(7));
-            newExtendHistory.setBookBorrowing(bookBorrowing);
-            newExtendHistory.setLibrarian(bookBorrowing.getIssued_by());
+            //Get extendHistory if it exists
+            ExtendHistory extendHistory = extendHistoryRepository.findFirstByBookBorrowing_IdOrderByDueAtDesc(bookBorrowing.getId())
+                    .orElse(new ExtendHistory());
 
+            //Extend only if index under max extend time
+            if (extendHistory.getExtendIndex() < policy.getMaxExtendTime()) {
+                //If the bookBorrowing is extended for the first time, create the first history
+                if (bookBorrowing.getExtendIndex() == 0) {
+                    extendHistory.setBorrowedAt(bookBorrowing.getBorrowedAt());
+                    extendHistory.setExtendIndex(bookBorrowing.getExtendIndex());
+                    extendHistory.setDueAt(bookBorrowing.getDueAt());
+                    extendHistory.setBookBorrowing(bookBorrowing);
+                    extendHistory.setIssuedBy(bookBorrowing.getIssued_by());
+                    extendHistory = extendHistoryRepository.saveAndFlush(extendHistory);
+                }
 
-            bookBorrowing.setExtendedAt(newExtendHistory.getExtendedAt());
-            bookBorrowing.setExtendIndex(newExtendHistory.getExtendIndex());
-            bookBorrowing.setDueAt(newExtendHistory.getDueAt());
+                //Create new history -----
+                ExtendHistory newExtendHistory = new ExtendHistory();
 
-            extendHistoryRepository.save(newExtendHistory);
-            bookBorrowingRepository.save(bookBorrowing);
-            return true;
+                newExtendHistory.setBorrowedAt(extendHistory.getBorrowedAt());
+                newExtendHistory.setExtendedAt(LocalDateTime.now());
+                newExtendHistory.setExtendIndex(extendHistory.getExtendIndex() + 1);
+                newExtendHistory.setBookBorrowing(bookBorrowing);
+                newExtendHistory.setIssuedBy(isssuedBy);
+
+                //Get Day to Plus by request or policy. Default is policy
+                newExtendHistory.setDueAt(extendHistory.getDueAt().plusDays(numberOfDayToPlus != null ? numberOfDayToPlus : policy.getExtendDueDuration()));
+
+                //------------------------ Create new history END
+
+                //Update bookBorrowing
+                bookBorrowing.setExtendedAt(newExtendHistory.getExtendedAt());
+                bookBorrowing.setExtendIndex(newExtendHistory.getExtendIndex());
+                bookBorrowing.setDueAt(newExtendHistory.getDueAt());
+
+                extendHistoryRepository.save(newExtendHistory);
+                bookBorrowingRepository.save(bookBorrowing);
+                return true;
+            } else {
+                throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "Reached the limit for extension");
+            }
         }
 
         return false;
+    }
+
+    @Override
+    public Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable) {
+        if (patronId == null) {
+            throw new MissingInputException("Missing input");
+        }
+
+        return new PageImpl<>(bookBorrowingRepository
+                .findAllByBorrower_Id(patronId, pageable)
+                .stream()
+                .map(bookBorrowing -> bookBorrowingMapper.toDto(bookBorrowing))
+                .collect(Collectors.toList()));
     }
 
 }

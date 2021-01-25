@@ -7,10 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Norms;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.Set;
 
+@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,9 +31,12 @@ public class Book extends Audit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @KeywordField
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
 
+    @FullTextField(name = "title", analyzer = "my", norms = Norms.NO)
+    @FullTextField(name = "title_2", norms = Norms.NO)
     @Column(name = "title", nullable = false)
     private String title;
 

@@ -1,6 +1,6 @@
 package capstone.library.dtos.response;
 
-import capstone.library.dtos.common.RoleDto;
+import capstone.library.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,18 +15,25 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class ProfileAccountResDto {
 
-    private Integer id;
+    private Integer profileId;
+    
+    private Integer accountId;
+
+    @NotNull(message = "{profile.fullname.notNull}")
+    @Length(max = 50, message = "{profile.fullname.length}")
+    private String fullName;
+
+    @NotNull(message = "{profile.phone.notNull}")
+    @Length(max = 10, message = "{profile.phone.length}")
+    private String phone;
+
+    @NotNull(message = "{profile.gender.notNull}")
+    private Gender gender;
+
 
     @NotNull(message = "{profileAccount.email.notNull}")
     @Length(max = 100, message = "{profileAccount.email.length}")
     private String email;
-
-    @NotNull(message = "{profileAccount.password.notNull}")
-    @Length(max = 100, message = "{profileAccount.password.length}")
-    private String password;
-
-    @Length(max = 4, message = "{profileAccount.pin.length}")
-    private String pin;
 
     @Length(max = 80, message = "{profileAccount.rfid.length}")
     private String rfid;
@@ -37,5 +44,6 @@ public class ProfileAccountResDto {
     @NotNull(message = "{profileAccount.isActive.notNull}")
     private boolean isActive;
 
-    private RoleDto role;
+    private String role;
+
 }

@@ -2,23 +2,28 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
+import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
-import capstone.library.dtos.response.ProfileResDto;
+import capstone.library.dtos.response.ProfileAccountResDto;
 import capstone.library.services.PatronService;
+import capstone.library.util.ApiPageable;
 import capstone.library.util.ConstantUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
-@RequestMapping("/web/patron")
+@RequestMapping("/patron")
 public class PatronController {
 
     @Autowired
@@ -26,7 +31,7 @@ public class PatronController {
 
     @ApiOperation(value = "This API create new wishlist")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/wishlist")
+    @PostMapping("/wishlist/addWishlist")
     public ResponseEntity<?> addWishlist(@RequestParam(required = true, value = "bookID") Integer bookId,
                                          @RequestParam(required = true, value = "patronID") Integer patronId) {
 
@@ -43,16 +48,16 @@ public class PatronController {
 
     @ApiOperation(value = "This API get profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/profile/{patronId}")
-    public ProfileResDto getProfile(@PathVariable Integer patronId) {
+    @GetMapping("/profile/getProfile/{patronId}")
+    public ProfileAccountResDto getProfile(@PathVariable Integer patronId) {
         return patronService.getProfile(patronId);
     }
 
     @ApiOperation(value = "This API update profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/profile/{patronId}")
+    @PostMapping("/profile/updateProfile/{patronId}")
     public ResponseEntity<?> updateProfile(@PathVariable Integer patronId,
-                                           @RequestBody(required = true) ProfileUpdateReqDto newProfile) {
+                                           @Valid @RequestBody(required = true) ProfileUpdateReqDto newProfile) {
         boolean bool = patronService.updateProfile(patronId, newProfile);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
@@ -64,21 +69,23 @@ public class PatronController {
                 bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ApiOperation(value = "This API get extend history of 1 borrowing book by patronId, bookId")
+    @ApiPageable
+    @ApiOperation(value = "This API get extend history of 1 borrowing book by bookBorrowingId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/extendHistory/{patronId}/{bookCopyId}")
-    public List<ExtendHistoryResDto> getExtendHistory(@PathVariable Integer patronId,
-                                                      @PathVariable Integer bookCopyId) {
-        return patronService.getExtendHistories(patronId, bookCopyId);
+    @GetMapping("/extendHistory/getExtendHistories/{bookBorrowingId}")
+    public Page<ExtendHistoryResDto> getExtendHistories(@PathVariable Integer bookBorrowingId,
+                                                        @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
+        return patronService.getExtendHistories(bookBorrowingId, pageable);
     }
 
-    @ApiOperation(value = "This API extend due date of 1 borrowing book by patronId, bookCopyId")
+    @ApiOperation(value = "This API extend due date of 1 borrowing book by bookBorrowingId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/extendHistory/{patronId}/{bookCopyId}")
-    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer patronId,
-                                                   @PathVariable Integer bookCopyId) {
+    @PostMapping("/extendHistory/createExtendHistory/{bookBorrowingId}")
+    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer bookBorrowingId,
+                                                   @RequestParam(required = false, value = "librarianId") Integer librarianId,
+                                                   @RequestParam(required = false, value = "numberOfDayToPlus") Integer numberOfDayToPlus) {
 
-        boolean bool = patronService.addNewExtendHistory(patronId, bookCopyId);
+        boolean bool = patronService.addNewExtendHistory(bookBorrowingId, librarianId, numberOfDayToPlus);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -87,6 +94,15 @@ public class PatronController {
 
         return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
                 bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ApiPageable
+    @ApiOperation(value = "This API get borrowing history of 1 patron by patronId")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @GetMapping("/borrowingHistory/getBorrowingHistories/{patronId}")
+    public Page<BookBorrowingResDto> getBorrowingHistories(@ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable,
+                                                           @PathVariable Integer patronId) {
+        return patronService.getBorrowingHistories(patronId, pageable);
     }
 
 }
