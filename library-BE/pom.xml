@@ -118,6 +118,16 @@
             <artifactId>hibernate-core</artifactId>
             <version>5.4.27.Final</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- -->
 
 

@@ -18,3 +18,5 @@ SelfCheckOutReturnBE/HELP.md
 SelfCheckOutReturnBE/SelfCheckOutReturnBE.iml
 
 .idea/
+
+library-BE/src/test/java/capstone/library/LibrarianServiceTestCases.java

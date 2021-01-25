@@ -1,6 +1,6 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.request.BookCheckoutRequestDto;
+import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
 import capstone.library.dtos.response.BookCheckoutResponseDto;
 import capstone.library.services.LibrarianService;
 import io.swagger.annotations.ApiOperation;
@@ -21,8 +21,15 @@ public class LibrarianController
 
     @PostMapping("/checkout")
     @ApiOperation(value = "Checkout a list of books")
-    public List<BookCheckoutResponseDto> getLibrarians(@RequestBody BookCheckoutRequestDto bookCheckoutRequestDto)
+    public List<BookCheckoutResponseDto> checkoutBooks(@RequestBody ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
     {
-        return librarianService.checkout(bookCheckoutRequestDto);
+        return librarianService.checkout(scannedRFIDBooksRequestDto);
     }
+
+//    @PostMapping("/return")
+//    @ApiOperation(value = "return a list of books")
+//    public List<BookCheckoutResponseDto> returnBooks(@RequestBody ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+//    {
+//        return librarianService.returnBooks(scannedRFIDBooksRequestDto);
+//    }
 }
