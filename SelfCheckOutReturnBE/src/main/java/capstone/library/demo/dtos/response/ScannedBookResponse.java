@@ -23,6 +23,8 @@ public class ScannedBookResponse {
 
     private String subtitle;
 
+    private int groupId;
+
     private String group;
 
 }

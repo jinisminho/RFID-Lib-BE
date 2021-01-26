@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface BorrowPolicyRepository extends JpaRepository<BorrowPolicy, Integer> {
 
+    Optional<BorrowPolicy> findByPatronTypeIdAndBookCopyTypeId (Integer patronTypeId, Integer bookCopyTypeId);
+
 }

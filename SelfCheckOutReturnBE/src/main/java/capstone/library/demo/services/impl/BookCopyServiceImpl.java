@@ -35,6 +35,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 authors,
                 book.getImg(),
                 book.getSubtitle(),
+                copy.getBookCopyType().getId(),
                 copy.getBookCopyType().getName());
     }
 }

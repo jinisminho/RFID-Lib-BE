@@ -1,5 +1,6 @@
 package capstone.library.demo.entities;
 
+import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

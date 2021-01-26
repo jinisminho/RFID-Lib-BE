@@ -119,7 +119,7 @@ create table book(
     status varchar(30) not null,
     created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
-    img varchar(500),
+    img varchar(500) not null,
 
     created_by int,
     updated_by int,

@@ -1,6 +1,7 @@
 package capstone.library.demo.exceptions.handler;
 
 import capstone.library.demo.dtos.response.ErrorDto;
+import capstone.library.demo.exceptions.InvalidPolicyException;
 import capstone.library.demo.exceptions.MissingInputException;
 import capstone.library.demo.exceptions.ResourceNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +37,17 @@ public class ApplicationExceptionHandler {
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.NOT_FOUND.value(),
                 "Resource Not Found",
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = InvalidPolicyException.class)
+    public ResponseEntity handleException(InvalidPolicyException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.NOT_FOUND.value(),
+                "Invalid Policy",
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
