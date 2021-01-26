@@ -5,14 +5,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookResponseDto
 {
+    private int bookCopyId;
+
+    private String barcode;
+
+    private String borrowedAt;
+
+    private String dueAt;
+
+    private int overdueDays;
+
     private String isbn;
 
     private String title;
@@ -29,31 +37,21 @@ public class BookResponseDto
 
     private Integer pageNumber;
 
-    private String ddc;
-
-    private Integer numberOfCopy;
+    private String callNumber;
 
     private String status;
 
-    private List<AuthorDto> author;
+    private String authors;
 
-    private List<GenreDto> genre;
+    private String genres;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private static class AuthorDto
-    {
-        private String name;
-    }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private static class GenreDto
-    {
-        private String name;
-    }
+//    @Getter
+//    @Setter
+//    @NoArgsConstructor
+//    @AllArgsConstructor
+//    private static class BookDto
+//    {
+//
+//    }
 }

@@ -31,4 +31,11 @@ public class Genre
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "genre")
     public Set<BookGenre> bookGenres;
+
+
+    @Override
+    public String toString()
+    {
+        return name;
+    }
 }

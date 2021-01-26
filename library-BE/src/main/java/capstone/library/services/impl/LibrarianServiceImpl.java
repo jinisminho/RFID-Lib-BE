@@ -1,6 +1,7 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
+import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.dtos.response.CheckoutBookResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.Account;
@@ -8,6 +9,7 @@ import capstone.library.entities.BookBorrowing;
 import capstone.library.entities.BookCopy;
 import capstone.library.entities.BorrowPolicy;
 import capstone.library.enums.BookCopyStatus;
+import capstone.library.enums.BookStatus;
 import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
@@ -15,6 +17,7 @@ import capstone.library.repositories.BookBorrowingRepository;
 import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.BorrowPolicyRepository;
 import capstone.library.services.LibrarianService;
+import capstone.library.util.tools.OverdueBooksFinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +39,8 @@ public class LibrarianServiceImpl implements LibrarianService
     BookBorrowingRepository bookBorrowingRepository;
     @Autowired
     AccountRepository accountRepository;
+    @Autowired
+    OverdueBooksFinder overdueBooksFinder;
 
     /*Renew Index is used to determine if this book has been renew this time.
      * If the book has not been renewed, then Renew index is 0*/
@@ -227,8 +232,15 @@ public class LibrarianServiceImpl implements LibrarianService
                 bookBorrowing.setFine(fine);
                 bookBorrowingRepository.save(bookBorrowing);
 
-                /*Update book_copy status from BORROWED to AVAILABLE*/
-                bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+                /*Update book_copy status from BORROWED to AVAILABLE if its Book is still IN_CIRCULATION
+                 * Else update from BORROWED to OUT_OF_CIRCULATION*/
+                if (bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
+                {
+                    bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+                } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
+                {
+                    bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+                }
                 bookCopyRepository.save(bookCopy);
 
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
@@ -247,5 +259,11 @@ public class LibrarianServiceImpl implements LibrarianService
         }
 
         return responseDtos;
+    }
+
+    @Override
+    public List<BookResponseDto> getOverdueBooksByBorrower(int patronId)
+    {
+        return overdueBooksFinder.findOverdueBooksByPatronId(patronId);
     }
 }

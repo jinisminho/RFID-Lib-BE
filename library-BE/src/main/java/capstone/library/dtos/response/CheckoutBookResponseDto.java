@@ -1,6 +1,5 @@
 package capstone.library.dtos.response;
 
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel("Checkout response")
 public class CheckoutBookResponseDto
 {
     private String rfid;
