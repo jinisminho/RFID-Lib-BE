@@ -48,6 +48,7 @@ create table book_lost_report(
 	id int not null auto_increment,
 	lost_at datetime not null default now(),
     reason varchar(100) not null,
+    fine double precision not null,
     
     borrow_id int,
     lost_by int,
@@ -81,6 +82,7 @@ create table book_borrowing(
     extend_index int,
     lost_at datetime,
     note varchar(500),
+    fine double precision default 0,
     
     returned_by int,
     borrowed_by int,
@@ -94,7 +96,7 @@ create table extend_history(
 	id int not null auto_increment,
 	borrowed_at datetime not null,
     extended_at datetime,
-    extend_index int,
+    extend_index int default 0,
     due_at date not null,
     
     book_borrowing_id int,
@@ -111,7 +113,7 @@ create table book(
     publish_year int not null,
     edition int not null,
     language varchar(20),
-    page_number int,
+    page_number int default 0,
     call_number varchar(50) not null,
 	number_of_copy int not null,
     status varchar(30) not null,
