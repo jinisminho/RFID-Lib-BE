@@ -2,6 +2,7 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
 import capstone.library.dtos.response.BookCheckoutResponseDto;
+import capstone.library.dtos.response.BookReturnResponseDto;
 import capstone.library.services.LibrarianService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,10 @@ public class LibrarianController
         return librarianService.checkout(scannedRFIDBooksRequestDto);
     }
 
-//    @PostMapping("/return")
-//    @ApiOperation(value = "return a list of books")
-//    public List<BookCheckoutResponseDto> returnBooks(@RequestBody ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
-//    {
-//        return librarianService.returnBooks(scannedRFIDBooksRequestDto);
-//    }
+    @PostMapping("/return")
+    @ApiOperation(value = "return a list of books")
+    public List<BookReturnResponseDto> returnBooks(@RequestBody ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    {
+        return librarianService.returnBooks(scannedRFIDBooksRequestDto);
+    }
 }

@@ -1,6 +1,7 @@
 package capstone.library.repositories;
 
 import capstone.library.entities.BookCopy;
+import capstone.library.enums.BookCopyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,4 +11,6 @@ import java.util.Optional;
 public interface BookCopyRepository extends JpaRepository<BookCopy, Integer>
 {
     Optional<BookCopy> findByRfid(String rfid);
+
+    Optional<BookCopy> findByRfidAndStatus(String rfid, BookCopyStatus status);
 }
