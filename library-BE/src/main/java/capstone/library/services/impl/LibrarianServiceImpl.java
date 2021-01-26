@@ -1,8 +1,8 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
-import capstone.library.dtos.response.BookCheckoutResponseDto;
-import capstone.library.dtos.response.BookReturnResponseDto;
+import capstone.library.dtos.response.CheckoutBookResponseDto;
+import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.Account;
 import capstone.library.entities.BookBorrowing;
 import capstone.library.entities.BookCopy;
@@ -44,9 +44,9 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<BookCheckoutResponseDto> checkout(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    public List<CheckoutBookResponseDto> checkout(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
     {
-        List<BookCheckoutResponseDto> bookCheckoutResponseDtos = new ArrayList<>();
+        List<CheckoutBookResponseDto> checkoutBookResponseDtos = new ArrayList<>();
         List<String> rfidTags = scannedRFIDBooksRequestDto.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
@@ -79,7 +79,7 @@ public class LibrarianServiceImpl implements LibrarianService
         for (String rfidTag :
                 rfidTags)
         {
-            BookCheckoutResponseDto copyDto = new BookCheckoutResponseDto();
+            CheckoutBookResponseDto copyDto = new CheckoutBookResponseDto();
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfidTag);
             if (bookCopyOptional.isPresent())
             {
@@ -134,6 +134,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 copyDto.setRfid(rfidTag);
                 copyDto.setDueDate(dueAt.toString());
                 copyDto.setTitle(bookCopy.getBook().getTitle());
+                copyDto.setSubtitle(bookCopy.getBook().getSubtitle());
             } else
             {
                 //Add bookBorrowing to response dto
@@ -142,28 +143,17 @@ public class LibrarianServiceImpl implements LibrarianService
                 copyDto.setDueDate("");
                 copyDto.setTitle("");
             }
-            bookCheckoutResponseDtos.add(copyDto);
+            checkoutBookResponseDtos.add(copyDto);
         }
-        return bookCheckoutResponseDtos;
+        return checkoutBookResponseDtos;
     }
 
     @Override
     @Transactional
-    public List<BookReturnResponseDto> returnBooks(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    public List<ReturnBookResponseDto> returnBooks(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
     {
         List<BookCopy> bookCopies = new ArrayList<>();
-        List<BookReturnResponseDto> responseDtos = new ArrayList<>();
-
-        /*Get patron type to get overdue fine rate in borrow_policy*/
-        Optional<Account> patronOptional = accountRepository.findById(scannedRFIDBooksRequestDto.getPatronId());
-        if (patronOptional.isEmpty())
-        {
-            ResourceNotFoundException resourceNotFoundException = new ResourceNotFoundException();
-            resourceNotFoundException.setResourceName("Patron");
-            resourceNotFoundException.setMessage("Patron with id: " + scannedRFIDBooksRequestDto.getPatronId() + " does not exist");
-            throw resourceNotFoundException;
-        }
-        int patronTypeId = patronOptional.get().getPatronType().getId();
+        List<ReturnBookResponseDto> responseDtos = new ArrayList<>();
 
         /*Get librarian*/
         Optional<Account> librarianOptional = accountRepository.findById(scannedRFIDBooksRequestDto.getLibrarianId());
@@ -187,7 +177,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 bookCopies.add(bookCopyOptional.get());
             } else
             {
-                BookReturnResponseDto dto = new BookReturnResponseDto();
+                ReturnBookResponseDto dto = new ReturnBookResponseDto();
                 dto.setRfid(rfidTag);
                 dto.setReason("Cannot find this book in borrowed-book list");
                 responseDtos.add(dto);
@@ -200,14 +190,14 @@ public class LibrarianServiceImpl implements LibrarianService
          * If book copy is overdue, calculate fine*/
         for (BookCopy bookCopy : bookCopies)
         {
-            BookReturnResponseDto dto = new BookReturnResponseDto();
+            ReturnBookResponseDto dto = new ReturnBookResponseDto();
             dto.setOverdue(false);
             Optional<BookBorrowing> bookBorrowingOptional = bookBorrowingRepository.
-                    findByBookCopyIdAndBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId(),
-                            scannedRFIDBooksRequestDto.getPatronId());
+                    findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
             if (bookBorrowingOptional.isPresent())
             {
                 BookBorrowing bookBorrowing = bookBorrowingOptional.get();
+                int patronTypeId = bookBorrowing.getBorrower().getId();
                 double fineRate;
                 double fine = 0;
                 //Returns >0 if today has passed overdue date
@@ -246,6 +236,11 @@ public class LibrarianServiceImpl implements LibrarianService
                 dto.setSubtitle(bookCopy.getBook().getSubtitle());
                 dto.setOverdueDays(overdueDays);
                 dto.setBookPrice(bookCopy.getPrice());
+                String authors = bookCopy.getBook().getBookAuthors().toString();
+                authors = authors.replace("[", "");
+                authors = authors.replace("]", "");
+                dto.setAuthors(authors);
+                dto.setIsbn(bookCopy.getBook().getIsbn());
 
                 responseDtos.add(dto);
             }

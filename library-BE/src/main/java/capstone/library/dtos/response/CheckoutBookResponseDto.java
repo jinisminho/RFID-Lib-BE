@@ -1,5 +1,6 @@
 package capstone.library.dtos.response;
 
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookReturnResponseDto
+@ApiModel("Checkout response")
+public class CheckoutBookResponseDto
 {
     private String rfid;
 
@@ -17,15 +19,12 @@ public class BookReturnResponseDto
 
     private String subtitle;
 
-    private boolean overdue;
+    private String author;
 
-    private int overdueDays;
+    private boolean ableToBorrow;
 
     private String reason;
 
     private String dueDate;
 
-    private double fine;
-
-    private double bookPrice;
 }

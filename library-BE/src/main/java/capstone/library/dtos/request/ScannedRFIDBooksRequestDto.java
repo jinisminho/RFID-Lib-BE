@@ -15,7 +15,6 @@ import java.util.List;
 @NotNull
 public class ScannedRFIDBooksRequestDto
 {
-    @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")
     private int patronId;
 
     @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")

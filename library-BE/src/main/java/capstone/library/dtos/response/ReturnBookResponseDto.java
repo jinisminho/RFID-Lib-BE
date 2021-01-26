@@ -9,16 +9,27 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookCheckoutResponseDto
+public class ReturnBookResponseDto
 {
     private String rfid;
 
     private String title;
 
-    private boolean ableToBorrow;
+    private String subtitle;
+
+    private String authors;
+
+    private String isbn;
+
+    private boolean overdue;
+
+    private int overdueDays;
 
     private String reason;
 
     private String dueDate;
 
+    private double fine;
+
+    private double bookPrice;
 }

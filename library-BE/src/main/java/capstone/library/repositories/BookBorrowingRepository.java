@@ -16,6 +16,6 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
 
     Page<BookBorrowing> findAllByBorrower_Id(Integer patronId, Pageable pageable);
 
-    Optional<BookBorrowing> findByBookCopyIdAndBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(int bookCopyId, int borrowerId);
+    Optional<BookBorrowing> findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(int bookCopyId);
 
 }

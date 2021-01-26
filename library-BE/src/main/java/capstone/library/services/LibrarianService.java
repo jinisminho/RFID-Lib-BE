@@ -1,15 +1,15 @@
 package capstone.library.services;
 
 import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
-import capstone.library.dtos.response.BookCheckoutResponseDto;
-import capstone.library.dtos.response.BookReturnResponseDto;
+import capstone.library.dtos.response.CheckoutBookResponseDto;
+import capstone.library.dtos.response.ReturnBookResponseDto;
 
 import java.util.List;
 
 public interface LibrarianService
 {
 
-    List<BookCheckoutResponseDto> checkout(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto);
+    List<CheckoutBookResponseDto> checkout(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto);
 
-    List<BookReturnResponseDto> returnBooks(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto);
+    List<ReturnBookResponseDto> returnBooks(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto);
 }
