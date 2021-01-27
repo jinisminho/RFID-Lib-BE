@@ -27,4 +27,6 @@ public class ScannedBookResponse {
 
     private String group;
 
+    private  String genres;
+
 }

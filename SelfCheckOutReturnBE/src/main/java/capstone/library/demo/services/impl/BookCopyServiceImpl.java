@@ -29,6 +29,11 @@ public class BookCopyServiceImpl implements BookCopyService {
                 .map(a -> a.getAuthor().getName())
                 .collect(Collectors.joining(", "));
 
+        String genres = book.getBookGenres()
+                .stream()
+                .map(g -> g.getGenre().getName())
+                .collect(Collectors.joining(","));
+
         return new ScannedBookResponse(rfid,
                 book.getTitle(),
                 book.getEdition(),
@@ -36,6 +41,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 book.getImg(),
                 book.getSubtitle(),
                 copy.getBookCopyType().getId(),
-                copy.getBookCopyType().getName());
+                copy.getBookCopyType().getName(),
+                genres);
     }
 }

@@ -34,4 +34,6 @@ public class BookCheckOutResponse {
 
     private String borrowedAt;
 
+    private  String genres;
+
 }

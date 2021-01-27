@@ -33,18 +33,18 @@ public class ApplicationExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(value = ResourceNotFoundException.class)
-    public ResponseEntity handleException(ResourceNotFoundException exception) {
+    public ResponseEntity<ErrorDto> handleException(ResourceNotFoundException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.NOT_FOUND.value(),
-                "Resource Not Found",
+                ErrorStatus.RESOURCE_NOT_FOUND.value(),
+                ErrorStatus.RESOURCE_NOT_FOUND.getReasonPhrase(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ResponseBody
     @ExceptionHandler(value = InvalidPolicyException.class)
-    public ResponseEntity handleException(InvalidPolicyException exception) {
+    public ResponseEntity<ErrorDto> handleException(InvalidPolicyException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 ErrorStatus.BORROWING_POLICY_VIOLATION.value(),
@@ -55,33 +55,33 @@ public class ApplicationExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(value = MissingInputException.class)
-    public ResponseEntity handleException(MissingInputException exception) {
+    public ResponseEntity<ErrorDto> handleException(MissingInputException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Missing Input",
+                ErrorStatus.MISSING_INPUT.value(),
+                ErrorStatus.MISSING_INPUT.getReasonPhrase(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ResponseBody
     @ExceptionHandler(value = RuntimeException.class)
-    public ResponseEntity handleException(RuntimeException exception) {
+    public ResponseEntity<ErrorDto> handleException(RuntimeException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "server error",
+                ErrorStatus.SYSTEM_ERROR.value(),
+                ErrorStatus.SYSTEM_ERROR.getReasonPhrase(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ResponseBody
     @ExceptionHandler(value = DataIntegrityViolationException.class)
-    public ResponseEntity handleException(DataIntegrityViolationException exception) {
+    public ResponseEntity<ErrorDto> handleException(DataIntegrityViolationException exception) {
         logger.error(exception.getMessage());
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.CONFLICT.value(),
-                "Resource Conflict",
+                ErrorStatus.DATABASE_INTEGRITY_VIOLATION.value(),
+                ErrorStatus.DATABASE_INTEGRITY_VIOLATION.getReasonPhrase(),
                 exception.getMessage());
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("FK_copy_book")) {
@@ -123,11 +123,11 @@ public class ApplicationExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
-    public ResponseEntity handleException(HttpMessageNotReadableException exception) {
+    public ResponseEntity<ErrorDto> handleException(HttpMessageNotReadableException exception) {
         logger.error(exception.getMessage());
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
+                ErrorStatus.INVALID_DATA_FIELD.value(),
+                ErrorStatus.INVALID_DATA_FIELD.getReasonPhrase(),
                 exception.getMessage());
         if (exception.getMessage() != null
                 && exception.getMessage().contains("java.time.LocalDate")) {
@@ -139,26 +139,26 @@ public class ApplicationExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity handleException(MethodArgumentNotValidException exception) {
+    public ResponseEntity<ErrorDto> handleException(MethodArgumentNotValidException exception) {
         StringBuilder msg = new StringBuilder();
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
             msg.append(fieldError.getObjectName()).append(":").append(fieldError.getDefaultMessage()).append(";");
         }
         logger.error(msg);
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
+                ErrorStatus.INVALID_DATA_FIELD.value(),
+                ErrorStatus.INVALID_DATA_FIELD.getReasonPhrase(),
                 msg.toString());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }
 
     @ResponseBody
     @ExceptionHandler(value = ConstraintViolationException.class)
-    public ResponseEntity handleException(ConstraintViolationException exception) {
+    public ResponseEntity<ErrorDto> handleException(ConstraintViolationException exception) {
         logger.error(exception.getMessage());
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
+                ErrorStatus.INVALID_DATA_FIELD.value(),
+                ErrorStatus.INVALID_DATA_FIELD.getReasonPhrase(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }

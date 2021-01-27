@@ -385,3 +385,6 @@ ADD CONSTRAINT UK_patronType_name UNIQUE (name);
 ALTER TABLE book_copy_type
 ADD CONSTRAINT UK_copyType_name UNIQUE (name);
 
+ALTER TABLE book
+ADD CONSTRAINT UK_book_isbn UNIQUE (ISBN);
+

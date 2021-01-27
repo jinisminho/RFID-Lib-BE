@@ -91,54 +91,61 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
 
     @Override
     @Transactional
-    public List<BookReturnResponse> returnBook(List<String> bookCodeList) {
+    public List<BookReturnResponse> returnBookByBatch (List<String> bookCodeList) {
         List<BookReturnResponse> rs = new ArrayList<>();
         for (String code : bookCodeList){
-            BookCopy copy = bookCopyRepo.findByRfid(code)
-                    .orElseThrow(() -> new ResourceNotFoundException("Book with rfid: " + code + " not found" ));
-
-            BookReturnResponse dto = mapFromCopyToReturnBasically(copy);
-
-            if(copy.getStatus() != BookCopyStatus.BORROWED){
-                dto.setStatus(BookReturnStatus.INVALID);
-            }else{
-                BookBorrowing borrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException(("Cannot find borrowing transaction with book id" + copy.getId())));
-
-                int overdueDays = LocalDate.now().compareTo(borrowing.getDueAt());
-                //check if overdue : not allow to return
-                if(overdueDays > 0){
-                    BorrowPolicy policy = borrowPolicyRepo
-                            .findByPatronTypeIdAndBookCopyTypeId(borrowing.getBorrower().getPatronType().getId(),
-                                    copy.getBookCopyType().getId())
-                            .orElseThrow(() -> new InvalidPolicyException("Cannot find policy"));
-
-                    double fine = overdueDays * policy.getOverdueFinePerDay();
-                    double bookPrice = copy.getPrice();
-                    if(fine >= bookPrice){
-                        fine = bookPrice;
-                    }
-                    dto.setOverdueDay(overdueDays);
-                    dto.setFine(fine);
-                    dto.setStatus(BookReturnStatus.OVERDUE);
-                }
-                else{
-                    BookStatus bookStatus = copy.getBook().getStatus();
-                    if(bookStatus == BookStatus.OUT_OF_CIRCULATION){
-                        copy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                    }else{
-                        copy.setStatus(BookCopyStatus.AVAILABLE);
-                    }
-                    borrowing.setReturn_by(borrowing.getBorrower());
-                    LocalDateTime now = LocalDateTime.now();
-                    borrowing.setReturnedAt(now);
-                    dto.setReturnedAt(DateTimeUtil.convertDateTimeToString(now));
-                    dto.setStatus(BookReturnStatus.RETURNED);
-                }
-            }
+            BookReturnResponse dto = returnBookOneByOne(code);
             rs.add(dto);
         }
         return rs;
+    }
+
+    @Override
+    @Transactional
+    public BookReturnResponse returnBookOneByOne (String rfidCode){
+        BookCopy copy = bookCopyRepo.findByRfid(rfidCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Book with rfid: " + rfidCode + " not found" ));
+
+        BookReturnResponse dto = mapFromCopyToReturnBasically(copy);
+
+        if(copy.getStatus() != BookCopyStatus.BORROWED){
+            dto.setStatus(BookReturnStatus.INVALID);
+        }else{
+            BookBorrowing borrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(("Cannot find borrowing transaction with book id" + copy.getId())));
+            dto.setPatron(borrowing.getBorrower().getEmail());
+            int overdueDays = LocalDate.now().compareTo(borrowing.getDueAt());
+            //check if overdue : not allow to return
+            if(overdueDays > 0){
+                BorrowPolicy policy = borrowPolicyRepo
+                        .findByPatronTypeIdAndBookCopyTypeId(borrowing.getBorrower().getPatronType().getId(),
+                                copy.getBookCopyType().getId())
+                        .orElseThrow(() -> new InvalidPolicyException("Cannot find policy"));
+
+                double fine = overdueDays * policy.getOverdueFinePerDay();
+                double bookPrice = copy.getPrice();
+                if(fine >= bookPrice){
+                    fine = bookPrice;
+                }
+                dto.setOverdueDay(overdueDays);
+                dto.setFine(fine);
+                dto.setStatus(BookReturnStatus.OVERDUE);
+            }
+            else{
+                BookStatus bookStatus = copy.getBook().getStatus();
+                if(bookStatus == BookStatus.OUT_OF_CIRCULATION){
+                    copy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+                }else{
+                    copy.setStatus(BookCopyStatus.AVAILABLE);
+                }
+                borrowing.setReturn_by(borrowing.getBorrower());
+                LocalDateTime now = LocalDateTime.now();
+                borrowing.setReturnedAt(now);
+                dto.setReturnedAt(DateTimeUtil.convertDateTimeToString(now));
+                dto.setStatus(BookReturnStatus.RETURNED);
+            }
+        }
+        return dto;
     }
 
     private BookReturnResponse mapFromCopyToReturnBasically(BookCopy copy){
@@ -150,10 +157,17 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 .stream()
                 .map(a -> a.getAuthor().getName())
                 .collect(Collectors.joining(", "));
+
+        String genres = copy.getBook().getBookGenres()
+                .stream()
+                .map(g -> g.getGenre().getName())
+                .collect(Collectors.joining(","));
+
         dto.setAuthors(authors);
         dto.setEdition(copy.getBook().getEdition());
         dto.setGroup(copy.getBookCopyType().getName());
         dto.setImg(copy.getBook().getImg());
+        dto.setGenres(genres);
         return dto;
     }
 
@@ -166,10 +180,17 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 .stream()
                 .map(a -> a.getAuthor().getName())
                 .collect(Collectors.joining(", "));
+
+        String genres = copy.getBook().getBookGenres()
+                .stream()
+                .map(g -> g.getGenre().getName())
+                .collect(Collectors.joining(","));
+
         dto.setAuthors(authors);
         dto.setEdition(copy.getBook().getEdition());
         dto.setGroup(copy.getBookCopyType().getName());
         dto.setImg(copy.getBook().getImg());
+        dto.setGenres(genres);
         return dto;
     }
 

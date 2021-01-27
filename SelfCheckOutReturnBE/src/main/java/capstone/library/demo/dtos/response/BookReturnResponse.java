@@ -36,4 +36,9 @@ public class BookReturnResponse {
 
     private String returnedAt;
 
+    private String genres;
+
+    private String patron;
+
+
 }

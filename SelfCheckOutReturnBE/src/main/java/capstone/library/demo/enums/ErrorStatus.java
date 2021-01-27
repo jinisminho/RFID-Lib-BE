@@ -4,7 +4,14 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorStatus {
 
-    BORROWING_POLICY_VIOLATION (421, "Violate Book Borrow Policy");
+    SYSTEM_ERROR (420, "System Error"),
+    INVALID_DATA_FIELD (421, "Invalid Data"),
+    RESOURCE_NOT_FOUND (422, "Resource Not Found"),
+    MISSING_INPUT (423, "Missing Input"),
+    DATABASE_INTEGRITY_VIOLATION (424, "Violate Database Constraints"),
+
+    //Business
+    BORROWING_POLICY_VIOLATION (450, "Violate Book Borrow Policy");
 
     private final int value;
     private final String reasonPhrase;

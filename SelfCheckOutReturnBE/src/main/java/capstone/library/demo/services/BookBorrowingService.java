@@ -10,5 +10,7 @@ public interface BookBorrowingService {
 
     List<BookCheckOutResponse> checkout (int patronId, List<CheckOutBookRequest> bookCodeList);
 
-    List<BookReturnResponse> returnBook (List<String> bookCodeList);
+    List<BookReturnResponse> returnBookByBatch(List<String> bookCodeList);
+
+    BookReturnResponse returnBookOneByOne (String rfidCode);
 }
