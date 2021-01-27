@@ -48,4 +48,7 @@ public class AddBookRequestDto
     private String status;
     @NotNull(message = "{AddBookRequestDto.authors.notNull}")
     private List<Integer> authorIds;
+
+    @Length(min = 1, max = 500, message = "{AddBookRequestDto.img.length}")
+    private String img;
 }

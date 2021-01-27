@@ -1,6 +1,7 @@
 package capstone.library.services;
 
 import capstone.library.dtos.request.AddBookRequestDto;
+import capstone.library.dtos.request.UpdateBookInfoRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.enums.BookStatus;
@@ -23,4 +24,6 @@ public interface BookService
     String addBook(AddBookRequestDto request);
 
     String updateBookStatus(int id, BookStatus status);
+
+    String updateBookInfo(UpdateBookInfoRequestDto request);
 }

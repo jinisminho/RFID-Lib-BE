@@ -2,6 +2,7 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.request.AddBookRequestDto;
+import capstone.library.dtos.request.UpdateBookInfoRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.enums.BookStatus;
@@ -77,8 +78,14 @@ public class BookController
     }
 
     @PostMapping("/update/status/{id}")
-    public String updateStatus(@NotNull @PathVariable int id, @RequestParam(value = "status") BookStatus status)
+    public String updateBookStatus(@NotNull @PathVariable int id, @RequestParam(value = "status") BookStatus status)
     {
         return bookService.updateBookStatus(id, status);
+    }
+
+    @PostMapping("/update")
+    public String updateBookInfo(@RequestBody UpdateBookInfoRequestDto request)
+    {
+        return bookService.updateBookInfo(request);
     }
 }
