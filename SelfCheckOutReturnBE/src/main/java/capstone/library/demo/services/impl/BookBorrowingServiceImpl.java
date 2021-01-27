@@ -62,7 +62,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                     .orElseThrow(() -> new ResourceNotFoundException("Book with rfid: " + book.getRfid() + " not found" ));
             BorrowPolicy policy = borrowPolicyRepo.findByPatronTypeIdAndBookCopyTypeId(patron.getPatronType().getId(), copy.getBookCopyType().getId())
                     .orElseThrow(() -> new InvalidPolicyException
-                            (patron.getPatronType().getName() + " not allowed to borrow books in " + copy.getBookCopyType().getName()));
+                            ( copy.getBookCopyType().getName() + ": not allow to borrow"));
 
             BookCheckOutResponse dto = mapFromCopyToCheckOutBasically(copy);
             //if this copy able to borrow: set bookCopy status -> borrow; add bookBorrowing
@@ -207,10 +207,10 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                         int maxBorrowNumber = policyOpt.get().getMaxNumberCopyBorrow();
                         if(v.getCount() > maxBorrowNumber){
                             String tmp = msg.get();
-                            msg.set(tmp + " " + v.getGroup() + ": limit " + maxBorrowNumber + " books;");
+                            msg.set(tmp + " " + v.getGroup() + ": limit " + maxBorrowNumber + " book(s)\n");
                         }
                     }else{
-                        msg.set(msg + " " + v.getGroup() + ": not allow to borrow;");
+                        msg.set(msg + " " + v.getGroup() + ": not allow to borrow\n");
                     }
 
                 }

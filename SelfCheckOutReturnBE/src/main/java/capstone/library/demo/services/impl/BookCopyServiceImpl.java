@@ -21,7 +21,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     @Override
     public ScannedBookResponse searchBookByRfid(String rfid) {
         BookCopy copy = bookCopyRepo.findByRfid(rfid)
-                .orElseThrow(() -> new ResourceNotFoundException("Book with code: " + rfid + " not found. Please contact librarian!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book with code: " + rfid + " not found. Please contact the librarian!"));
 
         Book book = copy.getBook();
         String authors = book.getBookAuthors()

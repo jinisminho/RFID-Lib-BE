@@ -1,6 +1,7 @@
 package capstone.library.demo.exceptions.handler;
 
 import capstone.library.demo.dtos.response.ErrorDto;
+import capstone.library.demo.enums.ErrorStatus;
 import capstone.library.demo.exceptions.InvalidPolicyException;
 import capstone.library.demo.exceptions.MissingInputException;
 import capstone.library.demo.exceptions.ResourceNotFoundException;
@@ -46,8 +47,8 @@ public class ApplicationExceptionHandler {
     public ResponseEntity handleException(InvalidPolicyException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.NOT_FOUND.value(),
-                "Invalid Policy",
+                ErrorStatus.BORROWING_POLICY_VIOLATION.value(),
+                ErrorStatus.BORROWING_POLICY_VIOLATION.getReasonPhrase(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
