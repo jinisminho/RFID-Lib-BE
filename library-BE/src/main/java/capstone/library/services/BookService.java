@@ -1,7 +1,9 @@
 package capstone.library.services;
 
+import capstone.library.dtos.request.AddBookRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
+import capstone.library.enums.BookStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,4 +19,8 @@ public interface BookService
     boolean reindexAll();
 
     List<BookResponseDto> findAllBooks(Pageable pageable);
+
+    String addBook(AddBookRequestDto request);
+
+    String updateBookStatus(int id, BookStatus status);
 }

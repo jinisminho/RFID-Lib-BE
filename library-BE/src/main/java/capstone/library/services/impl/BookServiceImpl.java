@@ -1,28 +1,29 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.BookCopyDto;
+import capstone.library.dtos.request.AddBookRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.entities.Book;
-import capstone.library.entities.BookCopy;
+import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
+import capstone.library.enums.BookStatus;
+import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.mappers.BookMapper;
-import capstone.library.repositories.BookCopyRepository;
-import capstone.library.repositories.BookRepository;
-import capstone.library.repositories.MyBookRepository;
+import capstone.library.repositories.*;
 import capstone.library.services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.transaction.Transactional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +42,10 @@ public class BookServiceImpl implements BookService
     private BookRepository bookRepository;
     @Autowired
     private MyBookRepository myBookRepository;
+    @Autowired
+    private AuthorRepository authorRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Override
     public Page<BookResDto> findBooks(String searchValue, Pageable pageable)
@@ -90,6 +95,81 @@ public class BookServiceImpl implements BookService
             responseDtos.add(dto);
         }
         return responseDtos;
+    }
+
+    @Override
+    @Transactional
+    public String addBook(AddBookRequestDto request)
+    {
+        Book book = objectMapper.convertValue(request, Book.class);
+        Set<BookAuthor> bookAuthorSet = new HashSet<>();
+        Set<BookGenre> bookGenreSet = new HashSet<>();
+        for (int id : request.getAuthorIds())
+        {
+            Optional<Author> authorOptional = authorRepository.findById(id);
+            if (authorOptional.isPresent())
+            {
+                BookAuthor bookAuthor = new BookAuthor();
+                bookAuthor.setBook(book);
+                bookAuthor.setAuthor(authorOptional.get());
+                bookAuthorSet.add(bookAuthor);
+            }
+        }
+        for (int id : request.getGenreIds())
+        {
+            Optional<Genre> genreOptional = genreRepository.findById(id);
+            if (genreOptional.isPresent())
+            {
+                BookGenre bookGenre = new BookGenre();
+                bookGenre.setBook(book);
+                bookGenre.setGenre(genreOptional.get());
+                bookGenreSet.add(bookGenre);
+            }
+        }
+        book.setBookAuthors(bookAuthorSet);
+        book.setBookGenres(bookGenreSet);
+        book.setImg("img_url");
+        book.setNumberOfCopy(0);
+
+        try
+        {
+            myBookRepository.save(book);
+        } catch (Exception e)
+        {
+            throw new CustomException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Database error", e.getLocalizedMessage());
+        }
+
+        return "Success";
+    }
+
+    @Override
+    public String updateBookStatus(int id, BookStatus status)
+    {
+        Optional<Book> bookOptional = myBookRepository.findById(id);
+        if (bookOptional.isPresent())
+        {
+            Book book = bookOptional.get();
+            if (status.equals(book.getStatus()))
+            {
+                return "Book status is already " + status;
+            }
+
+            book.setStatus(status);
+
+            try
+            {
+                myBookRepository.save(book);
+            } catch (Exception e)
+            {
+                throw new CustomException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "Database error", e.getLocalizedMessage());
+            }
+            return "Success";
+        } else
+        {
+            throw new ResourceNotFoundException("Book", "Book [" + id + "] is not found");
+        }
     }
 
     @Override

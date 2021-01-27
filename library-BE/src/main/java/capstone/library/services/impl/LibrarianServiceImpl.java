@@ -42,6 +42,8 @@ public class LibrarianServiceImpl implements LibrarianService
     @Autowired
     OverdueBooksFinder overdueBooksFinder;
 
+    private static final String NOT_FOUND = " not found";
+
     /*Renew Index is used to determine if this book has been renew this time.
      * If the book has not been renewed, then Renew index is 0*/
     private static final int DEFAULT_RENEW_INDEX = 0;
@@ -59,10 +61,9 @@ public class LibrarianServiceImpl implements LibrarianService
         //Return 404 if no patron with 'getLibrarianId' is found
         if (librarianOptional.isEmpty())
         {
-            ResourceNotFoundException resourceNotFoundException = new ResourceNotFoundException();
-            resourceNotFoundException.setResourceName("Librarian");
-            resourceNotFoundException.setMessage("Librarian with id: " + scannedRFIDBooksRequestDto.getPatronId() + " does not exist");
-            throw resourceNotFoundException;
+            throw new ResourceNotFoundException(
+                    "Librarian",
+                    "Librarian with id: " + scannedRFIDBooksRequestDto.getPatronId() + NOT_FOUND);
         }
         Account issuingLibrarian = librarianOptional.get();
         /*========================*/
@@ -72,10 +73,8 @@ public class LibrarianServiceImpl implements LibrarianService
         //Return 404 if no patron with 'patronId' is found
         if (patronOptional.isEmpty())
         {
-            ResourceNotFoundException resourceNotFoundException = new ResourceNotFoundException();
-            resourceNotFoundException.setResourceName("Patron");
-            resourceNotFoundException.setMessage("Patron with id: " + scannedRFIDBooksRequestDto.getPatronId() + " does not exist");
-            throw resourceNotFoundException;
+            throw new ResourceNotFoundException(
+                    "Patron", "Patron with id: " + scannedRFIDBooksRequestDto.getPatronId() + NOT_FOUND);
         }
         Account borrowingPatron = patronOptional.get();
         /*========================*/
@@ -164,10 +163,8 @@ public class LibrarianServiceImpl implements LibrarianService
         Optional<Account> librarianOptional = accountRepository.findById(scannedRFIDBooksRequestDto.getLibrarianId());
         if (librarianOptional.isEmpty())
         {
-            ResourceNotFoundException resourceNotFoundException = new ResourceNotFoundException();
-            resourceNotFoundException.setResourceName("Librarian");
-            resourceNotFoundException.setMessage("Librarian with id: " + scannedRFIDBooksRequestDto.getLibrarianId() + " does not exist");
-            throw resourceNotFoundException;
+            throw new ResourceNotFoundException(
+                    "Librarian", "Librarian with id: " + scannedRFIDBooksRequestDto.getLibrarianId() + NOT_FOUND);
         }
         Account librarian = librarianOptional.get();
 

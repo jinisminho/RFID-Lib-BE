@@ -1,8 +1,10 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.common.ErrorDto;
+import capstone.library.dtos.request.AddBookRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
+import capstone.library.enums.BookStatus;
 import capstone.library.services.BookService;
 import capstone.library.util.ApiPageable;
 import capstone.library.util.ConstantUtil;
@@ -17,19 +19,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/book")
-public class BookController {
+public class BookController
+{
 
     @Autowired
     private BookService bookService;
 
     @ApiPageable
     @GetMapping("/search")
-    public Page<BookResDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
+    public Page<BookResDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable)
+    {
         return bookService.findBooks(searchValue, pageable);
     }
 
@@ -37,7 +43,8 @@ public class BookController {
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/bookCopy/tagRfid/{bookCopyId}")
     public ResponseEntity<?> tagRfidToBookCopy(@PathVariable Integer bookCopyId,
-                                               @RequestParam(required = false, value = "rfid") String rfid) {
+                                               @RequestParam(required = false, value = "rfid") String rfid)
+    {
 
         boolean bool = bookService.tagRfidToBookCopy(bookCopyId, rfid);
 
@@ -61,5 +68,17 @@ public class BookController {
     public List<BookResponseDto> findAllBooks(Pageable pageable)
     {
         return bookService.findAllBooks(pageable);
+    }
+
+    @PostMapping("/add")
+    public String addBook(@RequestBody @Valid AddBookRequestDto request)
+    {
+        return bookService.addBook(request);
+    }
+
+    @PostMapping("/update/status/{id}")
+    public String updateStatus(@NotNull @PathVariable int id, @RequestParam(value = "status") BookStatus status)
+    {
+        return bookService.updateBookStatus(id, status);
     }
 }
