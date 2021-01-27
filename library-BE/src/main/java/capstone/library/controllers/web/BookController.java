@@ -2,6 +2,7 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.response.BookResDto;
+import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.services.BookService;
 import capstone.library.util.ApiPageable;
 import capstone.library.util.ConstantUtil;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/book")
@@ -49,9 +51,15 @@ public class BookController {
     }
 
     @GetMapping("/reindex")
-    public ResponseEntity<?> reindexAll() {
+    public ResponseEntity<?> reindexAll()
+    {
         boolean bool = bookService.reindexAll();
         return new ResponseEntity(bool ? "Reindexed" : "Failed to reindex", bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping("/all")
+    public List<BookResponseDto> findAllBooks(Pageable pageable)
+    {
+        return bookService.findAllBooks(pageable);
+    }
 }

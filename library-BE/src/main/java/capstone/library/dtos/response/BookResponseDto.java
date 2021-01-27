@@ -13,6 +13,8 @@ public class BookResponseDto
 {
     private int bookCopyId;
 
+    private int bookId;
+
     private String barcode;
 
     private String borrowedAt;
@@ -39,19 +41,15 @@ public class BookResponseDto
 
     private String callNumber;
 
+    private boolean available;
+
+    private int availableCopies;
+
+    private String img;
+
     private String status;
 
     private String authors;
 
     private String genres;
-
-
-//    @Getter
-//    @Setter
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    private static class BookDto
-//    {
-//
-//    }
 }
