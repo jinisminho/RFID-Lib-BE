@@ -1,6 +1,6 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
+import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.dtos.response.CheckoutBookResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
@@ -19,22 +19,22 @@ public class LibrarianController
     LibrarianService librarianService;
 
     @PostMapping("/checkout")
-    @ApiOperation(value = "Checkout a list of books")
-    public List<CheckoutBookResponseDto> checkoutBooks(@RequestBody ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    @ApiOperation(value = "Checkout a list of book copies")
+    public List<CheckoutBookResponseDto> checkoutBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
-        return librarianService.checkout(scannedRFIDBooksRequestDto);
+        return librarianService.checkout(scannedRFIDCopiesRequestDto);
     }
 
     @PostMapping("/return")
-    @ApiOperation(value = "Return a list of books")
-    public List<ReturnBookResponseDto> returnBooks(@RequestBody ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    @ApiOperation(value = "Return a list of book copies")
+    public List<ReturnBookResponseDto> returnBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
-        return librarianService.returnBooks(scannedRFIDBooksRequestDto);
+        return librarianService.returnBookCopies(scannedRFIDCopiesRequestDto);
     }
 
     @GetMapping("/overdue/{patronId}")
     @ApiOperation(value = "return a list of overdue books based on borrower")
-    public List<BookResponseDto> getOverdueBooksByBorrower(@PathVariable int patronId)
+    public List<BookResponseDto> getOverdueCopiesByBorrower(@PathVariable int patronId)
     {
         return librarianService.getOverdueBooksByBorrower(patronId);
     }

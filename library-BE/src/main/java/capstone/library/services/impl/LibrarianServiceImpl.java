@@ -1,6 +1,6 @@
 package capstone.library.services.impl;
 
-import capstone.library.dtos.request.ScannedRFIDBooksRequestDto;
+import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.dtos.response.CheckoutBookResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
@@ -54,30 +54,30 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<CheckoutBookResponseDto> checkout(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    public List<CheckoutBookResponseDto> checkout(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         List<CheckoutBookResponseDto> checkoutBookResponseDtos = new ArrayList<>();
-        List<String> rfidTags = scannedRFIDBooksRequestDto.getBookRfidTags();
+        List<String> rfidTags = scannedRFIDCopiesRequestDto.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
-        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(scannedRFIDBooksRequestDto.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
+        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(scannedRFIDCopiesRequestDto.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
         //Return 404 if no patron with 'getLibrarianId' is found
         if (librarianOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
                     "Librarian",
-                    "Librarian with id: " + scannedRFIDBooksRequestDto.getPatronId() + NOT_FOUND);
+                    "Librarian with id: " + scannedRFIDCopiesRequestDto.getPatronId() + NOT_FOUND);
         }
         Account issuingLibrarian = librarianOptional.get();
         /*========================*/
 
         /*Get the borrowing patron to add to borrowed_by in book_borrowing table*/
-        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(scannedRFIDBooksRequestDto.getPatronId(), RoleIdEnum.PATRON.getRoleId());
+        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(scannedRFIDCopiesRequestDto.getPatronId(), RoleIdEnum.PATRON.getRoleId());
         //Return 404 if no patron with 'patronId' is found
         if (patronOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
-                    "Patron", "Patron with id: " + scannedRFIDBooksRequestDto.getPatronId() + NOT_FOUND);
+                    "Patron", "Patron with id: " + scannedRFIDCopiesRequestDto.getPatronId() + NOT_FOUND);
         }
         Account borrowingPatron = patronOptional.get();
         /*========================*/
@@ -142,6 +142,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 copyDto.setDueDate(dueAt.toString());
                 copyDto.setTitle(bookCopy.getBook().getTitle());
                 copyDto.setSubtitle(bookCopy.getBook().getSubtitle());
+                copyDto.setAuthor(bookCopy.getBook().getBookAuthors().toString());
             } else
             {
                 //Add bookBorrowing to response dto
@@ -157,23 +158,23 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<ReturnBookResponseDto> returnBooks(ScannedRFIDBooksRequestDto scannedRFIDBooksRequestDto)
+    public List<ReturnBookResponseDto> returnBookCopies(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         List<BookCopy> bookCopies = new ArrayList<>();
         List<ReturnBookResponseDto> responseDtos = new ArrayList<>();
 
         /*Get librarian*/
-        Optional<Account> librarianOptional = accountRepository.findById(scannedRFIDBooksRequestDto.getLibrarianId());
+        Optional<Account> librarianOptional = accountRepository.findById(scannedRFIDCopiesRequestDto.getLibrarianId());
         if (librarianOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
-                    "Librarian", "Librarian with id: " + scannedRFIDBooksRequestDto.getLibrarianId() + NOT_FOUND);
+                    "Librarian", "Librarian with id: " + scannedRFIDCopiesRequestDto.getLibrarianId() + NOT_FOUND);
         }
         Account librarian = librarianOptional.get();
 
         /*Check to make sure book copy for each rfidTag is in DB.
          * Only update DB for book copies that are found*/
-        for (String rfidTag : scannedRFIDBooksRequestDto.getBookRfidTags())
+        for (String rfidTag : scannedRFIDCopiesRequestDto.getBookRfidTags())
         {
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.
                     findByRfidAndStatus(rfidTag, BookCopyStatus.BORROWED);

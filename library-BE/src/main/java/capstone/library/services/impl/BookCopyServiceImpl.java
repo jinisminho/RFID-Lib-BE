@@ -1,6 +1,7 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.entities.Account;
 import capstone.library.entities.Book;
 import capstone.library.entities.BookCopy;
@@ -14,14 +15,15 @@ import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.BookCopyTypeRepository;
 import capstone.library.repositories.MyBookRepository;
 import capstone.library.services.BookCopyService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class BookCopyServiceImpl implements BookCopyService
@@ -34,6 +36,8 @@ public class BookCopyServiceImpl implements BookCopyService
     BookCopyTypeRepository bookCopyTypeRepository;
     @Autowired
     AccountRepository accountRepository;
+    @Autowired
+    ObjectMapper objectMapper;
 
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.PREPARING;
 
@@ -72,6 +76,25 @@ public class BookCopyServiceImpl implements BookCopyService
         }
 
         return "Success";
+    }
+
+    @Override
+    public List<CopyResponseDto> getCopiesList(Pageable pageable)
+    {
+        List<CopyResponseDto> response = new ArrayList<>();
+        Page<BookCopy> bookCopiesPage = bookCopyRepository.findAll(pageable);
+        for (BookCopy copy : bookCopiesPage.getContent())
+        {
+            CopyResponseDto dto;
+            dto = objectMapper.convertValue(copy, CopyResponseDto.class);
+            dto.getBook().setAuthors(copy.getBook().getBookAuthors().
+                    toString().replace("]", "").replace("[", ""));
+            dto.getBook().setGenres(copy.getBook().getBookGenres().
+                    toString().replace("]", "").replace("[", ""));
+            dto.setCopyType(copy.getBookCopyType().getName());
+            response.add(dto);
+        }
+        return response;
     }
 
     private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception

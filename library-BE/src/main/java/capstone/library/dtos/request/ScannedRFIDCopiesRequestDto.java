@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @NotNull
-public class ScannedRFIDBooksRequestDto
+public class ScannedRFIDCopiesRequestDto
 {
     private int patronId;
 
