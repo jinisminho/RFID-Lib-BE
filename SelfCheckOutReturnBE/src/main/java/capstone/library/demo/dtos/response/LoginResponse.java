@@ -17,8 +17,6 @@ public class LoginResponse {
 
     private String role;
 
-    private int maxNumberBorrowAllowed;
-
     private boolean isOverDue;
 
 

@@ -1,10 +1,7 @@
 package capstone.library.entities;
 
 import capstone.library.enums.BookCopyStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -42,4 +39,16 @@ public class BookCopy extends Audit
     @JoinColumn(name = "book_copy_type_id")
     private BookCopyType bookCopyType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private Account creator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private Account updater;
+
+    @Transient
+    @Version
+    @Setter(AccessLevel.NONE)
+    private Long version;
 }

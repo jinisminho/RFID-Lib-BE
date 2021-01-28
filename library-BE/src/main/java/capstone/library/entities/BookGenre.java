@@ -33,4 +33,9 @@ public class BookGenre
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
+    @Override
+    public String toString()
+    {
+        return genre.toString();
+    }
 }

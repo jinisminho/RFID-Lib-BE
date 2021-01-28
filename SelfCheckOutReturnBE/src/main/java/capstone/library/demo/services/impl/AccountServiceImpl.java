@@ -35,20 +35,17 @@ public class AccountServiceImpl implements AccountService {
             return null;
         }else{
             Account account = accOpt.get();
-            BorrowPolicy policy = borrowPolicyRepo.findById(1)
-                    .orElseThrow(() -> new ResourceNotFoundException("Cannot find the policy"));
+
             List<BookBorrowing> borrowings = bookBorrowingRepo.findOverDueTransactionByPatronId(account.getId());
             if(borrowings.isEmpty()){
                 return new LoginResponse(account.getId(),
                         account.getEmail(),
                         account.getRole().getName(),
-                        policy.getMaxNumberCopyBorrow(),
                         false);
             }else{
                 return new LoginResponse(account.getId(),
                         account.getEmail(),
                         account.getRole().getName(),
-                        policy.getMaxNumberCopyBorrow(),
                         true);
             }
         }

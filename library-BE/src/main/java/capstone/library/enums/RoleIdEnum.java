@@ -2,19 +2,19 @@ package capstone.library.enums;
 
 public enum RoleIdEnum
 {
-    ROLE_ADMIN(1),
-    ROLE_LIBRARIAN(2),
-    ROLE_PATRON(3);
+    ADMIN(1),
+    LIBRARIAN(2),
+    PATRON(3);
 
-    private int statusCode;
+    private int roleId;
 
-    RoleIdEnum(int statusCode)
+    RoleIdEnum(int roleId)
     {
-        this.statusCode = statusCode;
+        this.roleId = roleId;
     }
 
     public int getRoleId()
     {
-        return statusCode;
+        return roleId;
     }
 }

@@ -26,7 +26,10 @@ public class Book extends Audit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "isbn", length = 20, nullable = false)
+    @Column(name = "img", length = 500, nullable = false)
+    private String img;
+
+    @Column(name = "isbn", length = 20, nullable = false, unique = true)
     private String isbn;
 
     @Column(name = "title", nullable = false)

@@ -55,4 +55,7 @@ public class BookBorrowing {
     @JoinColumn(name = "book_copy_id")
     private BookCopy bookCopy;
 
+    @Column(name = "fine")
+    private Double fine;
+
 }

@@ -13,9 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @NotNull
-public class BookCheckoutRequestDto
+public class ScannedRFIDCopiesRequestDto
 {
-    @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")
     private int patronId;
 
     @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")

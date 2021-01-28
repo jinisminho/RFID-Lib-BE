@@ -35,10 +35,13 @@ public class BookBorrowing {
     private LocalDateTime extendedAt;
 
     @Column(name = "extend_index")
-    private int extendIndex;
+    private int extendIndex = 0;
 
     @Column(name = "lost_at")
     private LocalDateTime lostAt;
+
+    @Column(name = "fine")
+    private double fine = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowed_by")

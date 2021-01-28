@@ -51,4 +51,8 @@ public class Account extends Audit {
 
     @OneToOne(mappedBy = "account", cascade = CascadeType.PERSIST)
     private Profile profile;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patron_type_id")
+    private PatronType patronType;
 }

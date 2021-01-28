@@ -30,6 +30,8 @@ public class AccountDetailResponseDto
 
     private ProfileDto profile;
 
+    private PatronTypeDto patronType;
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -48,6 +50,13 @@ public class AccountDetailResponseDto
     private static class RoleDto
     {
         private int id;
+        private String name;
+    }
+
+    private static class PatronTypeDto
+    {
+        private Integer id;
+
         private String name;
     }
 }
