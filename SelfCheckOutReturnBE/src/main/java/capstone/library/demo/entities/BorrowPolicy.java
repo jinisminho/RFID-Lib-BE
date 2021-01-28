@@ -1,5 +1,6 @@
 package capstone.library.demo.entities;
 
+import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class BorrowPolicy extends Audit{
     @Column(name="due_duration",nullable = false)
     private int dueDuration;
 
-    @Column(name="max_number_copy_borrow",nullable = false)
+    @Column(name="max_borrow_number",nullable = false)
     private int maxNumberCopyBorrow;
 
     @Column(name = "max_extend_time",nullable = false)
@@ -36,4 +37,12 @@ public class BorrowPolicy extends Audit{
 
     @Column(name = "policy_form_url")
     private String policyFormUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patron_type_id")
+    private PatronType patronType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_type_id")
+    private BookCopyType bookCopyType;
 }

@@ -26,8 +26,13 @@ public class BookBorrowingController {
         return bookBorrowingService.checkout(request.getPatronId(), request.getBookCodeList());
     }
 
-    @PostMapping("/return")
-    public List<BookReturnResponse> returnBook(@RequestBody @NotNull List<String> bookCodeList){
-        return bookBorrowingService.returnBook(bookCodeList);
+    @PostMapping("/returnBatch")
+    public List<BookReturnResponse> returnBookByBatch(@RequestBody @NotNull List<String> bookCodeList){
+        return bookBorrowingService.returnBookByBatch(bookCodeList);
+    }
+
+    @PostMapping("/returnOne")
+    public BookReturnResponse returnBookOneByOne(@RequestBody String bookRfid){
+        return bookBorrowingService.returnBookOneByOne(bookRfid);
     }
 }
