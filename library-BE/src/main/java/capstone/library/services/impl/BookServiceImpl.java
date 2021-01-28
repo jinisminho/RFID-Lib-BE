@@ -1,7 +1,7 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.BookCopyDto;
-import capstone.library.dtos.request.AddBookRequestDto;
+import capstone.library.dtos.request.CreateBookRequestDto;
 import capstone.library.dtos.request.UpdateBookInfoRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
@@ -105,6 +105,9 @@ public class BookServiceImpl implements BookService
         return responseDtos;
     }
 
+    /*This API can be reuse for other use cases.
+     * Eg: update img, update book authors, update book genres, etc
+     * request DTO can be modified by FE to match their requirements*/
     @Override
     @Transactional
     public String updateBookInfo(UpdateBookInfoRequestDto request)
@@ -114,11 +117,14 @@ public class BookServiceImpl implements BookService
         {
             Book book = bookOptional.get();
 
+            /*Validate and set data from requestDto to new Book*/
             setBasicBookInfo(book, request);
 
             Set<BookAuthor> bookAuthorSet = new HashSet<>();
             Set<BookGenre> bookGenreSet = new HashSet<>();
 
+            /*Remove old book authors and book relationships
+             * to create new book authors and book relationships from the request*/
             if (request.getAuthorIds() != null)
             {
                 setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
@@ -136,6 +142,8 @@ public class BookServiceImpl implements BookService
                 book.setBookAuthors(bookAuthorSet);
             }
 
+            /*Remove old book genres and book relationships
+             * to create new book genres and book relationships from the request*/
             if (request.getGenreIds() != null)
             {
                 setBookGenre(book, bookGenreSet, request.getGenreIds());
@@ -206,6 +214,9 @@ public class BookServiceImpl implements BookService
         }
     }
 
+    /*Validate request fields before saving request to database.
+     * I didn't validate on DTO because this request dto can be modified for other use cases,
+     * making this API reusable*/
     private void setBasicBookInfo(Book book, UpdateBookInfoRequestDto request)
     {
         if (request.getTitle() != null && !request.getTitle().isBlank())
@@ -220,11 +231,11 @@ public class BookServiceImpl implements BookService
         {
             book.setPublisher(request.getPublisher());
         }
-        if (request.getPublishYear() != null && book.getPublishYear() != request.getPublishYear())
+        if (request.getPublishYear() != null && !book.getPublishYear().equals(request.getPublishYear()))
         {
             book.setPublishYear(request.getPublishYear());
         }
-        if (request.getEdition() != null && book.getEdition() != request.getEdition())
+        if (request.getEdition() != null && !book.getEdition().equals(request.getEdition()) && request.getEdition() > 0)
         {
             book.setEdition(request.getEdition());
         }
@@ -232,7 +243,7 @@ public class BookServiceImpl implements BookService
         {
             book.setLanguage(request.getLanguage());
         }
-        if (request.getPageNumber() != null && book.getPageNumber() != request.getPageNumber())
+        if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0)
         {
             book.setPageNumber(request.getPageNumber());
         }
@@ -240,7 +251,7 @@ public class BookServiceImpl implements BookService
         {
             book.setCallNumber(request.getCallNumber());
         }
-        if (request.getNumberOfCopy() != null && book.getNumberOfCopy() != request.getNumberOfCopy())
+        if (request.getNumberOfCopy() != null && !book.getNumberOfCopy().equals(request.getNumberOfCopy()))
         {
             book.setNumberOfCopy(request.getNumberOfCopy());
         }
@@ -252,7 +263,7 @@ public class BookServiceImpl implements BookService
 
     @Override
     @Transactional
-    public String addBook(AddBookRequestDto request)
+    public String addBook(CreateBookRequestDto request)
     {
         if (request.getPageNumber() == 0)
         {

@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddBookRequestDto
+public class CreateBookRequestDto
 {
     @NotNull(message = "{AddBookRequestDto.isbn.notNull}")
     @Length(min = 10, max = 13, message = "{AddBookRequestDto.isbn.length}")

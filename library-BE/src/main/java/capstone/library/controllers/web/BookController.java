@@ -1,7 +1,7 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.common.ErrorDto;
-import capstone.library.dtos.request.AddBookRequestDto;
+import capstone.library.dtos.request.CreateBookRequestDto;
 import capstone.library.dtos.request.UpdateBookInfoRequestDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
@@ -72,7 +72,7 @@ public class BookController
     }
 
     @PostMapping("/add")
-    public String addBook(@RequestBody @Valid AddBookRequestDto request)
+    public String addBook(@RequestBody @Valid CreateBookRequestDto request)
     {
         return bookService.addBook(request);
     }
@@ -84,7 +84,7 @@ public class BookController
     }
 
     @PostMapping("/update")
-    public String updateBookInfo(@RequestBody UpdateBookInfoRequestDto request)
+    public String updateBookInfo(@RequestBody @Valid UpdateBookInfoRequestDto request)
     {
         return bookService.updateBookInfo(request);
     }

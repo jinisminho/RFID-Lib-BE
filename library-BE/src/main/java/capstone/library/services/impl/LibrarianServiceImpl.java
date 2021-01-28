@@ -10,7 +10,9 @@ import capstone.library.entities.BookCopy;
 import capstone.library.entities.BorrowPolicy;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
+import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
+import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookBorrowingRepository;
@@ -19,6 +21,7 @@ import capstone.library.repositories.BorrowPolicyRepository;
 import capstone.library.services.LibrarianService;
 import capstone.library.util.tools.OverdueBooksFinder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -229,8 +232,8 @@ public class LibrarianServiceImpl implements LibrarianService
                 bookBorrowing.setFine(fine);
                 bookBorrowingRepository.save(bookBorrowing);
 
-                /*Update book_copy status from BORROWED to AVAILABLE if its Book is still IN_CIRCULATION
-                 * Else update from BORROWED to OUT_OF_CIRCULATION*/
+                /*Update book_copy status from BORROWED to AVAILABLE if its Book is IN_CIRCULATION
+                 * Else if the Book is OUT_OF_CIRCULATION update from BORROWED to OUT_OF_CIRCULATION*/
                 if (bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
                 {
                     bookCopy.setStatus(BookCopyStatus.AVAILABLE);
@@ -238,7 +241,16 @@ public class LibrarianServiceImpl implements LibrarianService
                 {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
                 }
-                bookCopyRepository.save(bookCopy);
+
+                //Insert return transaction to database
+                try
+                {
+                    bookCopyRepository.save(bookCopy);
+                } catch (Exception e)
+                {
+                    throw new CustomException(
+                            HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                }
 
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
                 dto.setTitle(bookCopy.getBook().getTitle());
