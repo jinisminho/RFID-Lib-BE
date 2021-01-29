@@ -7,13 +7,14 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateBookInfoRequestDto
+public class UpdateBookInfoRequestDto implements Serializable
 {
     @NotNull(message = "{id.notNull}")
     private int id;

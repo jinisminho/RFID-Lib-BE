@@ -12,4 +12,5 @@ public interface BookCopyService
 
     List<CopyResponseDto> getCopiesList(Pageable pageable);
 
+    String tagCopy(String barcode, String rfid);
 }

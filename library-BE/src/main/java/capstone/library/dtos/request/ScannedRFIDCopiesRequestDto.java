@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @NotNull
-public class ScannedRFIDCopiesRequestDto
+public class ScannedRFIDCopiesRequestDto implements Serializable
 {
     private int patronId;
 

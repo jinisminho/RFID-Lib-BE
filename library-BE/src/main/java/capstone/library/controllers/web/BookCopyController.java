@@ -28,4 +28,11 @@ public class BookCopyController
     {
         return bookCopyService.getCopiesList(pageable);
     }
+
+    @PostMapping("/tag")
+    public String tagCopy(String barcode, String rfid)
+    {
+        return bookCopyService.tagCopy(barcode, rfid);
+    }
+
 }

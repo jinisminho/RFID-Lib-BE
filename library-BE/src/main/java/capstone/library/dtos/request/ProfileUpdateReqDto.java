@@ -9,12 +9,14 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileUpdateReqDto {
+public class ProfileUpdateReqDto implements Serializable
+{
 
     @NotNull(message = "{phone.notNull}")
     @Length(max = 10, message = "{phone.maxLength}")
