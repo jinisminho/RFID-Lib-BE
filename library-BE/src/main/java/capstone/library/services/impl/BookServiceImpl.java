@@ -102,6 +102,7 @@ public class BookServiceImpl implements BookService
             dto.setBookId(book.getId());
             responseDtos.add(dto);
         }
+
         return responseDtos;
     }
 
@@ -302,6 +303,7 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
+    @Transactional
     public String updateBookStatus(int id, BookStatus status)
     {
         Optional<Book> bookOptional = myBookRepository.findById(id);
@@ -327,6 +329,27 @@ public class BookServiceImpl implements BookService
         } else
         {
             throw new ResourceNotFoundException("Book", "Book [" + id + "] is not found");
+        }
+    }
+
+    /*Only change status of copies that are "AVAILABLE"*/
+    private void updateCopiesStatusOnBookStatusChange(Book book)
+    {
+        List<BookCopy> bookCopies = bookCopyRepository.findByBookId(book.getId());
+        for (BookCopy bookCopy : bookCopies)
+        {
+            if (bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE))
+            {
+                if (book.getStatus().equals(BookStatus.NOT_ALLOWED_TO_BORROWED))
+                {
+                    bookCopy.setStatus(BookCopyStatus.NOT_ALLOWED_TO_BORROWED);
+                }
+                if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
+                {
+                    bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+                }
+            }
+
         }
     }
 
