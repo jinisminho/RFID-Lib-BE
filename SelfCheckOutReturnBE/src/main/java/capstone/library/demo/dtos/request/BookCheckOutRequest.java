@@ -15,13 +15,13 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@NotNull
+@NotNull(message = "{BookCheckOutRequest.body.notNull}")
 public class BookCheckOutRequest {
 
     @NotNull(message = "{BookCheckOutRequest.patronId.notNull}")
     private int patronId;
 
-    @NotNull
+    @NotNull(message = "{BookCheckOutRequest.bookCodeList.notNull}")
     private List<CheckOutBookRequest> bookCodeList;
 
 }
