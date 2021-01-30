@@ -1,6 +1,7 @@
 package capstone.library.demo.controllers;
 
 import capstone.library.demo.dtos.request.BookCheckOutRequest;
+import capstone.library.demo.dtos.request.ReturnOneRequest;
 import capstone.library.demo.dtos.response.BookCheckOutResponse;
 import capstone.library.demo.dtos.response.BookReturnResponse;
 import capstone.library.demo.services.BookBorrowingService;
@@ -32,7 +33,7 @@ public class BookBorrowingController {
     }
 
     @PostMapping("/returnOne")
-    public BookReturnResponse returnBookOneByOne(@RequestBody String bookRfid){
-        return bookBorrowingService.returnBookOneByOne(bookRfid);
+    public BookReturnResponse returnBookOneByOne(@RequestBody @Valid ReturnOneRequest request){
+        return bookBorrowingService.returnBookOneByOne(request.getBookRfid());
     }
 }
