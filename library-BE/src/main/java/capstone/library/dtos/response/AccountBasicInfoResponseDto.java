@@ -1,16 +1,17 @@
 package capstone.library.dtos.response;
 
-import capstone.library.enums.Gender;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @ApiModel("Account basic info")
-public class AccountBasicInfoResponseDto
+public class AccountBasicInfoResponseDto implements Serializable
 {
     private int id;
 

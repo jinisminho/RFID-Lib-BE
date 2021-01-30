@@ -6,13 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCopiesRequestDto
+public class CreateCopiesRequestDto implements Serializable
 {
     @NotNull(message = "{CreateCopiesRequestDto.bookId.notNull}")
     int bookId;

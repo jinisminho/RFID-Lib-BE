@@ -7,6 +7,7 @@ import capstone.library.entities.Book;
 import capstone.library.entities.BookCopy;
 import capstone.library.entities.BookCopyType;
 import capstone.library.enums.BookCopyStatus;
+import capstone.library.enums.BookStatus;
 import capstone.library.enums.ErrorStatus;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
@@ -39,6 +40,9 @@ public class BookCopyServiceImpl implements BookCopyService
     @Autowired
     ObjectMapper objectMapper;
 
+    private static final String COPY_NOT_FOUND = "Cannot find this book copy";
+    private static final String BOOK_COPY = "Book copy";
+    private static final String BOOK = "Book";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.PREPARING;
 
     @Override
@@ -72,7 +76,8 @@ public class BookCopyServiceImpl implements BookCopyService
         } catch (Exception e)
         {
             throw new CustomException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
         }
 
         return "Success";
@@ -95,6 +100,46 @@ public class BookCopyServiceImpl implements BookCopyService
             response.add(dto);
         }
         return response;
+    }
+
+    @Override
+    public String tagCopy(String barcode, String rfid)
+    {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
+        if (bookCopyOptional.isPresent())
+        {
+            BookCopy bookCopy = bookCopyOptional.get();
+            Optional<Book> bookOptional = myBookRepository.findById(bookCopy.getBook().getId());
+            if (bookOptional.isPresent())
+            {
+                Book book = bookOptional.get();
+                bookCopy.setRfid(rfid);
+                if (book.getStatus().equals(BookStatus.IN_CIRCULATION))
+                {
+                    bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+                } else if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
+                {
+                    bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+                } else if (book.getStatus().equals(BookStatus.NOT_ALLOWED_TO_BORROWED))
+                {
+                    bookCopy.setStatus(BookCopyStatus.NOT_ALLOWED_TO_BORROWED);
+                }
+                try
+                {
+                    bookCopyRepository.save(bookCopy);
+                } catch (Exception e)
+                {
+                    throw new CustomException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                }
+            }
+
+        } else
+        {
+            throw new ResourceNotFoundException(BOOK_COPY, COPY_NOT_FOUND + ": " + barcode);
+        }
+        return "Success";
     }
 
     private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception

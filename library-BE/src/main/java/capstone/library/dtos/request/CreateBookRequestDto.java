@@ -7,13 +7,14 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateBookRequestDto
+public class CreateBookRequestDto implements Serializable
 {
     @NotNull(message = "{AddBookRequestDto.isbn.notNull}")
     @Length(min = 10, max = 13, message = "{AddBookRequestDto.isbn.length}")
