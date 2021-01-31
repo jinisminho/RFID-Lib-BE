@@ -1,6 +1,5 @@
 package capstone.library.entities;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +34,10 @@ public class BookBorrowing {
     private LocalDateTime extendedAt;
 
     @Column(name = "extend_index")
-    private Integer extendIndex;
+    private int extendIndex;
+
+    @Column(name = "lost_at")
+    private LocalDateTime lostAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowed_by")
@@ -52,5 +54,8 @@ public class BookBorrowing {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_copy_id")
     private BookCopy bookCopy;
+
+    @Column(name = "fine")
+    private Double fine;
 
 }

@@ -9,36 +9,38 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateLibrarianRequestDto
+public class CreateLibrarianRequestDto implements Serializable
 {
-    @NotNull(message = "CreateLibrarianRequestDto.email.notNull")
-    @Email(message = "CreateLibrarianRequestDto.email.emailFormat")
+    @NotNull(message = "{CreateLibrarianRequestDto.email.notNull}")
+    @Email(message = "{CreateLibrarianRequestDto.email.emailFormat}")
     private String email;
 
-    @NotNull(message = "CreateLibrarianRequestDto.password.notNull")
+    @NotNull(message = "{CreateLibrarianRequestDto.password.notNull}")
     private String password;
 
-    @Length(max = 500, message = "CreateLibrarianRequestDto.avatar.maxLength")
+    @Length(max = 500, message = "{CreateLibrarianRequestDto.avatar.maxLength}")
     private String avatar;
 
-    @NotNull(message = "CreateLibrarianRequestDto.creator.notNull")
+    @NotNull(message = "{CreateLibrarianRequestDto.creator.notNull}")
     private int creator;
 
-    @NotNull(message = "CreateLibrarianRequestDto.updater.notNull")
+    @NotNull(message = "{CreateLibrarianRequestDto.updater.notNull}")
     private int updater;
 
-    @NotNull(message = "CreateLibrarianRequestDto.fullName.notNull")
-    @Length(max = 80, message = "CreateLibrarianRequestDto.fullName.maxLength")
+    @NotNull(message = "{CreateLibrarianRequestDto.fullName.notNull}")
+    @Length(max = 80, message = "{CreateLibrarianRequestDto.fullName.maxLength}")
     private String fullName;
 
-    @NotNull(message = "{phone.notNull}")
-    @Length(min = 10, max = 10, message = "{phone.maxLength}")
+    @NotNull(message = "{CreateLibrarianRequestDto.phone.notNull}")
+    @Length(min = 10, max = 10, message = "{CreateLibrarianRequestDto.phone.length}")
     private String phone;
 
+    @NotNull(message = "{CreateLibrarianRequestDto.gender.notNull}")
     private Gender gender;
 }

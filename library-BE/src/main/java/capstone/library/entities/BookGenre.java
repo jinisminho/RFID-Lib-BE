@@ -18,7 +18,8 @@ import javax.persistence.*;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class BookGenre {
+public class BookGenre
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +33,9 @@ public class BookGenre {
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
+    @Override
+    public String toString()
+    {
+        return genre.toString();
+    }
 }

@@ -1,6 +1,6 @@
 package capstone.library.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,10 +37,12 @@ public class Account extends Audit {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
+    @JsonBackReference
     private Account creator;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
+    @JsonBackReference
     private Account updater;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -49,4 +51,8 @@ public class Account extends Audit {
 
     @OneToOne(mappedBy = "account", cascade = CascadeType.PERSIST)
     private Profile profile;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patron_type_id")
+    private PatronType patronType;
 }

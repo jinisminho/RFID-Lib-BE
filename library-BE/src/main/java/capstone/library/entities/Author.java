@@ -19,7 +19,8 @@ import java.util.Set;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class Author {
+public class Author
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,11 +29,12 @@ public class Author {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},mappedBy = "author")
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "author")
     public Set<BookAuthor> bookAuthors;
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return name;
     }
 }

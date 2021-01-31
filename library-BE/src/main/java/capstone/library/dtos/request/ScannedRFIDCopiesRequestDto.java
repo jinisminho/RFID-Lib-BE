@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
@@ -13,9 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @NotNull
-public class BookCheckoutRequestDto
+public class ScannedRFIDCopiesRequestDto implements Serializable
 {
-    @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")
     private int patronId;
 
     @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")

@@ -7,11 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @ApiModel("Account detail")
-public class AccountDetailResponseDto
+public class AccountDetailResponseDto implements Serializable
 {
     private int id;
 
@@ -26,13 +28,11 @@ public class AccountDetailResponseDto
 
     private boolean isActive;
 
-    private AccountDto creator;
-
-    private AccountDto updater;
-
     private RoleDto role;
 
     private ProfileDto profile;
+
+    private PatronTypeDto patronType;
 
     @Getter
     @Setter
@@ -49,17 +49,16 @@ public class AccountDetailResponseDto
     @Getter
     @Setter
     @NoArgsConstructor
-    private static class AccountDto
-    {
-        private int id;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
     private static class RoleDto
     {
         private int id;
+        private String name;
+    }
+
+    private static class PatronTypeDto
+    {
+        private Integer id;
+
         private String name;
     }
 }

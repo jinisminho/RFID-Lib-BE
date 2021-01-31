@@ -1,12 +1,7 @@
 package capstone.library.entities;
 
 import capstone.library.enums.BookCopyStatus;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -16,10 +11,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "book_copy")
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id")
-public class BookCopy extends Audit {
+public class BookCopy extends Audit
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +21,7 @@ public class BookCopy extends Audit {
     @Column(name = "barcode", length = 100, nullable = false)
     private String barcode;
 
-    @Column(name = "rfid", length = 80)
+    @Column(name = "rfid", length = 80, nullable = false)
     private String rfid;
 
     @Column(name = "price", nullable = false)
@@ -43,10 +36,19 @@ public class BookCopy extends Audit {
     private Book book;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_type_id")
+    private BookCopyType bookCopyType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private Account creator;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private Account updater;
+
+    @Transient
+    @Version
+    @Setter(AccessLevel.NONE)
+    private Long version;
 }

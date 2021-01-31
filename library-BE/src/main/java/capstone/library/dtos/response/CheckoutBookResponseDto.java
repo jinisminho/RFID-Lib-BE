@@ -5,15 +5,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookCheckoutResponseDto
+public class CheckoutBookResponseDto implements Serializable
 {
     private String rfid;
 
     private String title;
+
+    private String subtitle;
+
+    private String author;
 
     private boolean ableToBorrow;
 
