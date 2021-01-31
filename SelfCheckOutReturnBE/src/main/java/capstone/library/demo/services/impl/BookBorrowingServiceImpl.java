@@ -42,6 +42,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
     @Autowired
     PatronTypeRepository patronTypeRepo;
 
+    @Autowired
+    FeePolicyRepository feePolicyRepo;
+
     @Override
     @Transactional
     public List<BookCheckOutResponse> checkout(int patronId, List<CheckOutBookRequest> bookCodeList) {
@@ -73,12 +76,19 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 dto.setAbleToBorrow(true);
                 dto.setDueDate(dueDate.toString());
                 dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(now));
+
+                //get fee policy
+                FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreateAtAsc()
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
                 BookBorrowing borrowing = new BookBorrowing();
                 borrowing.setBorrower(patron);
                 borrowing.setBorrowedAt(now);
                 borrowing.setDueAt(dueDate);
                 borrowing.setIssued_by(patron);
                 borrowing.setBookCopy(copy);
+                borrowing.setFeePolicy(feePolicy);
                 bookBorrowingRepo.save(borrowing);
             }else{
                 dto.setAbleToBorrow(false);
@@ -117,15 +127,12 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             int overdueDays = LocalDate.now().compareTo(borrowing.getDueAt());
             //check if overdue : not allow to return
             if(overdueDays > 0){
-                BorrowPolicy policy = borrowPolicyRepo
-                        .findByPatronTypeIdAndBookCopyTypeId(borrowing.getBorrower().getPatronType().getId(),
-                                copy.getBookCopyType().getId())
-                        .orElseThrow(() -> new InvalidPolicyException("Cannot find policy"));
+                FeePolicy feePolicy = borrowing.getFeePolicy();
 
-                double fine = overdueDays * policy.getOverdueFinePerDay();
-                double bookPrice = copy.getPrice();
-                if(fine >= bookPrice){
-                    fine = bookPrice;
+                double fine = overdueDays * feePolicy.getOverdueFinePerDay();
+                double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine();
+                if(fine >= maxFine){
+                    fine = maxFine;
                 }
                 dto.setOverdueDay(overdueDays);
                 dto.setFine(fine);

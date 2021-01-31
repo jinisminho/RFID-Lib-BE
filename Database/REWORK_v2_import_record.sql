@@ -126,24 +126,31 @@ insert into borrow_policy (	id,
     max_borrow_number,
     max_extend_time,
     extend_due_duration,
-    overdue_fine_per_day,
 	created_at,
 	updated_at,
     patron_type_id,
     book_copy_type_id
     ) values
-(1, 7, 4, 2, 7, 2000, now(), now(), 1, 1 ),
-(2, 7, 4, 2, 7, 2000, now(), now(), 1, 2 ),
-(3, 7, 4, 2, 7, 2000, now(), now(), 1, 3 ),
-(4, 7, 4, 2, 7, 2000, now(), now(), 2, 1 ),
-(5, 7, 4, 2, 7, 2000, now(), now(), 2, 2 ),
-(6, 7, 4, 2, 7, 2000, now(), now(), 2, 3 );
+(1, 7, 4, 2, 7,  now(), now(), 1, 1 ),
+(2, 7, 4, 2, 7,  now(), now(), 1, 2 ),
+(3, 7, 4, 2, 7,  now(), now(), 1, 3 ),
+(4, 7, 4, 2, 7,  now(), now(), 2, 1 ),
+(5, 7, 4, 2, 7,  now(), now(), 2, 2 ),
+(6, 7, 4, 2, 7, now(), now(), 2, 3 );
 
 insert into book_copy_position (id, floor, shelf, from_call_number, to_call_number, book_copy_type_id) values
 (1, 1, 'Henry', 'A1', 'B1', 1),
 (2, 1, 'Lucy', 'A1', 'B1', 2),
 (3, 1, 'Mars', 'A1', 'B1', 3);
 
+insert into fee_policy (id,
+    overdue_fine_per_day,
+    max_percentage_overde_fine,
+    document_processing_fee,
+    missing_doc_multiplier,
+    created_at
+) values
+(1, 2000, 100, 30000, 5, now());
 
 
 
