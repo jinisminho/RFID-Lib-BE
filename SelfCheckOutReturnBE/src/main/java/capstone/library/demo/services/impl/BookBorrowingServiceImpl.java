@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -78,7 +79,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(now));
 
                 //get fee policy
-                FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreateAtAsc()
+                FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreatedAtAsc()
                         .stream()
                         .findFirst()
                         .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
@@ -124,17 +125,17 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             BookBorrowing borrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
                     .orElseThrow(() -> new ResourceNotFoundException(("Cannot find borrowing transaction with book id" + copy.getId())));
             dto.setPatron(borrowing.getBorrower().getEmail());
-            int overdueDays = LocalDate.now().compareTo(borrowing.getDueAt());
+            long overdueDays = Duration.between(borrowing.getDueAt().atStartOfDay(), LocalDate.now().atStartOfDay()).toDays();
             //check if overdue : not allow to return
             if(overdueDays > 0){
                 FeePolicy feePolicy = borrowing.getFeePolicy();
 
                 double fine = overdueDays * feePolicy.getOverdueFinePerDay();
-                double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine();
+                double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine()/100;
                 if(fine >= maxFine){
                     fine = maxFine;
                 }
-                dto.setOverdueDay(overdueDays);
+                dto.setOverdueDay((int) overdueDays);
                 dto.setFine(fine);
                 dto.setStatus(BookReturnStatus.OVERDUE);
             }
