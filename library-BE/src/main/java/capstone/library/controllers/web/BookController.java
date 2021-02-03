@@ -23,7 +23,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/book")
@@ -66,7 +65,7 @@ public class BookController
     }
 
     @GetMapping("/all")
-    public List<BookResponseDto> findAllBooks(Pageable pageable)
+    public Page<BookResponseDto> findAllBooks(Pageable pageable)
     {
         return bookService.findAllBooks(pageable);
     }

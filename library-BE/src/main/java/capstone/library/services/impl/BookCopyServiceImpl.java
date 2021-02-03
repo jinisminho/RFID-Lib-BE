@@ -19,6 +19,7 @@ import capstone.library.services.BookCopyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,7 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public List<CopyResponseDto> getCopiesList(Pageable pageable)
+    public Page<CopyResponseDto> getCopiesList(Pageable pageable)
     {
         List<CopyResponseDto> response = new ArrayList<>();
         Page<BookCopy> bookCopiesPage = bookCopyRepository.findAll(pageable);
@@ -99,7 +100,7 @@ public class BookCopyServiceImpl implements BookCopyService
             dto.setCopyType(copy.getBookCopyType().getName());
             response.add(dto);
         }
-        return response;
+        return new PageImpl<CopyResponseDto>(response, pageable, response.size());
     }
 
     @Override

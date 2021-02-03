@@ -23,8 +23,7 @@ public class DateTimeUtils
     }
 
     /*https://howtodoinjava.com/java/date-time/calculate-business-days/*/
-    private long countBusinessDaysBetween(LocalDate today, LocalDate dueDate,
-                                          Optional<List<LocalDate>> holidaysOptional)
+    private long countBusinessDaysBetween(LocalDate today, LocalDate dueDate, Optional<List<LocalDate>> holidaysOptional)
     {
         List<LocalDate> holidays = new ArrayList<>();
 

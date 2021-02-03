@@ -3,6 +3,7 @@ package capstone.library.services.impl;
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.dtos.response.CheckoutBookResponseDto;
+import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,30 +55,30 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<CheckoutBookResponseDto> checkout(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
+    public List<CheckoutBookResponseDto> checkout(ScannedRFIDCopiesRequestDto request)
     {
         List<CheckoutBookResponseDto> checkoutBookResponseDtos = new ArrayList<>();
-        List<String> rfidTags = scannedRFIDCopiesRequestDto.getBookRfidTags();
+        List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
-        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(scannedRFIDCopiesRequestDto.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
+        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
         //Return 404 if no patron with 'getLibrarianId' is found
         if (librarianOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
                     "Librarian",
-                    "Librarian with id: " + scannedRFIDCopiesRequestDto.getPatronId() + NOT_FOUND);
+                    "Librarian with id: " + request.getPatronId() + NOT_FOUND);
         }
         Account issuingLibrarian = librarianOptional.get();
         /*========================*/
 
         /*Get the borrowing patron to add to borrowed_by in book_borrowing table*/
-        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(scannedRFIDCopiesRequestDto.getPatronId(), RoleIdEnum.PATRON.getRoleId());
+        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.PATRON.getRoleId());
         //Return 404 if no patron with 'patronId' is found
         if (patronOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
-                    "Patron", "Patron with id: " + scannedRFIDCopiesRequestDto.getPatronId() + NOT_FOUND);
+                    "Patron", "Patron with id: " + request.getPatronId() + NOT_FOUND);
         }
         Account borrowingPatron = patronOptional.get();
         /*========================*/
@@ -117,6 +119,13 @@ public class LibrarianServiceImpl implements LibrarianService
                 {
                     int borrowDuration = policyOptional.get().getDueDuration();
                     dueAt = dueAt.plusDays(borrowDuration);
+                    /*overdue days excludes saturdays and sundays
+	                    eg: If due date is on Sunday then when return on Monday, overdue days = 0*/
+                    while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY))
+                    {
+                        dueAt = dueAt.plusDays(1);
+                    }
+                    /*==========================*/
                     if (bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE))
                     {
                         //Update book copy status in db
@@ -304,5 +313,121 @@ public class LibrarianServiceImpl implements LibrarianService
     public List<BookResponseDto> getOverdueBooksByBorrower(int patronId)
     {
         return overdueBooksFinder.findOverdueBooksByPatronId(patronId);
+    }
+
+    @Override
+    public CheckoutPolicyValidationResponseDto validateCheckoutPolicy(ScannedRFIDCopiesRequestDto request)
+    {
+        CheckoutPolicyValidationResponseDto response = new CheckoutPolicyValidationResponseDto();
+        boolean haveOverdueCopies = false;
+        boolean violatePolicy = false;
+
+        /*Get the librarian to add to issued_by in book_borrowing table*/
+        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
+        //Return 404 if no patron with 'getLibrarianId' is found
+        if (librarianOptional.isEmpty())
+        {
+            throw new ResourceNotFoundException(
+                    "Librarian",
+                    "Librarian with id: " + request.getPatronId() + NOT_FOUND);
+        }
+        /*========================*/
+
+        /*Get the borrowing patron.
+         * Check if he/she is keeping any overdue books*/
+        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.PATRON.getRoleId());
+        //Return 404 if no patron with 'patronId' is found
+        if (patronOptional.isEmpty())
+        {
+            throw new ResourceNotFoundException(
+                    "Patron", "Patron with id: " + request.getPatronId() + NOT_FOUND);
+        }
+        Account borrowingPatron = patronOptional.get();
+        //Get patron borrowings
+        List<BookBorrowing> bookBorrowings = bookBorrowingRepository.findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(borrowingPatron.getId());
+        for (BookBorrowing bookBorrowing : bookBorrowings)
+        {
+            LocalDate dueAt = bookBorrowing.getDueAt();
+            long overdueDays = dateTimeUtils.getOverdueDays(LocalDate.now(), dueAt);
+            if (overdueDays > 0)
+            {
+                haveOverdueCopies = true;
+            }
+        }
+        /*========================*/
+
+        /*Get the latest Fee Policy*/
+        List<FeePolicy> feePolicies = feePolicyRepository.findAllByOrderByCreatedAtAsc();
+        if (feePolicies.isEmpty())
+        {
+            throw new ResourceNotFoundException(
+                    "Fee Policy", "Fee Policy " + NOT_FOUND);
+        }
+        /*=========================*/
+
+        List<String> rfidTags = request.getBookRfidTags();
+        List<CheckoutBookResponseDto> dtos = new ArrayList<>();
+        for (String rfidTag :
+                rfidTags)
+        {
+            CheckoutBookResponseDto copyDto = new CheckoutBookResponseDto();
+            Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfidTag);
+            if (bookCopyOptional.isPresent())
+            {
+                BookCopy bookCopy = bookCopyOptional.get();
+
+                /*Get borrowing durations (days) from borrowing policy.
+                    Borrowing policy is determined by Book Copy Type and Patron Type.
+                    Calculate the due date by adding borrowing duration (days) to today*/
+                Optional<BorrowPolicy> policyOptional = borrowPolicyRepository.findByPatronTypeIdAndBookCopyTypeId(borrowingPatron.getPatronType().getId(), bookCopy.getBookCopyType().getId());
+                LocalDate dueAt = LocalDate.now();
+                if (policyOptional.isEmpty())
+                {
+                    /*Cannot find borrowing policy means this patron type not allow to borrow this book copy type
+                    Add this book copy as not AbleToBorrow to response List*/
+                    copyDto.setAbleToBorrow(false);
+                    copyDto.setReason(borrowingPatron.getRole().getName() + " cannot borrow this copy");
+                    violatePolicy = true;
+                } else
+                {
+                    int borrowDuration = policyOptional.get().getDueDuration();
+                    dueAt = dueAt.plusDays(borrowDuration);
+                    if (bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE))
+                    {
+                        //Add this book copy as is AbleToBorrow to response List
+                        copyDto.setAbleToBorrow(true);
+                        copyDto.setReason("");
+                    } else
+                    {
+                        //Add this book copy as not AbleToBorrow to response List
+                        copyDto.setAbleToBorrow(false);
+                        copyDto.setReason("Book is not available");
+                    }
+                }
+                /*====================*/
+
+                //Add bookBorrowing to response dto
+                copyDto.setRfid(rfidTag);
+                copyDto.setDueDate(dueAt.toString());
+                copyDto.setTitle(bookCopy.getBook().getTitle());
+                copyDto.setSubtitle(bookCopy.getBook().getSubtitle());
+                String authors = bookCopy.getBook().getBookAuthors().toString();
+                authors = authors.replace("[", "");
+                authors = authors.replace("]", "");
+                copyDto.setAuthor(authors);
+            } else
+            {
+                //Add bookBorrowing to response dto
+                copyDto.setRfid(rfidTag);
+                copyDto.setReason("Cannot find this book in database");
+                copyDto.setDueDate("");
+                copyDto.setTitle("");
+            }
+            dtos.add(copyDto);
+        }
+        response.setViolatePolicy(violatePolicy);
+        response.setHaveOverdueCopies(haveOverdueCopies);
+        response.setContents(dtos);
+        return null;
     }
 }
