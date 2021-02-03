@@ -34,7 +34,7 @@ public class LibrarianController
     }
 
     @PostMapping("/return")
-    @ApiOperation(value = "Return a list of book copies")
+    @ApiOperation(value = "Return (Checkin) a list of book copies")
     public List<ReturnBookResponseDto> returnBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         return librarianService.returnBookCopies(scannedRFIDCopiesRequestDto);
