@@ -88,6 +88,7 @@ create table book_borrowing(
     borrowed_by int,
     issued_by int,
     book_copy_id int,
+    fee_policy_id int, 
 	primary key (id)
 );
 
@@ -178,8 +179,6 @@ create table borrow_policy(
     max_borrow_number int not null,
     max_extend_time int not null,
     extend_due_duration int not null,
-    overdue_fine_per_day double precision not null,
-    policy_form_url varchar(500),
 	created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
     
@@ -198,6 +197,16 @@ create  table book_copy_position (
     book_copy_type_id int,
 	primary key (id)
 ); 
+
+create table fee_policy(
+    id int not null auto_increment,
+    overdue_fine_per_day double precision not null,
+    max_percentage_overdue_fine int not null,
+    document_processing_fee  double precision not null,
+    missing_doc_multiplier int not null,
+    created_at datetime not null default now(),
+	primary key (id)
+);
 
 
 
@@ -303,6 +312,11 @@ alter table book_borrowing
 alter table book_borrowing
 	add constraint FK_borrow_acc_rt
 	foreign key (returned_by) references account (id)
+    ON DELETE SET NULL ON UPDATE CASCADE; 
+    
+alter table book_borrowing
+	add constraint FK_borrow_feePolicy
+	foreign key (fee_policy_id) references fee_policy (id)
     ON DELETE SET NULL ON UPDATE CASCADE; 
 
 

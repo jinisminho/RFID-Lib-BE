@@ -32,12 +32,6 @@ public class BorrowPolicy extends Audit{
     @Column(name = "extend_due_duration",nullable = false)
     private int extendDueDuration;
 
-    @Column(name = "overdue_fine_per_day",nullable = false)
-    private double overdueFinePerDay;
-
-    @Column(name = "policy_form_url")
-    private String policyFormUrl;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patron_type_id")
     private PatronType patronType;

@@ -58,4 +58,9 @@ public class BookBorrowing {
     @Column(name = "fine")
     private Double fine;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fee_policy_id")
+    private FeePolicy feePolicy;
+
+
 }
