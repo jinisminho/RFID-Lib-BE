@@ -11,4 +11,5 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     Optional<Account> findByRfidAndIsActive (String rfid, boolean isActive);
 
+    Optional<Account> findByEmail (String email);
 }

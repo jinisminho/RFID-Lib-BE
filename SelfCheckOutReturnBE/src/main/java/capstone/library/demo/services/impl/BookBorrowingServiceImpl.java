@@ -60,6 +60,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
         Account patron = accountRepo.findById(patronId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron with id " + patronId + " not found"));
 
+        LocalDateTime curDateTime = LocalDateTime.now();
+        LocalDate curDate = LocalDate.now();
 
         for (CheckOutBookRequest book : bookCodeList){
             BookCopy copy = bookCopyRepo.findByRfid(book.getRfid())
@@ -71,12 +73,11 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             BookCheckOutResponse dto = mapFromCopyToCheckOutBasically(copy);
             //if this copy able to borrow: set bookCopy status -> borrow; add bookBorrowing
             if(copy.getStatus() == BookCopyStatus.AVAILABLE){
-                LocalDateTime now = LocalDateTime.now();
-                LocalDate dueDate = LocalDate.now().plusDays(policy.getDueDuration());
+                LocalDate dueDate = curDate.plusDays(policy.getDueDuration());
                 copy.setStatus(BookCopyStatus.BORROWED);
                 dto.setAbleToBorrow(true);
                 dto.setDueDate(dueDate.toString());
-                dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(now));
+                dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
 
                 //get fee policy
                 FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreatedAtAsc()
@@ -85,7 +86,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                         .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
                 BookBorrowing borrowing = new BookBorrowing();
                 borrowing.setBorrower(patron);
-                borrowing.setBorrowedAt(now);
+                borrowing.setBorrowedAt(curDateTime);
                 borrowing.setDueAt(dueDate);
                 borrowing.setIssued_by(patron);
                 borrowing.setBookCopy(copy);
@@ -103,9 +104,13 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
     @Override
     @Transactional
     public List<BookReturnResponse> returnBookByBatch (List<String> bookCodeList) {
+        if(bookCodeList == null){
+            throw new MissingInputException("bookCodeList is missing");
+        }
+        LocalDateTime curDateTime = LocalDateTime.now();
         List<BookReturnResponse> rs = new ArrayList<>();
         for (String code : bookCodeList){
-            BookReturnResponse dto = returnBookOneByOne(code);
+            BookReturnResponse dto = returnBookOneByOne(code, curDateTime);
             rs.add(dto);
         }
         return rs;
@@ -113,7 +118,10 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
 
     @Override
     @Transactional
-    public BookReturnResponse returnBookOneByOne (String rfidCode){
+    public BookReturnResponse returnBookOneByOne (String rfidCode, LocalDateTime curDateTime){
+        if(curDateTime == null){
+            throw new MissingInputException("curDateTime is missing");
+        }
         BookCopy copy = bookCopyRepo.findByRfid(rfidCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Book with rfid: " + rfidCode + " not found" ));
 
@@ -125,7 +133,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             BookBorrowing borrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
                     .orElseThrow(() -> new ResourceNotFoundException(("Cannot find borrowing transaction with book id" + copy.getId())));
             dto.setPatron(borrowing.getBorrower().getEmail());
-            long overdueDays = Duration.between(borrowing.getDueAt().atStartOfDay(), LocalDate.now().atStartOfDay()).toDays();
+            long overdueDays = Duration.between(borrowing.getDueAt().atStartOfDay(), curDateTime.toLocalDate().atStartOfDay()).toDays();
             //check if overdue : not allow to return
             if(overdueDays > 0){
                 FeePolicy feePolicy = borrowing.getFeePolicy();
@@ -147,9 +155,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                     copy.setStatus(BookCopyStatus.AVAILABLE);
                 }
                 borrowing.setReturn_by(borrowing.getBorrower());
-                LocalDateTime now = LocalDateTime.now();
-                borrowing.setReturnedAt(now);
-                dto.setReturnedAt(DateTimeUtil.convertDateTimeToString(now));
+                borrowing.setReturnedAt(curDateTime);
+                dto.setReturnedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
                 dto.setStatus(BookReturnStatus.RETURNED);
             }
         }
@@ -157,6 +164,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
     }
 
     private BookReturnResponse mapFromCopyToReturnBasically(BookCopy copy){
+        if(copy == null){
+            throw new MissingInputException("copy is missing");
+        }
         BookReturnResponse dto = new BookReturnResponse();
         dto.setRfid(copy.getRfid());
         dto.setTitle(copy.getBook().getTitle());
@@ -180,6 +190,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
     }
 
     private BookCheckOutResponse mapFromCopyToCheckOutBasically(BookCopy copy){
+        if(copy == null){
+            throw new MissingInputException("copy is missing");
+        }
         BookCheckOutResponse dto = new BookCheckOutResponse();
         dto.setRfid(copy.getRfid());
         dto.setTitle(copy.getBook().getTitle());
