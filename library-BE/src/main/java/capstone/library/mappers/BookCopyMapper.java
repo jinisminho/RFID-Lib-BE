@@ -2,6 +2,7 @@ package capstone.library.mappers;
 
 import capstone.library.dtos.common.BookCopyDto;
 import capstone.library.dtos.common.ProfileDto;
+import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.entities.BookCopy;
 import capstone.library.entities.Profile;
 import org.mapstruct.Mapper;
@@ -18,5 +19,7 @@ public interface BookCopyMapper {
     BookCopy toEntity(BookCopyDto dto);
 
     BookCopyDto toDto(BookCopy entity);
+
+    BookCopyResDto toResDto(BookCopy entity);
 
 }

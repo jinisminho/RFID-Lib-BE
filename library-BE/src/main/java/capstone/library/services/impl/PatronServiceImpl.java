@@ -112,13 +112,15 @@ public class PatronServiceImpl implements PatronService {
             throw new MissingInputException("Missing input");
         }
 
-        return new PageImpl<>(extendHistoryRepository
+        Page<ExtendHistory> histories = extendHistoryRepository
                 .findAllByBookBorrowing_IdOrderByDueAtAsc(bookBorrowingRepository.findById(bookBorrowingId)
                         .orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id: " + bookBorrowingId + " not found"))
-                        .getId(), pageable)
+                        .getId(), pageable);
+
+        return new PageImpl<ExtendHistoryResDto>(histories
                 .stream()
                 .map(extendHistory -> extendHistoryMapper.toResDto(extendHistory))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList()), pageable, histories.getTotalElements());
     }
 
     @Override
@@ -199,12 +201,12 @@ public class PatronServiceImpl implements PatronService {
         if (patronId == null) {
             throw new MissingInputException("Missing input");
         }
-
-        return new PageImpl<>(bookBorrowingRepository
-                .findAllByBorrower_Id(patronId, pageable)
+        Page<BookBorrowing> histories = bookBorrowingRepository
+                .findAllByBorrower_Id(patronId, pageable);
+        return new PageImpl<>(histories
                 .stream()
                 .map(bookBorrowing -> bookBorrowingMapper.toDto(bookBorrowing))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList()), pageable, histories.getTotalElements());
     }
 
 }

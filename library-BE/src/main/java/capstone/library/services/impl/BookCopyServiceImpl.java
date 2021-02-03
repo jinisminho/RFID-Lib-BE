@@ -28,8 +28,7 @@ import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
-public class BookCopyServiceImpl implements BookCopyService
-{
+public class BookCopyServiceImpl implements BookCopyService {
     @Autowired
     BookCopyRepository bookCopyRepository;
     @Autowired
@@ -48,8 +47,7 @@ public class BookCopyServiceImpl implements BookCopyService
 
     @Override
     @Transactional
-    public String createCopies(CreateCopiesRequestDto request)
-    {
+    public String createCopies(CreateCopiesRequestDto request) {
         Book book;
         BookCopyType bookCopyType;
         Account creator;
@@ -60,22 +58,18 @@ public class BookCopyServiceImpl implements BookCopyService
         Optional<Book> bookOptional = myBookRepository.findById(request.getBookId());
         Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
         Optional<Account> accountOptional = accountRepository.findById(request.getCreatorId());
-        if (bookOptional.isPresent() && bookCopyTypeOptional.isPresent() && accountOptional.isPresent())
-        {
+        if (bookOptional.isPresent() && bookCopyTypeOptional.isPresent() && accountOptional.isPresent()) {
             book = bookOptional.get();
             bookCopyType = bookCopyTypeOptional.get();
             creator = accountOptional.get();
-        } else
-        {
+        } else {
             throw new ResourceNotFoundException("Book", ErrorStatus.RESOURCE_NOT_FOUND.getReason());
         }
 
-        try
-        {
+        try {
             insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
             updateBookNumberOfCopy(book);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new CustomException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
@@ -85,12 +79,10 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public Page<CopyResponseDto> getCopiesList(Pageable pageable)
-    {
+    public Page<CopyResponseDto> getCopiesList(Pageable pageable) {
         List<CopyResponseDto> response = new ArrayList<>();
         Page<BookCopy> bookCopiesPage = bookCopyRepository.findAll(pageable);
-        for (BookCopy copy : bookCopiesPage.getContent())
-        {
+        for (BookCopy copy : bookCopiesPage.getContent()) {
             CopyResponseDto dto;
             dto = objectMapper.convertValue(copy, CopyResponseDto.class);
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
@@ -100,54 +92,44 @@ public class BookCopyServiceImpl implements BookCopyService
             dto.setCopyType(copy.getBookCopyType().getName());
             response.add(dto);
         }
-        return new PageImpl<CopyResponseDto>(response, pageable, response.size());
+//        return new PageImpl<CopyResponseDto>(response, pageable, response.size());
+        return new PageImpl<CopyResponseDto>(response, pageable, bookCopiesPage.getTotalElements());
     }
 
     @Override
-    public String tagCopy(String barcode, String rfid)
-    {
+    public String tagCopy(String barcode, String rfid) {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
-        if (bookCopyOptional.isPresent())
-        {
+        if (bookCopyOptional.isPresent()) {
             BookCopy bookCopy = bookCopyOptional.get();
             Optional<Book> bookOptional = myBookRepository.findById(bookCopy.getBook().getId());
-            if (bookOptional.isPresent())
-            {
+            if (bookOptional.isPresent()) {
                 Book book = bookOptional.get();
                 bookCopy.setRfid(rfid);
-                if (book.getStatus().equals(BookStatus.IN_CIRCULATION))
-                {
+                if (book.getStatus().equals(BookStatus.IN_CIRCULATION)) {
                     bookCopy.setStatus(BookCopyStatus.AVAILABLE);
-                } else if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
-                {
+                } else if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION)) {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
-                {
+                } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY)) {
                     bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
                 }
-                try
-                {
+                try {
                     bookCopyRepository.save(bookCopy);
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     throw new CustomException(
                             HttpStatus.INTERNAL_SERVER_ERROR,
                             ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
                 }
             }
 
-        } else
-        {
+        } else {
             throw new ResourceNotFoundException(BOOK_COPY, COPY_NOT_FOUND + ": " + barcode);
         }
         return "Success";
     }
 
-    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception
-    {
+    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception {
         Set<BookCopy> bookCopies = new HashSet<>();
-        for (String barcode : barcodes)
-        {
+        for (String barcode : barcodes) {
             BookCopy bookCopy = new BookCopy();
             bookCopy.setBook(book);
             bookCopy.setBookCopyType(bookCopyType);
@@ -161,8 +143,7 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
 
-    private void updateBookNumberOfCopy(Book book) throws Exception
-    {
+    private void updateBookNumberOfCopy(Book book) throws Exception {
         book.setNumberOfCopy(bookCopyRepository.findByBookId(book.getId()).size());
         myBookRepository.save(book);
     }
