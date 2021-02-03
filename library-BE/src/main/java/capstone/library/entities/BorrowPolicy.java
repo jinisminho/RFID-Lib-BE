@@ -23,7 +23,7 @@ public class BorrowPolicy extends Audit
     @Column(name = "due_duration", nullable = false)
     private int dueDuration;
 
-    @Column(name = "max_number_copy_borrow", nullable = false)
+    @Column(name = "max_borrow_number", nullable = false)
     private int maxNumberCopyBorrow;
 
     @Column(name = "max_extend_time", nullable = false)
