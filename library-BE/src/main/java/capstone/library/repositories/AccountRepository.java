@@ -22,4 +22,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer>
 
     Page<Account> findAccountsByRoleId(Integer roleId, Pageable pageable);
 
+    Optional<Account> findByEmail(String email);
+
 }

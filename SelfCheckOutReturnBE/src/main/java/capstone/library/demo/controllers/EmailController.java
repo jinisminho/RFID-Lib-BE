@@ -25,7 +25,7 @@ public class EmailController {
     }
 
     @PostMapping("/return")
-    public void emailBookCheckOut (@RequestBody @Valid List<BookReturnResponse> request){
+    public void emailBookReturn (@RequestBody @Valid List<BookReturnResponse> request){
         emailService.sendEmailAfterReturn(request);
     }
 }

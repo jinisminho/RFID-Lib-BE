@@ -80,7 +80,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
 
                 //get fee policy
-                FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreatedAtAsc()
+                FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreatedAtDesc()
                         .stream()
                         .findFirst()
                         .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
