@@ -145,7 +145,7 @@ insert into book_copy_position (id, floor, shelf, from_call_number, to_call_numb
 
 insert into fee_policy (id,
     overdue_fine_per_day,
-    max_percentage_overde_fine,
+    max_percentage_overdue_fine,
     document_processing_fee,
     missing_doc_multiplier,
     created_at
