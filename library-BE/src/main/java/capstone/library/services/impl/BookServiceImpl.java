@@ -310,7 +310,10 @@ public class BookServiceImpl implements BookService
         if (bookOptional.isPresent())
         {
             Book book = bookOptional.get();
-            if (status.equals(book.getStatus()))
+            if (book.getStatus().equals(BookStatus.DISCARD))
+            {
+                return "Cannot update DISCARD book";
+            } else if (status.equals(book.getStatus()))
             {
                 return "Book status is already " + status;
             }
@@ -340,9 +343,9 @@ public class BookServiceImpl implements BookService
         {
             if (bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE))
             {
-                if (book.getStatus().equals(BookStatus.NOT_ALLOWED_TO_BORROWED))
+                if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
                 {
-                    bookCopy.setStatus(BookCopyStatus.NOT_ALLOWED_TO_BORROWED);
+                    bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
                 }
                 if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
                 {

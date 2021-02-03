@@ -43,7 +43,7 @@ public class BookCopyServiceImpl implements BookCopyService
     private static final String COPY_NOT_FOUND = "Cannot find this book copy";
     private static final String BOOK_COPY = "Book copy";
     private static final String BOOK = "Book";
-    private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.PREPARING;
+    private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     @Override
     @Transactional
@@ -120,9 +120,9 @@ public class BookCopyServiceImpl implements BookCopyService
                 } else if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
                 {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                } else if (book.getStatus().equals(BookStatus.NOT_ALLOWED_TO_BORROWED))
+                } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
                 {
-                    bookCopy.setStatus(BookCopyStatus.NOT_ALLOWED_TO_BORROWED);
+                    bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
                 }
                 try
                 {
