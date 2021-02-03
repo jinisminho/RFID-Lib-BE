@@ -8,12 +8,11 @@ import capstone.library.enums.BookStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface BookService
-{
+public interface BookService {
 
     Page<BookResDto> findBooks(String searchValue, Pageable pageable);
 
-    boolean tagRfidToBookCopy(Integer bookCopyId, String rfid);
+//    boolean tagRfidToBookCopy(Integer bookCopyId, String rfid);
 
     boolean reindexAll();
 

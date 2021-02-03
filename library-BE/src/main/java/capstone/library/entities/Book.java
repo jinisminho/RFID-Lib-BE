@@ -7,10 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Norms;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.Set;
 
+@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,8 +25,7 @@ import java.util.Set;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
-public class Book extends Audit
-{
+public class Book extends Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,12 +34,17 @@ public class Book extends Audit
     @Column(name = "img", length = 500)
     private String img;
 
+    @KeywordField
     @Column(name = "isbn", length = 20, nullable = false)
     private String isbn;
 
+    @FullTextField(name = "title", analyzer = "my", norms = Norms.NO)
+    @FullTextField(name = "title_2", norms = Norms.NO)
     @Column(name = "title", nullable = false)
     private String title;
 
+    @FullTextField(name = "sub", analyzer = "my", norms = Norms.NO)
+    @FullTextField(name = "sub_2", norms = Norms.NO)
     @Column(name = "subtitle")
     private String subtitle;
 
@@ -72,8 +81,7 @@ public class Book extends Audit
 
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return bookAuthors.toString();
     }
 }
