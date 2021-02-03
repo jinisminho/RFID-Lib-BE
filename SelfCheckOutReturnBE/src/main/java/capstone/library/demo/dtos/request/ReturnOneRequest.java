@@ -12,10 +12,10 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@NotNull(message = "{login.body.notNull}")
-public class LoginRequest {
+@NotNull(message = "{ReturnOneRequest.body.notNull}")
+public class ReturnOneRequest {
 
-    @NotNull(message = "{login.rfid.notNull}")
-    @Length(max = 80, message = "{login.rfid.length}")
-    private String rfid;
+    @NotNull(message = "{ReturnOneRequest.bookRfid.notNull}")
+    @Length(max = 80, message = "{ReturnOneRequest.bookRfid.length}")
+    private String bookRfid;
 }

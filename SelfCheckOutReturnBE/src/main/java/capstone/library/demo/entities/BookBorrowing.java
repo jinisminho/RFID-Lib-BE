@@ -59,4 +59,8 @@ public class BookBorrowing {
     @JoinColumn(name = "book_copy_id")
     private BookCopy bookCopy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fee_policy_id")
+    private FeePolicy feePolicy;
+
 }
