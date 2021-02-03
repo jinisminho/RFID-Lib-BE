@@ -76,7 +76,7 @@ public class BookServiceImpl implements BookService
     }
 
     @Override
-    public List<BookResponseDto> findAllBooks(Pageable pageable)
+    public Page<BookResponseDto> findAllBooks(Pageable pageable)
     {
         Page<Book> books = myBookRepository.findAll(pageable);
         List<BookResponseDto> responseDtos = new ArrayList<>();
@@ -103,7 +103,7 @@ public class BookServiceImpl implements BookService
             responseDtos.add(dto);
         }
 
-        return responseDtos;
+        return new PageImpl<BookResponseDto>(responseDtos, pageable, responseDtos.size());
     }
 
     /*This API can be reuse for other use cases.
