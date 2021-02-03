@@ -81,6 +81,16 @@ public class LibrarianServiceImpl implements LibrarianService
         Account borrowingPatron = patronOptional.get();
         /*========================*/
 
+        /*Get the latest Fee Policy*/
+        List<FeePolicy> feePolicies = feePolicyRepository.findAllByOrderByCreatedAtAsc();
+        if (feePolicies.isEmpty())
+        {
+            throw new ResourceNotFoundException(
+                    "Fee Policy", "Fee Policy " + NOT_FOUND);
+        }
+        FeePolicy feePolicy = feePolicies.get(feePolicies.size() - 1);
+        /*=========================*/
+
         //Checkout books
         LocalDateTime now = LocalDateTime.now();
         for (String rfidTag :
@@ -120,6 +130,7 @@ public class LibrarianServiceImpl implements LibrarianService
                         bookBorrowing.setBorrowedAt(now);
                         bookBorrowing.setDueAt(dueAt);
                         bookBorrowing.setExtendIndex(DEFAULT_RENEW_INDEX);
+                        bookBorrowing.setFeePolicy(feePolicy);
                         /*===========================*/
 
                         //Save bookBorrowing to db
@@ -213,8 +224,8 @@ public class LibrarianServiceImpl implements LibrarianService
                 double fineRate;
                 double fine = 0;
                 //Returns >0 if today has passed overdue date
-//                int overdueDays = Period.between(bookBorrowing.getDueAt(), LocalDate.now()).getDays();
-                int overdueDays = (int) dateTimeUtils.getOverdueDays(bookBorrowing.getDueAt(), LocalDate.now());
+                int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+                System.out.println("OVERDUE DAYS: " + overdueDays);
                 if (overdueDays > 0)
                 {
                     Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());

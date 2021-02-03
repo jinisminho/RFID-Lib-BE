@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -25,9 +26,9 @@ public class DateTimeUtils
     private long countBusinessDaysBetween(LocalDate today, LocalDate dueDate,
                                           Optional<List<LocalDate>> holidaysOptional)
     {
-        List<LocalDate> holidays;
+        List<LocalDate> holidays = new ArrayList<>();
 
-        if (today == null || dueDate == null)
+        if (today == null || dueDate == null || holidaysOptional == null)
         {
             throw new IllegalArgumentException("Invalid method argument(s) to countBusinessDaysBetween(" + today
                     + "," + dueDate + "," + holidaysOptional + ")");
@@ -63,8 +64,7 @@ public class DateTimeUtils
                     .filter(isHoliday.or(isWeekend).negate()).count());
         } else
         {
-            return -Stream.iterate(today, date -> date.plusDays(1)).limit(daysBetween)
-                    .filter(isHoliday.or(isWeekend).negate()).count();
+            return -daysBetween;
         }
 
     }
