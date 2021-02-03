@@ -13,6 +13,7 @@ import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.LibrarianService;
+import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +41,8 @@ public class LibrarianServiceImpl implements LibrarianService
     OverdueBooksFinder overdueBooksFinder;
     @Autowired
     FeePolicyRepository feePolicyRepository;
+
+    DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
     private static final String NOT_FOUND = " not found";
 
@@ -78,6 +80,16 @@ public class LibrarianServiceImpl implements LibrarianService
         }
         Account borrowingPatron = patronOptional.get();
         /*========================*/
+
+        /*Get the latest Fee Policy*/
+        List<FeePolicy> feePolicies = feePolicyRepository.findAllByOrderByCreatedAtAsc();
+        if (feePolicies.isEmpty())
+        {
+            throw new ResourceNotFoundException(
+                    "Fee Policy", "Fee Policy " + NOT_FOUND);
+        }
+        FeePolicy feePolicy = feePolicies.get(feePolicies.size() - 1);
+        /*=========================*/
 
         //Checkout books
         LocalDateTime now = LocalDateTime.now();
@@ -118,6 +130,7 @@ public class LibrarianServiceImpl implements LibrarianService
                         bookBorrowing.setBorrowedAt(now);
                         bookBorrowing.setDueAt(dueAt);
                         bookBorrowing.setExtendIndex(DEFAULT_RENEW_INDEX);
+                        bookBorrowing.setFeePolicy(feePolicy);
                         /*===========================*/
 
                         //Save bookBorrowing to db
@@ -140,7 +153,10 @@ public class LibrarianServiceImpl implements LibrarianService
                 copyDto.setDueDate(dueAt.toString());
                 copyDto.setTitle(bookCopy.getBook().getTitle());
                 copyDto.setSubtitle(bookCopy.getBook().getSubtitle());
-                copyDto.setAuthor(bookCopy.getBook().getBookAuthors().toString());
+                String authors = bookCopy.getBook().getBookAuthors().toString();
+                authors = authors.replace("[", "");
+                authors = authors.replace("]", "");
+                copyDto.setAuthor(authors);
             } else
             {
                 //Add bookBorrowing to response dto
@@ -153,6 +169,7 @@ public class LibrarianServiceImpl implements LibrarianService
         }
         return checkoutBookResponseDtos;
     }
+
 
     /*Is for librarians use
      * For returning multiple of book copies borrowed by patrons */
@@ -207,7 +224,8 @@ public class LibrarianServiceImpl implements LibrarianService
                 double fineRate;
                 double fine = 0;
                 //Returns >0 if today has passed overdue date
-                int overdueDays = Period.between(bookBorrowing.getDueAt(), LocalDate.now()).getDays();
+                int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+                System.out.println("OVERDUE DAYS: " + overdueDays);
                 if (overdueDays > 0)
                 {
                     Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());
