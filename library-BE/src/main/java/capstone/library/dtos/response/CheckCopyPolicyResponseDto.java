@@ -1,6 +1,6 @@
 package capstone.library.dtos.response;
 
-
+import capstone.library.dtos.common.MyBookDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +12,11 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckoutPolicyValidationResponseDto
+public class CheckCopyPolicyResponseDto
 {
-    boolean haveOverdueCopies;
-    boolean violatePolicy;
-    List<CheckoutResponseDto> contents;
+    private MyBookDto copy;
 
+    private boolean violatePolicy;
+
+    private List<String> reasons;
 }

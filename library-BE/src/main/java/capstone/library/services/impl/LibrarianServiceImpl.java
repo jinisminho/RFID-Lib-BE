@@ -2,8 +2,8 @@ package capstone.library.services.impl;
 
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.dtos.response.CheckoutBookResponseDto;
 import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
+import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
@@ -55,9 +55,9 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<CheckoutBookResponseDto> checkout(ScannedRFIDCopiesRequestDto request)
+    public List<CheckoutResponseDto> checkout(ScannedRFIDCopiesRequestDto request)
     {
-        List<CheckoutBookResponseDto> checkoutBookResponseDtos = new ArrayList<>();
+        List<CheckoutResponseDto> checkoutResponseDtos = new ArrayList<>();
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
@@ -98,7 +98,7 @@ public class LibrarianServiceImpl implements LibrarianService
         for (String rfidTag :
                 rfidTags)
         {
-            CheckoutBookResponseDto copyDto = new CheckoutBookResponseDto();
+            CheckoutResponseDto copyDto = new CheckoutResponseDto();
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfidTag);
             if (bookCopyOptional.isPresent())
             {
@@ -174,9 +174,9 @@ public class LibrarianServiceImpl implements LibrarianService
                 copyDto.setDueDate("");
                 copyDto.setTitle("");
             }
-            checkoutBookResponseDtos.add(copyDto);
+            checkoutResponseDtos.add(copyDto);
         }
-        return checkoutBookResponseDtos;
+        return checkoutResponseDtos;
     }
 
 
@@ -366,11 +366,11 @@ public class LibrarianServiceImpl implements LibrarianService
         /*=========================*/
 
         List<String> rfidTags = request.getBookRfidTags();
-        List<CheckoutBookResponseDto> dtos = new ArrayList<>();
+        List<CheckoutResponseDto> dtos = new ArrayList<>();
         for (String rfidTag :
                 rfidTags)
         {
-            CheckoutBookResponseDto copyDto = new CheckoutBookResponseDto();
+            CheckoutResponseDto copyDto = new CheckoutResponseDto();
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfidTag);
             if (bookCopyOptional.isPresent())
             {

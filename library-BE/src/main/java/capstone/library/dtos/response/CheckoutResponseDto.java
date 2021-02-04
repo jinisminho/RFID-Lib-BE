@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckoutBookResponseDto implements Serializable
+public class CheckoutResponseDto implements Serializable
 {
     private String rfid;
 
