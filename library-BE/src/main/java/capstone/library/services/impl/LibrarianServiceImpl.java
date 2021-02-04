@@ -357,11 +357,10 @@ public class LibrarianServiceImpl implements LibrarianService
         }
         /*================*/
 
-        /*Get the borrowing patron.
-         * Check if he/she is keeping any overdue books*/
-        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.PATRON.getRoleId());
-        //Return 404 if no patron with 'patronId' is found
-        if (patronOptional.isEmpty())
+        /*Check if patron is borrowing exceeding total allowance*/
+        PatronType patronType = getPatronTypeInfo(patron.getPatronType().getId());
+        int totalMaxAllowance = patronType.getMaxBorrowNumber();
+        if (request.getBookRfidTags().size() > totalMaxAllowance)
         {
             violatePolicy = true;
             reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance);
