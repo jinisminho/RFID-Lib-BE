@@ -1,21 +1,20 @@
-package capstone.library.config;
+package capstone.library.demo.config;
 
-
-import java.util.Properties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+import java.util.Properties;
+
 @PropertySource(value={"classpath:application.properties"})
-public class EmailConfig{
+public class EmailConfig {
+
 
     @Value("${spring.mail.host}")
     private String mailServerHost;
@@ -57,12 +56,6 @@ public class EmailConfig{
         return mailSender;
     }
 
-    @Bean
-    public SimpleMailMessage templateSimpleMessage() {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setText("This is the test email template for your email:\n%s\n");
-        return message;
-    }
 
     @Bean
     public SpringTemplateEngine thymeleafTemplateEngine(ITemplateResolver templateResolver) {
@@ -83,12 +76,10 @@ public class EmailConfig{
     }
 
 
-
     @Bean
     public ResourceBundleMessageSource emailMessageSource() {
         final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("mailMessages");
         return messageSource;
     }
-
 }

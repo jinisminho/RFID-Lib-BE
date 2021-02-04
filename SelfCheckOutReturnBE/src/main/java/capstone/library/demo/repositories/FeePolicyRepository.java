@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface FeePolicyRepository extends JpaRepository<FeePolicy, Integer> {
 
-    List<FeePolicy> findAllByOrderByCreatedAtAsc ();
+    List<FeePolicy> findAllByOrderByCreatedAtDesc();
 }

@@ -29,7 +29,7 @@ public class SwaggerConfig {
 //                                .build())
 //                )
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("capstone.library"))
+                .apis(RequestHandlerSelectors.basePackage("capstone.library.demo"))
                 .paths(PathSelectors.any())
                 .build();
     }
