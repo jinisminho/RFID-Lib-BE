@@ -34,7 +34,7 @@ public interface BookMapper {
     Set<GenreResDto> toCategoryDtos(Set<BookGenre> entities);
 
     @Mappings({
-            @Mapping(target = "genre", source = "bookGenres"),
+            @Mapping(target = "genres", source = "bookGenres"),
             @Mapping(target = "author", source = "bookAuthors")
     })
     BookResDto toResDto(Book entity);
