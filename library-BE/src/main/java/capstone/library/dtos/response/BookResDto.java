@@ -39,8 +39,8 @@ public class BookResDto {
     @NotNull(message = "{book.pageNumber.notNull}")
     private Integer pageNumber;
 
-    @NotNull(message = "{book.ddc.notNull}")
-    private String ddc;
+    @NotNull(message = "{book.callNumber.notNull}")
+    private String callNumber;
 
     @NotNull(message = "{book.numberOfCopy.notNull}")
     private Integer numberOfCopy;
@@ -50,7 +50,15 @@ public class BookResDto {
 
     public Set<AuthorResDto> author;
 
-    public Set<GenreResDto> genre;
+    public Set<GenreResDto> genres;
 
+    private String img;
 
+    private Integer stock;
+
+    private boolean available;
+
+    private boolean onlyInLibrary;
+
+    private Integer totalCopies;
 }

@@ -5,6 +5,8 @@ import capstone.library.repositories.BookRepository;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Repository
@@ -24,7 +27,7 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Book> findBooks(String searchValue, Pageable pageable) {
+    public Page<Book> findBooks(String searchValue, Pageable pageable) {
         SearchSession searchSession = Search.session(entityManager);
 
         SearchResult<Book> result1, result2;
@@ -34,9 +37,16 @@ public class BookRepositoryImpl implements BookRepository {
         int offset = page * size;
         int limit = size;
 
+        long totalSize = 0;
+        totalSize = searchSession.search(Book.class)
+                .where(f -> f.match()
+                        .fields("title", "title_2", "sub", "sub_2")
+                        .matching(searchValue)
+                        .analyzer("default")
+                ).fetchTotalHitCount();
         result1 = searchSession.search(Book.class)
                 .where(f -> f.match()
-                        .fields("title", "title_2")
+                        .fields("title", "title_2", "sub", "sub_2")
                         .matching(searchValue)
                         .analyzer("default")
                 )
@@ -52,9 +62,19 @@ public class BookRepositoryImpl implements BookRepository {
 
         List<Book> res = new ArrayList<>();
         if (result1.total().hitCount() > 0) res.addAll(result1.hits());
-        if (result2.total().hitCount() > 0) res = result2.hits();
+        if (result2.total().hitCount() > 0) {
+            totalSize = searchSession.search(Book.class)
+                    .where(f -> f.match()
+                            .fields("isbn")
+                            .matching(searchValue)
+                            .analyzer("keyword")
+                    ).fetchTotalHitCount();
+            res = result2.hits();
+        }
 
-        return res;
+        List<Book> resWithoutDuplicates = new ArrayList<>(
+                new LinkedHashSet<>(res));
+        return new PageImpl<Book>(resWithoutDuplicates, pageable, totalSize);
     }
 
     @Override
