@@ -1,21 +1,26 @@
 package capstone.library;
 
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 
+@RunWith(SpringRunner.class)
 
 class LibraryApplicationTests
 {
 
+
+
     @Test
     void contextLoads()
     {
-        LocalDate curDate = LocalDate.of(2021, 1,31);
-
-        System.out.println("now: " + curDate);
-        System.out.println("tmr: " + curDate.plusDays(1));
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        System.out.println(encoder.encode("123456"));
     }
 
 }

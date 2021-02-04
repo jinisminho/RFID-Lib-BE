@@ -1,6 +1,7 @@
 package capstone.library.exceptions.handler;
 
 import capstone.library.dtos.common.ErrorDto;
+import capstone.library.enums.ErrorStatus;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,6 +34,7 @@ public class ApplicationExceptionHandler {
 
     private static final Logger logger = LogManager.getLogger(ApplicationExceptionHandler.class);
 
+
     @ResponseBody
     @ExceptionHandler(value = ResourceNotFoundException.class)
     public ResponseEntity<ErrorDto> handleException(ResourceNotFoundException exception) {
@@ -39,6 +42,17 @@ public class ApplicationExceptionHandler {
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.NOT_FOUND.value(),
                 ConstantUtil.EXCEPTION_RESOURCE_NOT_FOUND,
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ResponseEntity<ErrorDto> handleException(AccessDeniedException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.ACCESS_DENIED.getCode(),
+                ErrorStatus.ACCESS_DENIED.getReason(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -75,7 +89,7 @@ public class ApplicationExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<ErrorDto> handleException(RuntimeException exception) {
-        logger.error(exception.getMessage());
+        logger.error(exception);
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ConstantUtil.EXCEPTION_UNEXPECTED_ERROR,
