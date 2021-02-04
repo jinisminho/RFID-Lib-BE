@@ -37,7 +37,7 @@ public class ManagerServiceImpl implements ManagerService
     @Override
     public Page<AccountBasicInfoResponseDto> getLibrarians(Pageable pageable)
     {
-        return getAccountsByRoleId(pageable, RoleIdEnum.LIBRARIAN);
+        return getAccountsByRoleId(pageable, RoleIdEnum.ROLE_LIBRARIAN);
     }
 
     private String changeLibrarianStatus(int id, int updaterId, boolean status)
@@ -49,11 +49,11 @@ public class ManagerServiceImpl implements ManagerService
             resourceNotFoundException.setResourceName("Manager id: " + updaterId);
             resourceNotFoundException.setMessage("Manager id: '" + updaterId + "' does not exist");
             throw resourceNotFoundException;
-        } else if (!updaterAccountOptional.get().getRole().getId().equals(RoleIdEnum.ADMIN.getRoleId()))
+        } else if (!updaterAccountOptional.get().getRole().getId().equals(RoleIdEnum.ROLE_ADMIN.getRoleId()))
         {
             throw new UnauthorizedException("Only Manager can deactivate Librarian");
         }
-        Optional<Account> accountOptional = accountRepository.findByIdAndRoleId(id, RoleIdEnum.LIBRARIAN.getRoleId());
+        Optional<Account> accountOptional = accountRepository.findByIdAndRoleId(id, RoleIdEnum.ROLE_LIBRARIAN.getRoleId());
         if (accountOptional.isPresent())
         {
             Account librarian = accountOptional.get();

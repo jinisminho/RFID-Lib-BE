@@ -73,7 +73,7 @@ public class LibrarianServiceImpl implements LibrarianService
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
-        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
+        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.ROLE_LIBRARIAN.getRoleId());
         //Return 404 if no patron with 'getLibrarianId' is found
         if (librarianOptional.isEmpty())
         {
@@ -85,7 +85,7 @@ public class LibrarianServiceImpl implements LibrarianService
         /*========================*/
 
         /*Get the borrowing patron to add to borrowed_by in book_borrowing table*/
-        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.PATRON.getRoleId());
+        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.ROLE_PATRON.getRoleId());
         //Return 404 if no patron with 'patronId' is found
         if (patronOptional.isEmpty())
         {
@@ -357,10 +357,11 @@ public class LibrarianServiceImpl implements LibrarianService
         }
         /*================*/
 
-        /*Check if patron is borrowing exceeding total allowance*/
-        PatronType patronType = getPatronTypeInfo(patron.getPatronType().getId());
-        int totalMaxAllowance = patronType.getMaxBorrowNumber();
-        if (request.getBookRfidTags().size() > totalMaxAllowance)
+        /*Get the borrowing patron.
+         * Check if he/she is keeping any overdue books*/
+        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.PATRON.getRoleId());
+        //Return 404 if no patron with 'patronId' is found
+        if (patronOptional.isEmpty())
         {
             violatePolicy = true;
             reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance);

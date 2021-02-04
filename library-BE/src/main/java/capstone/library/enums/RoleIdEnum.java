@@ -2,9 +2,9 @@ package capstone.library.enums;
 
 public enum RoleIdEnum
 {
-    ADMIN(1),
-    LIBRARIAN(2),
-    PATRON(3);
+    ROLE_ADMIN(1),
+    ROLE_LIBRARIAN(2),
+    ROLE_PATRON(3);
 
     private int roleId;
 
