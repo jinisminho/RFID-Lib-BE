@@ -1,5 +1,6 @@
 package capstone.library.services.impl;
 
+import capstone.library.dtos.common.CheckoutCopyDto;
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
@@ -24,6 +25,7 @@ import javax.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -104,11 +106,14 @@ public class LibrarianServiceImpl implements LibrarianService
         /*=========================*/
 
         //Checkout books
+        CheckoutResponseDto response = new CheckoutResponseDto();
+        List<CheckoutCopyDto> dtos = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         for (String rfidTag :
                 rfidTags)
         {
-            CheckoutResponseDto copyDto = new CheckoutResponseDto();
+            CheckoutCopyDto dto = new CheckoutCopyDto();
+            response.setCheckoutCopyDto(dtos);
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfidTag);
             if (bookCopyOptional.isPresent())
             {
@@ -123,8 +128,8 @@ public class LibrarianServiceImpl implements LibrarianService
                 {
                     /*Cannot find borrowing policy means this patron type not allow to borrow this book copy type
                     Add this book copy as not AbleToBorrow to response List*/
-                    copyDto.setAbleToBorrow(false);
-                    copyDto.setReason(borrowingPatron.getRole().getName() + " cannot borrow this copy");
+                    dto.setAbleToBorrow(false);
+                    dto.setReason(borrowingPatron.getRole().getName() + " cannot borrow this copy");
                 } else
                 {
                     int borrowDuration = policyOptional.get().getDueDuration();
@@ -156,36 +161,42 @@ public class LibrarianServiceImpl implements LibrarianService
                         bookBorrowingRepository.save(bookBorrowing);
 
                         //Add this book copy as is AbleToBorrow to response List
-                        copyDto.setAbleToBorrow(true);
-                        copyDto.setReason("");
+                        dto.setAbleToBorrow(true);
+                        dto.setReason("");
+                        dto.setDueDate(dueAt.toString());
                     } else
                     {
                         //Add this book copy as not AbleToBorrow to response List
-                        copyDto.setAbleToBorrow(false);
-                        copyDto.setReason("Book is not available");
+                        dto.setAbleToBorrow(false);
+                        dto.setReason("Book is not available");
                     }
                 }
                 /*====================*/
 
                 //Add bookBorrowing to response dto
-                copyDto.setRfid(rfidTag);
-                copyDto.setDueDate(dueAt.toString());
-                copyDto.setTitle(bookCopy.getBook().getTitle());
-                copyDto.setSubtitle(bookCopy.getBook().getSubtitle());
+                dto.setRfid(rfidTag);
+                dto.setTitle(bookCopy.getBook().getTitle());
+                dto.setSubtitle(bookCopy.getBook().getSubtitle());
+                dto.setEdition(bookCopy.getBook().getEdition());
+                dto.setPublisher(bookCopy.getBook().getPublisher());
+                dto.setPublishYear(bookCopy.getBook().getPublishYear());
                 String authors = bookCopy.getBook().getBookAuthors().toString();
                 authors = authors.replace("[", "");
                 authors = authors.replace("]", "");
-                copyDto.setAuthor(authors);
+                dto.setAuthor(authors);
             } else
             {
                 //Add bookBorrowing to response dto
-                copyDto.setRfid(rfidTag);
-                copyDto.setReason("Cannot find this book in database");
-                copyDto.setDueDate("");
-                copyDto.setTitle("");
+                dto.setRfid(rfidTag);
+                dto.setReason("Cannot find this book in database");
+                dto.setDueDate("");
+                dto.setTitle("");
             }
-            checkoutResponseDtos.add(copyDto);
+            dtos.add(dto);
         }
+        response.setBorrowedAt(now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        response.setCheckoutCopyDto(dtos);
+        checkoutResponseDtos.add(response);
         return checkoutResponseDtos;
     }
 
