@@ -5,24 +5,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@NotNull
+@Valid
 public class EmailCheckOutBookDto {
 
-    @NotNull
+    @NotNull(message = "{EmailCheckOutBookDto.title.notNull}")
     private String title;
 
     private String subtitle;
 
-    @NotNull
+    @NotNull(message = "{EmailCheckOutBookDto.dueDate.notNull}")
     private String dueDate;
 
-    @NotNull
+    @NotNull(message = "{EmailCheckOutBookDto.borrowedAt.notNull}")
     private String borrowedAt;
 
     private int edition;

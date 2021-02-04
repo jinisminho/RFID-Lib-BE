@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p th:text="#{greetings(${patron})}"></p>
+
+<p>
+    You have been successfully borrowed the following books:
+</p>
+<table border="1">
+    <tr>
+        <th>No.</th>
+        <th>Book</th>
+        <th>Borrowed At</th>
+        <th>Due Date</th>
+    </tr>
+    <tr th:each="book : ${books}">
+        <td th:text="${bookStat.index + 1}"></td>
+        <td th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></td>
+        <td th:text="${book.borrowedAt}"></td>
+        <td th:text="${book.dueDate}"></td>
+    </tr>
+</table>
+<br/>
+<p th:text="#{regards}"></p>
+<p>
+    <em th:text="#{signature}"></em> <br />
+</p>
+</body>
+</html>
