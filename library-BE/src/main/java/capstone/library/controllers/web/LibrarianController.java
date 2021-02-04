@@ -27,7 +27,7 @@ public class LibrarianController
     }
 
     @PostMapping("/checkout/validate")
-    @ApiOperation(value = "Checkout a list of book copies")
+    @ApiOperation(value = "Validate policy for a list of book copies")
     public CheckoutPolicyValidationResponseDto validateCheckoutPolicy(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         return librarianService.validateCheckoutPolicy(scannedRFIDCopiesRequestDto);

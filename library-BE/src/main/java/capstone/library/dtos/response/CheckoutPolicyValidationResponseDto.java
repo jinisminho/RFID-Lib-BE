@@ -14,8 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 public class CheckoutPolicyValidationResponseDto
 {
-    boolean haveOverdueCopies;
-    boolean violatePolicy;
-    List<CheckoutResponseDto> contents;
+    private boolean haveOverdueCopies;
+    private boolean violatePolicy;
+    private boolean duplicateBook;
+    private List<String> reasons;
 
 }

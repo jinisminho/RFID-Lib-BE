@@ -208,8 +208,10 @@ public class BookCopyServiceImpl implements BookCopyService
 
         /*Prepare response*/
         response.setCopy(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class));
-        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString());
-        response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString());
+        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
+                replace("]", "").replace("[", ""));
+        response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
+                replace("]", "").replace("[", ""));
         response.setViolatePolicy(violatePolicy);
         response.setReasons(reasons);
         /*=================*/
