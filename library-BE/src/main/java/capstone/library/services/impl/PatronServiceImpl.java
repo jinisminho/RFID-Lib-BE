@@ -44,7 +44,7 @@ public class PatronServiceImpl implements PatronService {
     @Autowired
     private BookBorrowingRepository bookBorrowingRepository;
     @Autowired
-    private BorrowPolicyRespository borrowPolicyRespository;
+    private BorrowPolicyRepository borrowPolicyRepository;
     @Autowired
     private BookBorrowingMapper bookBorrowingMapper;
     @Autowired
@@ -131,7 +131,7 @@ public class PatronServiceImpl implements PatronService {
 
         //Get policy
         int policyId = 1;
-        BorrowPolicyDto policy = borrowPolicyMapper.toDto(borrowPolicyRespository.findById(policyId).orElseThrow(() -> new ResourceNotFoundException("BorrowPolicy", "BorrowPolicy with Id " + policyId + " not found")));
+        BorrowPolicyDto policy = borrowPolicyMapper.toDto(borrowPolicyRepository.findById(policyId).orElseThrow(() -> new ResourceNotFoundException("BorrowPolicy", "BorrowPolicy with Id " + policyId + " not found")));
 
         //Find and check if bookBorrowing exists
         BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id " + bookBorrowingId + " not found"));

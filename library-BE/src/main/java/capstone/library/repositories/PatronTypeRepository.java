@@ -1,11 +1,10 @@
 package capstone.library.repositories;
 
-import capstone.library.entities.BorrowPolicy;
+import capstone.library.entities.PatronType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BorrowPolicyRespository extends JpaRepository<BorrowPolicy, Integer> {
-
-
+public interface PatronTypeRepository extends JpaRepository<PatronType, Integer>
+{
 }

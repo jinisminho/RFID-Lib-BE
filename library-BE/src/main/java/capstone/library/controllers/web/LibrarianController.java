@@ -2,8 +2,8 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.dtos.response.CheckoutBookResponseDto;
 import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
+import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.services.LibrarianService;
 import io.swagger.annotations.ApiOperation;
@@ -21,13 +21,13 @@ public class LibrarianController
 
     @PostMapping("/checkout")
     @ApiOperation(value = "Checkout a list of book copies")
-    public List<CheckoutBookResponseDto> checkoutBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
+    public List<CheckoutResponseDto> checkoutBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         return librarianService.checkout(scannedRFIDCopiesRequestDto);
     }
 
     @PostMapping("/checkout/validate")
-    @ApiOperation(value = "Checkout a list of book copies")
+    @ApiOperation(value = "Validate policy for a list of book copies")
     public CheckoutPolicyValidationResponseDto validateCheckoutPolicy(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         return librarianService.validateCheckoutPolicy(scannedRFIDCopiesRequestDto);

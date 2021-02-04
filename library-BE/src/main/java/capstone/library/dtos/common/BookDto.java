@@ -40,7 +40,7 @@ public class BookDto {
     private Integer pageNumber;
 
     @NotNull(message = "{book.ddc.notNull}")
-    private String ddc;
+    private String callNumber;
 
     @NotNull(message = "{book.numberOfCopy.notNull}")
     private Integer numberOfCopy;

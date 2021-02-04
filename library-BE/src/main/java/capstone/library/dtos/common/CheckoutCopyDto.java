@@ -1,17 +1,15 @@
-package capstone.library.dtos.response;
+package capstone.library.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckoutBookResponseDto implements Serializable
+public class CheckoutCopyDto
 {
     private String rfid;
 
@@ -21,10 +19,15 @@ public class CheckoutBookResponseDto implements Serializable
 
     private String author;
 
+    private String publisher;
+
+    private int publishYear;
+
+    private int edition;
+
     private boolean ableToBorrow;
 
     private String reason;
 
     private String dueDate;
-
 }

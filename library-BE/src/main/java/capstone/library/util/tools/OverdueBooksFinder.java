@@ -20,6 +20,7 @@ public class OverdueBooksFinder
     BookBorrowingRepository bookBorrowingRepository;
     @Autowired
     ObjectMapper objectMapper;
+    DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
     public List<BookResponseDto> findOverdueBooksByPatronId(int id)
     {
@@ -27,7 +28,7 @@ public class OverdueBooksFinder
         List<BookBorrowing> allBorrowingBooks = bookBorrowingRepository.findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(id);
         for (BookBorrowing bookBorrowing : allBorrowingBooks)
         {
-            int overdueDays = LocalDate.now().compareTo(bookBorrowing.getDueAt());
+            int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
             if (overdueDays > 0)
             {
                 BookResponseDto dto = objectMapper.convertValue(bookBorrowing.getBookCopy().getBook(), BookResponseDto.class);
