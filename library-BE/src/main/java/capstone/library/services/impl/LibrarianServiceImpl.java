@@ -322,6 +322,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 authors = authors.replace("]", "");
                 dto.setAuthors(authors);
                 dto.setIsbn(bookCopy.getBook().getIsbn());
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
 
                 responseDtos.add(dto);
             }
@@ -333,7 +334,7 @@ public class LibrarianServiceImpl implements LibrarianService
     @Override
     public List<BookResponseDto> getOverdueBooksByBorrower(int patronId)
     {
-        return overdueBooksFinder.findOverdueBooksByPatronId(patronId);
+        return overdueBooksFinder.findOverdueBooksDTOByPatronId(patronId);
     }
 
     @Override
@@ -349,7 +350,7 @@ public class LibrarianServiceImpl implements LibrarianService
         /*=================*/
 
         /*Check if patron is keeping any overdue book*/
-        List<BookResponseDto> overdueBooks = overdueBooksFinder.findOverdueBooksByPatronId(patron.getId());
+        List<BookResponseDto> overdueBooks = overdueBooksFinder.findOverdueBooksDTOByPatronId(patron.getId());
         if (!overdueBooks.isEmpty())
         {
             haveOverdueCopies = true;

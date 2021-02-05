@@ -34,4 +34,6 @@ public class ReturnBookResponseDto implements Serializable
     private double fine;
 
     private double bookPrice;
+
+    private String borrowedAt;
 }
