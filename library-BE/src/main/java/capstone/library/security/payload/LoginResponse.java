@@ -29,12 +29,15 @@ public class LoginResponse {
 
     private String email;
 
-    public LoginResponse(String accessToken, Integer userId, Date expiryDate, String role, String patronGroup, String email) {
+    private String avatar;
+
+    public LoginResponse(String accessToken, Integer userId, Date expiryDate, String role, String patronGroup, String email, String avatar) {
         this.accessToken = accessToken;
         this.userId = userId;
         this.expiryDate = expiryDate;
         this.role = role;
         this.patronGroup = patronGroup;
         this.email = email;
+        this.avatar = avatar;
     }
 }
