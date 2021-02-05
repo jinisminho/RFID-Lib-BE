@@ -30,4 +30,6 @@ public class CheckoutCopyDto
     private String reason;
 
     private String dueDate;
+
+    private String borrowedAt;
 }

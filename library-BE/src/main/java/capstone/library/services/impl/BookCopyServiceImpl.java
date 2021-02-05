@@ -162,7 +162,7 @@ public class BookCopyServiceImpl implements BookCopyService
         if (patronOptional.isPresent())
         {
             patron = patronOptional.get();
-            if (patron.getRole().getId() != RoleIdEnum.PATRON.getRoleId())
+            if (patron.getRole().getId() != RoleIdEnum.ROLE_PATRON.getRoleId())
             {
                 throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
             }

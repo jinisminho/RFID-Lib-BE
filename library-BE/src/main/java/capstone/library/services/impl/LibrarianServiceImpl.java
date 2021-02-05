@@ -25,7 +25,6 @@ import javax.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -73,7 +72,7 @@ public class LibrarianServiceImpl implements LibrarianService
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
-        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.LIBRARIAN.getRoleId());
+        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.ROLE_LIBRARIAN.getRoleId());
         //Return 404 if no patron with 'getLibrarianId' is found
         if (librarianOptional.isEmpty())
         {
@@ -85,7 +84,7 @@ public class LibrarianServiceImpl implements LibrarianService
         /*========================*/
 
         /*Get the borrowing patron to add to borrowed_by in book_borrowing table*/
-        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.PATRON.getRoleId());
+        Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.ROLE_PATRON.getRoleId());
         //Return 404 if no patron with 'patronId' is found
         if (patronOptional.isEmpty())
         {
@@ -184,6 +183,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 authors = authors.replace("[", "");
                 authors = authors.replace("]", "");
                 dto.setAuthor(authors);
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(now));
             } else
             {
                 //Add bookBorrowing to response dto
@@ -194,7 +194,6 @@ public class LibrarianServiceImpl implements LibrarianService
             }
             dtos.add(dto);
         }
-        response.setBorrowedAt(now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         response.setCheckoutCopyDto(dtos);
         checkoutResponseDtos.add(response);
         return checkoutResponseDtos;

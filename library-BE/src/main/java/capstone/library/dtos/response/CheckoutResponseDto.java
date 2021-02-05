@@ -16,6 +16,5 @@ import java.util.List;
 public class CheckoutResponseDto implements Serializable
 {
     private List<CheckoutCopyDto> checkoutCopyDto;
-    private String borrowedAt;
 
 }

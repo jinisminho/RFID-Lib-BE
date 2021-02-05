@@ -27,4 +27,5 @@ public class ConstantUtil {
 
     //Other
     public static final String PHONE_REGEXP = "^\\d{10}$";
+    public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 }

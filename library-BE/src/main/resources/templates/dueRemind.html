@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p th:text="#{greetings(${patron})}"></p>
+
+<p> Please return book:
+    <span th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></span>
+    on <span th:text="${dueDate}"></span>.
+</p>
+<p>
+    You can return book at: book drop station, self return kiosk, or librarian counter.
+</p>
+<p>
+    If return is made after the due day, you have to pay overdue fine <span th:text="${fineRate}"></span>
+    VND/a copy/ a overdue day (Saturday and Sunday will not be count).
+</p>
+<br/>
+<p th:text="#{regards}"></p>
+<p>
+    <em th:text="#{signature}"></em> <br />
+</p>
+</body>
+</html>

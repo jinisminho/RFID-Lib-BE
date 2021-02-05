@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface BookCopyRepository extends JpaRepository<BookCopy, Integer>
@@ -20,4 +21,6 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Integer>
     List<BookCopy> findByBookIdAndStatus(Integer id, BookCopyStatus status);
 
     Optional<BookCopy> findByBarcode(String barcode);
+
+    List<BookCopy> findByBookIdAndStatusIn(int bookId,Set<BookCopyStatus> status);
 }

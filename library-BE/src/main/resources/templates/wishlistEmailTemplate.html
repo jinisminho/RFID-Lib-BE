@@ -4,8 +4,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-<p th:text="#{greetings(${recipientName})}"></p>
-<p th:text="${text}"></p>
+<p th:text="#{greetings(${patron})}"></p>
+
+<p> Book:
+    <span th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></span>
+    in your wishlist now is available at the library. Come and check please.
+</p>
+<br/>
 <p th:text="#{regards}"></p>
 <p>
     <em th:text="#{signature}"></em> <br />

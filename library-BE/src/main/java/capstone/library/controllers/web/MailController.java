@@ -1,51 +1,40 @@
 package capstone.library.controllers.web;
 
-
-import capstone.library.dtos.common.ErrorDto;
-import capstone.library.services.EmailService;
-import capstone.library.util.ConstantUtil;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import org.mapstruct.ap.shaded.freemarker.template.TemplateException;
+import capstone.library.dtos.email.EmailCheckOutBookDto;
+import capstone.library.dtos.email.EmailReturnBookDto;
+import capstone.library.services.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
+import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/mail")
 public class MailController {
+
     @Autowired
-    public EmailService emailService;
+    MailService mailService;
 
-    @ApiOperation(value = "This API test send mail")
-    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/sendHtml")
-    public ResponseEntity<?> sendEmail(@RequestParam(required = true, value = "to") String toMail,@RequestParam(required = true, value = "subject") String subject) throws IOException, MessagingException, TemplateException {
-        Map<String, Object> templateModel = new HashMap<>();
-        templateModel.put("recipientName", "KhangNDN");
-        templateModel.put("text", "Test email");
-        emailService.sendMessageUsingThymeleafTemplate(
-                toMail,
-                subject,
-                templateModel);
-        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "INTERNAL SERVER ERROR",
-                "Failed to send email");
+    @PostMapping("/checkout")
+    void sendCheckoutEmail (@RequestParam(name = "patronEmail")String patronEmail,
+                            @RequestBody @Valid List<EmailCheckOutBookDto> books){
+        mailService.sendCheckoutMail(patronEmail, books);
+    }
 
-        return new ResponseEntity("ok",
-                 HttpStatus.OK );
+    @PostMapping("/return")
+    void sendReturnEmail (@RequestBody @Valid List<EmailReturnBookDto> books){
+        mailService.sendReturnMail(books);
+    }
+
+    @GetMapping("/wishlist")
+    void sendWishlistAvailableEmail(){
+        mailService.sendNotifyWishlistAvailable();
+    }
+
+    @GetMapping("/remindDue")
+    void sendRemindDueDateEmail(){
+        mailService.sendRemindOverdueBook();
     }
 }

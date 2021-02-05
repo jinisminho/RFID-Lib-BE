@@ -4,6 +4,7 @@ import capstone.library.demo.dtos.request.CheckOutBookRequest;
 import capstone.library.demo.dtos.response.BookCheckOutResponse;
 import capstone.library.demo.dtos.response.BookReturnResponse;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookBorrowingService {
@@ -12,5 +13,5 @@ public interface BookBorrowingService {
 
     List<BookReturnResponse> returnBookByBatch(List<String> bookCodeList);
 
-    BookReturnResponse returnBookOneByOne (String rfidCode);
+    BookReturnResponse returnBookOneByOne (String rfidCode, LocalDateTime curdateTime);
 }
