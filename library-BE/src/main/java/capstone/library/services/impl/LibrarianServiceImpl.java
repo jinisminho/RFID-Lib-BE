@@ -66,7 +66,7 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<CheckoutResponseDto> checkout(ScannedRFIDCopiesRequestDto request)
+    public CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto request)
     {
         List<CheckoutResponseDto> checkoutResponseDtos = new ArrayList<>();
         List<String> rfidTags = request.getBookRfidTags();
@@ -195,8 +195,7 @@ public class LibrarianServiceImpl implements LibrarianService
             dtos.add(dto);
         }
         response.setCheckoutCopyDto(dtos);
-        checkoutResponseDtos.add(response);
-        return checkoutResponseDtos;
+        return response;
     }
 
 
