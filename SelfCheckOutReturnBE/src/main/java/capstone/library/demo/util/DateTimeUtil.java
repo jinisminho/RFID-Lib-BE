@@ -3,8 +3,8 @@ package capstone.library.demo.util;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +57,7 @@ public class DateTimeUtil {
         Predicate<LocalDate> isWeekend = date -> date.getDayOfWeek() == DayOfWeek.SATURDAY
                 || date.getDayOfWeek() == DayOfWeek.SUNDAY;
 
-        long daysBetween = Period.between(today, dueDate).getDays();
+        long daysBetween = ChronoUnit.DAYS.between(today, dueDate);
 
         if (daysBetween < 0)
         {
@@ -70,4 +70,5 @@ public class DateTimeUtil {
         }
 
     }
+
 }
