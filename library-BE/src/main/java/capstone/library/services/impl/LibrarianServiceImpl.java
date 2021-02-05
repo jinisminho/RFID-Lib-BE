@@ -25,7 +25,6 @@ import javax.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -184,6 +183,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 authors = authors.replace("[", "");
                 authors = authors.replace("]", "");
                 dto.setAuthor(authors);
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(now));
             } else
             {
                 //Add bookBorrowing to response dto
@@ -194,7 +194,6 @@ public class LibrarianServiceImpl implements LibrarianService
             }
             dtos.add(dto);
         }
-        response.setBorrowedAt(now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         response.setCheckoutCopyDto(dtos);
         checkoutResponseDtos.add(response);
         return checkoutResponseDtos;
