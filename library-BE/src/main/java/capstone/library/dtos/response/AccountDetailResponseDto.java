@@ -55,6 +55,9 @@ public class AccountDetailResponseDto implements Serializable
         private String name;
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
     private static class PatronTypeDto
     {
         private Integer id;
