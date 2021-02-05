@@ -1,7 +1,9 @@
 package capstone.library.services.impl;
 
+import capstone.library.dtos.common.CheckoutCopyDto;
 import capstone.library.dtos.email.EmailCheckOutBookDto;
 import capstone.library.dtos.email.EmailReturnBookDto;
+import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.WishListStatus;
@@ -62,11 +64,14 @@ public class MailServiceImpl implements MailService {
     BookBorrowingRepository borrowingRepo;
 
     @Override
-    public void sendCheckoutMail(String patronEmail, List<EmailCheckOutBookDto> books) {
-        if(books == null){
+    public void sendCheckoutMail(String patronEmail, CheckoutResponseDto request) {
+        if(request == null || request.getCheckoutCopyDto() == null){
             throw new MissingInputException("books is missing");
         }
-
+        List<CheckoutCopyDto> books =  request.getCheckoutCopyDto()
+                .stream()
+                .filter(CheckoutCopyDto::isAbleToBorrow)
+                .collect(Collectors.toList());
         if(!books.isEmpty()){
             Optional<Account> receiverOpt = accountRepo.findByEmail(patronEmail);
             if(receiverOpt.isPresent()){
