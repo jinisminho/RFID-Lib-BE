@@ -1,10 +1,13 @@
 package capstone.library.util.tools;
 
+import capstone.library.util.ConstantUtil;
 import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,5 +69,11 @@ public class DateTimeUtils
             return -daysBetween;
         }
 
+    }
+
+    public String convertDateTimeToString(LocalDateTime date)
+    {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(ConstantUtil.DATE_TIME_PATTERN);
+        return date.format(formatter);
     }
 }
