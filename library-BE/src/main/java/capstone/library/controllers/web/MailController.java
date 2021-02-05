@@ -2,6 +2,7 @@ package capstone.library.controllers.web;
 
 import capstone.library.dtos.email.EmailCheckOutBookDto;
 import capstone.library.dtos.email.EmailReturnBookDto;
+import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.services.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -19,8 +20,8 @@ public class MailController {
 
     @PostMapping("/checkout")
     void sendCheckoutEmail (@RequestParam(name = "patronEmail")String patronEmail,
-                            @RequestBody @Valid List<EmailCheckOutBookDto> books){
-        mailService.sendCheckoutMail(patronEmail, books);
+                            @RequestBody @Valid CheckoutResponseDto request){
+        mailService.sendCheckoutMail(patronEmail, request);
     }
 
     @PostMapping("/return")

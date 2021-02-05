@@ -63,6 +63,7 @@ public class AuthController {
                 );
         //set cookies
         Cookie cookie = new Cookie(HEADER_STRING, jwt);
+        cookie.setPath("/");
         response.addCookie(cookie);
         return payload;
     }

@@ -1,10 +1,11 @@
 package capstone.library.demo.enums;
 
 public enum BookCopyStatus {
-    PREPARING,
+    IN_PROCESS,
     AVAILABLE,
     BORROWED,
     OUT_OF_CIRCULATION,
     LOST,
-    NOT_ALLOWED_TO_BORROWED
+    LIB_USE_ONLY,
+    DISCARD
 }
