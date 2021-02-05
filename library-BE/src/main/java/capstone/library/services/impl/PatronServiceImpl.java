@@ -68,6 +68,7 @@ public class PatronServiceImpl implements PatronService
 
     private static final String EMAIL_DEFAULT = "test@test.com";
     private static final String PATRON_NOT_FOUND = "Cannot find patron";
+    private static final String NOT_PATRON = "This is not a patron account";
 
     @Override
     public boolean addWishlist(Integer bookId, Integer patronId)
@@ -253,6 +254,10 @@ public class PatronServiceImpl implements PatronService
             throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
         }
         Account patron = patronOptional.get();
+        if (patron.getPatronType() == null)
+        {
+            throw new ResourceNotFoundException("Patron", NOT_PATRON);
+        }
         /*=========*/
 
         /*Get overdue books*/
