@@ -63,10 +63,7 @@ public class AuthController {
                 );
         //set cookies
         Cookie cookie = new Cookie(HEADER_STRING, jwt);
-        cookie.setMaxAge((int) EXPIRATION_TIME);
         cookie.setPath("/");
-        cookie.setSecure(true);
-        cookie.setHttpOnly(true);
         response.addCookie(cookie);
         return payload;
     }
