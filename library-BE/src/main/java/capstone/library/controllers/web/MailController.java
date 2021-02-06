@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+import static capstone.library.util.constants.SecurityConstant.ADMIN;
+import static capstone.library.util.constants.SecurityConstant.LIBRARIAN;
+
 @RestController
 @RequestMapping("/mail")
 public class MailController {
@@ -18,12 +21,14 @@ public class MailController {
     @Autowired
     MailService mailService;
 
+    //@Secured({LIBRARIAN, ADMIN})
     @PostMapping("/checkout")
     void sendCheckoutEmail (@RequestParam(name = "patronEmail")String patronEmail,
                             @RequestBody @Valid CheckoutResponseDto request){
         mailService.sendCheckoutMail(patronEmail, request);
     }
 
+    //@Secured({LIBRARIAN, ADMIN})
     @PostMapping("/return")
     void sendReturnEmail (@RequestBody @Valid List<EmailReturnBookDto> books){
         mailService.sendReturnMail(books);

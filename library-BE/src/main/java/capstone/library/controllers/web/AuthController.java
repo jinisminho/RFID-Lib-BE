@@ -66,7 +66,9 @@ public class AuthController {
         //set cookies
         Cookie cookie = new Cookie(HEADER_STRING, jwt);
         cookie.setPath("/");
+        cookie.setMaxAge(EXPIRATION_TIME);
         response.addCookie(cookie);
+
         return payload;
     }
 }
