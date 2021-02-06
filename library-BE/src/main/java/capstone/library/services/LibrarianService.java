@@ -16,5 +16,5 @@ public interface LibrarianService
 
     CheckoutPolicyValidationResponseDto validateCheckoutPolicy(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
 
-    GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn);
+    GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId);
 }

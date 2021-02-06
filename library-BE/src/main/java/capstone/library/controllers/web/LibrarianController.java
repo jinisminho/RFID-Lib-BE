@@ -46,9 +46,9 @@ public class LibrarianController
 
     @GetMapping("/barcodes/generate")
     @ApiOperation(value = "return a list of barcodes based on book id")
-    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn)
+    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId)
     {
-        return librarianService.generateBarcodes(numberOfCopies, isbn);
+        return librarianService.generateBarcodes(numberOfCopies, isbn, copyTypeId);
     }
 
 

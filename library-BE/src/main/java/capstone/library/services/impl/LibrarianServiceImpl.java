@@ -12,6 +12,7 @@ import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.LibrarianService;
+import capstone.library.util.tools.BookCopyBarcodeUtils;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +47,8 @@ public class LibrarianServiceImpl implements LibrarianService
     MyBookRepository myBookRepository;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    BookCopyBarcodeUtils bookCopyBarcodeUtils;
 
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
@@ -456,7 +459,7 @@ public class LibrarianServiceImpl implements LibrarianService
     }
 
     @Override
-    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn)
+    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId)
     {
         GenerateBarcodesResponseDto response = new GenerateBarcodesResponseDto();
 
@@ -472,10 +475,11 @@ public class LibrarianServiceImpl implements LibrarianService
                     replace("[", "").replace("]", ""));
             response.setBookInfo(dto);
         }
-        
 
         //Generate barcodes
-
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findFirstByOrderByIdDesc();
+        bookCopyOptional.ifPresent(bookCopy -> response.setGeneratedBarcodes(bookCopyBarcodeUtils.
+                generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies)));
 
         return response;
     }
