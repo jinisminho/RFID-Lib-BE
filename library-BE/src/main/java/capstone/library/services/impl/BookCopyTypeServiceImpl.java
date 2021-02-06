@@ -14,17 +14,17 @@ import java.util.stream.Collectors;
 public class BookCopyTypeServiceImpl implements BookCopyTypeService {
 
     @Autowired
-    BookCopyTypeRepository bookCopyTypeRepo;
+    BookCopyTypeRepository bookCopyTypeRepository;
 
     @Autowired
-    ObjectMapper mapper;
+    ObjectMapper objectMapper;
 
     @Override
     public List<BookCopyTypeDto> getAllBookCopyType() {
-        return bookCopyTypeRepo
+        return bookCopyTypeRepository
                 .findAll()
                 .stream()
-                .map(b -> mapper.convertValue(b, BookCopyTypeDto.class))
+                .map(b -> objectMapper.convertValue(b, BookCopyTypeDto.class))
                 .collect(Collectors.toList());
     }
 }
