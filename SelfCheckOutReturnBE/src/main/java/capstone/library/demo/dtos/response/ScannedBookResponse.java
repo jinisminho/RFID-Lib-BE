@@ -29,4 +29,6 @@ public class ScannedBookResponse {
 
     private  String genres;
 
+    private int bookId;
+
 }
