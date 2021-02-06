@@ -14,7 +14,7 @@ import capstone.library.mappers.ExtendHistoryMapper;
 import capstone.library.mappers.ProfileMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
-import capstone.library.util.ConstantUtil;
+import capstone.library.util.constants.ConstantUtil;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;

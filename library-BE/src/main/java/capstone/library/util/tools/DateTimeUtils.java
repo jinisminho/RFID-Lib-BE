@@ -1,6 +1,6 @@
 package capstone.library.util.tools;
 
-import capstone.library.util.ConstantUtil;
+import capstone.library.util.constants.ConstantUtil;
 import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;

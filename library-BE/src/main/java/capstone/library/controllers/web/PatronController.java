@@ -8,7 +8,7 @@ import capstone.library.dtos.response.PatronCheckoutInfoResponseDto;
 import capstone.library.dtos.response.ProfileAccountResDto;
 import capstone.library.services.PatronService;
 import capstone.library.util.ApiPageable;
-import capstone.library.util.ConstantUtil;
+import capstone.library.util.constants.ConstantUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;

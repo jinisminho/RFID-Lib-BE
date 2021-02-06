@@ -1,10 +1,7 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
-import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
-import capstone.library.dtos.response.CheckoutResponseDto;
-import capstone.library.dtos.response.ReturnBookResponseDto;
+import capstone.library.dtos.response.*;
 import capstone.library.services.LibrarianService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,4 +43,13 @@ public class LibrarianController
     {
         return librarianService.getOverdueBooksByBorrower(patronId);
     }
+
+    @GetMapping("/barcodes/generate")
+    @ApiOperation(value = "return a list of barcodes based on book id")
+    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn)
+    {
+        return librarianService.generateBarcodes(numberOfCopies, isbn);
+    }
+
+
 }
