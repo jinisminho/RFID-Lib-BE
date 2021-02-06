@@ -23,6 +23,8 @@ public class ReturnBookResponseDto implements Serializable
 
     private String isbn;
 
+    private int edition;
+
     private boolean overdue;
 
     private int overdueDays;
