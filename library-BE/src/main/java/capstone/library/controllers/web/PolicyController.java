@@ -28,16 +28,19 @@ public class PolicyController {
         return policyService.getBorrowPolicies(pageable, patronTypeId, bookCopyTypeId);
     }
 
+    //@Secured(ADMIN)
     @PostMapping("/addBorrowPolicy")
     public BorrowPolicyResponse addBorrowPolicy (@RequestBody @Valid CreateBorrowPolicyRequest request){
         return policyService.addBorrowPolicy(request);
     }
 
+    //@Secured(ADMIN)
     @PostMapping("/updateBorrowPolicy")
     public BorrowPolicyResponse updateBorrowPolicy (@RequestBody @Valid UpdateBorrowPolicyRequest request){
         return policyService.updateBorrowPolicy(request);
     }
 
+    //@Secured(ADMIN)
     @PostMapping("/deleteBorrowPolicy")
     public String deleteBorrowPolicy(@RequestParam(name = "id") int id){
         return policyService.deleteBorrowPolicy(id);
