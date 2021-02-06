@@ -23,4 +23,6 @@ public interface BookService {
     String updateBookStatus(int id, BookStatus status);
 
     String updateBookInfo(UpdateBookInfoRequestDto request);
+
+    BookResponseDto findByISBN(String isbn);
 }
