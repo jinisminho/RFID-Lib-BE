@@ -43,6 +43,9 @@ public class BookBorrowing {
     @Column(name = "fine")
     private double fine = 0;
 
+    @Column(name = "note")
+    private String note;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowed_by")
     private Account borrower;

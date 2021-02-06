@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,6 +75,12 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             //if this copy able to borrow: set bookCopy status -> borrow; add bookBorrowing
             if(copy.getStatus() == BookCopyStatus.AVAILABLE){
                 LocalDate dueDate = curDate.plusDays(policy.getDueDuration());
+                /*overdue days excludes saturdays and sundays
+	                    eg: If due date is on Sunday then when return on Monday, overdue days = 0*/
+                while (dueDate.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueDate.getDayOfWeek().equals(DayOfWeek.SUNDAY))
+                {
+                    dueDate = dueDate.plusDays(1);
+                }
                 copy.setStatus(BookCopyStatus.BORROWED);
                 dto.setAbleToBorrow(true);
                 dto.setDueDate(dueDate.toString());
@@ -91,6 +98,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 borrowing.setIssued_by(patron);
                 borrowing.setBookCopy(copy);
                 borrowing.setFeePolicy(feePolicy);
+                borrowing.setNote("");
                 bookBorrowingRepo.save(borrowing);
             }else{
                 dto.setAbleToBorrow(false);
@@ -133,13 +141,13 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             BookBorrowing borrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
                     .orElseThrow(() -> new ResourceNotFoundException(("Cannot find borrowing transaction with book id" + copy.getId())));
             dto.setPatron(borrowing.getBorrower().getEmail());
-            long overdueDays = Duration.between(borrowing.getDueAt().atStartOfDay(), curDateTime.toLocalDate().atStartOfDay()).toDays();
+            long overdueDays = (int) DateTimeUtil.getOverdueDays(LocalDate.now(), borrowing.getDueAt());
             //check if overdue : not allow to return
             if(overdueDays > 0){
                 FeePolicy feePolicy = borrowing.getFeePolicy();
 
                 double fine = overdueDays * feePolicy.getOverdueFinePerDay();
-                double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine()/100;
+                double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine() / 100;
                 if(fine >= maxFine){
                     fine = maxFine;
                 }
@@ -151,7 +159,11 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 BookStatus bookStatus = copy.getBook().getStatus();
                 if(bookStatus == BookStatus.OUT_OF_CIRCULATION){
                     copy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                }else{
+                }else if (bookStatus == BookStatus.DISCARD){
+                    copy.setStatus(BookCopyStatus.DISCARD);
+                }else if (bookStatus == BookStatus.LIB_USE_ONLY){
+                    copy.setStatus(BookCopyStatus.LIB_USE_ONLY);
+                }else if (bookStatus == BookStatus.IN_CIRCULATION){
                     copy.setStatus(BookCopyStatus.AVAILABLE);
                 }
                 borrowing.setReturn_by(borrowing.getBorrower());

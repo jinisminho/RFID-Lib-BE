@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null)
             return header.replace("Bearer ", "");
         Cookie cookie = WebUtils.getCookie(request, HEADER_STRING);
-        if (cookie != null)
+         if (cookie != null)
             return cookie.getValue();
         return null;
     }
