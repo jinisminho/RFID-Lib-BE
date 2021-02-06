@@ -11,7 +11,7 @@ import java.util.List;
 public interface LibrarianService
 {
 
-    List<CheckoutResponseDto> checkout(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
+    CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
 
     List<ReturnBookResponseDto> returnBookCopies(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
 

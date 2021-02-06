@@ -2,6 +2,7 @@ package capstone.library.util.tools;
 
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.entities.BookBorrowing;
+import capstone.library.entities.BookCopy;
 import capstone.library.repositories.BookBorrowingRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class OverdueBooksFinder
     ObjectMapper objectMapper;
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
-    public List<BookResponseDto> findOverdueBooksByPatronId(int id)
+    public List<BookResponseDto> findOverdueBooksDTOByPatronId(int id)
     {
         List<BookResponseDto> response = new ArrayList<>();
         List<BookBorrowing> allBorrowingBooks = bookBorrowingRepository.findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(id);
@@ -46,4 +47,24 @@ public class OverdueBooksFinder
         }
         return response;
     }
+
+    public List<BookCopy> findOverdueBookCopiesByPatronId(int id)
+    {
+        List<BookCopy> response = new ArrayList<>();
+
+        List<BookBorrowing> allBorrowingBooks = bookBorrowingRepository.findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(id);
+
+        for (BookBorrowing bookBorrowing : allBorrowingBooks)
+        {
+            int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+            if (overdueDays > 0)
+            {
+                BookCopy bookCopy = bookBorrowing.getBookCopy();
+                response.add(bookCopy);
+            }
+        }
+
+        return response;
+    }
+
 }

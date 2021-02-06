@@ -21,7 +21,7 @@ public class LibrarianController
 
     @PostMapping("/checkout")
     @ApiOperation(value = "Checkout a list of book copies")
-    public List<CheckoutResponseDto> checkoutBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
+    public CheckoutResponseDto checkoutBookCopies(@RequestBody ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
     {
         return librarianService.checkout(scannedRFIDCopiesRequestDto);
     }

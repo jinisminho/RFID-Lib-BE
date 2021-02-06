@@ -53,13 +53,15 @@ public class AuthController {
         String jwt = tokenProvider.generateToken(authentication);
         String role = account.getRole().getName();
         String patronGroup = account.getPatronType() == null ? "" : account.getPatronType().getName();
+        String avatar = account.getAvatar();
         LoginResponse payload = new LoginResponse(
                 jwt,
                 tokenProvider.getUserIdFromJwt(jwt),
                 tokenProvider.getExpiryDateFromJwt(jwt),
                 role,
                 patronGroup,
-                loginRequest.getEmail()
+                loginRequest.getEmail(),
+                avatar
                 );
         //set cookies
         Cookie cookie = new Cookie(HEADER_STRING, jwt);

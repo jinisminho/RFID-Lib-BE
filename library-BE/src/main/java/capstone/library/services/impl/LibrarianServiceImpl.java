@@ -66,7 +66,7 @@ public class LibrarianServiceImpl implements LibrarianService
 
     @Override
     @Transactional
-    public List<CheckoutResponseDto> checkout(ScannedRFIDCopiesRequestDto request)
+    public CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto request)
     {
         List<CheckoutResponseDto> checkoutResponseDtos = new ArrayList<>();
         List<String> rfidTags = request.getBookRfidTags();
@@ -195,8 +195,7 @@ public class LibrarianServiceImpl implements LibrarianService
             dtos.add(dto);
         }
         response.setCheckoutCopyDto(dtos);
-        checkoutResponseDtos.add(response);
-        return checkoutResponseDtos;
+        return response;
     }
 
 
@@ -254,6 +253,8 @@ public class LibrarianServiceImpl implements LibrarianService
                 double fine = 0;
                 //Returns >0 if today has passed overdue date
                 int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+                System.out.println("Now: " + LocalDate.now());
+                System.out.println(("Due at: " + bookBorrowing.getDueAt()));
                 System.out.println("OVERDUE DAYS: " + overdueDays);
                 if (overdueDays > 0)
                 {
@@ -264,7 +265,7 @@ public class LibrarianServiceImpl implements LibrarianService
                         fineRate = feePolicyOptional.get().getOverdueFinePerDay();
                         fine = fineRate * overdueDays;
                         int maxOverdueFinePercentage = feePolicyOptional.get().getMaxPercentageOverdueFine();
-                        double maxOverdueFine = bookCopyPrice * maxOverdueFinePercentage;
+                        double maxOverdueFine = bookCopyPrice * ((double) maxOverdueFinePercentage / 100);
                         if (fine >= maxOverdueFine)
                         {
                             fine = maxOverdueFine;
@@ -321,6 +322,7 @@ public class LibrarianServiceImpl implements LibrarianService
                 authors = authors.replace("]", "");
                 dto.setAuthors(authors);
                 dto.setIsbn(bookCopy.getBook().getIsbn());
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
 
                 responseDtos.add(dto);
             }
@@ -332,7 +334,7 @@ public class LibrarianServiceImpl implements LibrarianService
     @Override
     public List<BookResponseDto> getOverdueBooksByBorrower(int patronId)
     {
-        return overdueBooksFinder.findOverdueBooksByPatronId(patronId);
+        return overdueBooksFinder.findOverdueBooksDTOByPatronId(patronId);
     }
 
     @Override
@@ -348,7 +350,7 @@ public class LibrarianServiceImpl implements LibrarianService
         /*=================*/
 
         /*Check if patron is keeping any overdue book*/
-        List<BookResponseDto> overdueBooks = overdueBooksFinder.findOverdueBooksByPatronId(patron.getId());
+        List<BookResponseDto> overdueBooks = overdueBooksFinder.findOverdueBooksDTOByPatronId(patron.getId());
         if (!overdueBooks.isEmpty())
         {
             haveOverdueCopies = true;
