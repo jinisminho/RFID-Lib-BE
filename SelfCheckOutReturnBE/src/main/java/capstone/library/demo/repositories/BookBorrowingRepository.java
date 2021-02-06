@@ -28,4 +28,10 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
             nativeQuery = true
     )
     Optional<BookBorrowing> findBorrowedTransactionByBookCopyId(@Param("book_copy_id") int bookCopyId);
+
+
+    Optional<BookBorrowing> findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(int bookCopyId);
+
+    List<BookBorrowing> findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(int patronId);
+
 }

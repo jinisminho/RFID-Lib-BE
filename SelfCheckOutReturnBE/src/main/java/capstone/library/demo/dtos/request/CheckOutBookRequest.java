@@ -23,4 +23,8 @@ public class CheckOutBookRequest {
     private String group;
 
     private int groupId;
+
+    private int bookId;
+
+    private String title;
 }

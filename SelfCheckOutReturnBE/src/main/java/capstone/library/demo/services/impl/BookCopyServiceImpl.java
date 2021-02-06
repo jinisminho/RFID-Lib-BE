@@ -42,6 +42,8 @@ public class BookCopyServiceImpl implements BookCopyService {
                 book.getSubtitle(),
                 copy.getBookCopyType().getId(),
                 copy.getBookCopyType().getName(),
-                genres);
+                genres,
+                book.getId()
+                );
     }
 }

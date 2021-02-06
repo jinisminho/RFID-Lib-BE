@@ -243,6 +243,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                     ("You're not allowed to borrow more than " + patronType.getMaxNumberCopyBorrow() + " books");
         }
 
+        List<BookBorrowing> holdingBooks = bookBorrowingRepo
+                .findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patronId);
+
         Map<Integer, BookGroup> bookGroupMap = new HashMap<>();
         for (CheckOutBookRequest book :  bookCodeList){
             int count = 1;
@@ -250,6 +253,15 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 count = bookGroupMap.get(book.getGroupId()).getCount() + 1;
             }
             bookGroupMap.put(book.getGroupId(), new BookGroup(book.getGroup(), count));
+            //check duplicate
+            BookBorrowing tmp = holdingBooks
+                    .stream()
+                    .filter(b -> b.getBookCopy().getBook().getId() == book.getBookId())
+                    .findFirst()
+                    .orElse(null);
+            if(tmp != null){
+                msg.set(msg + "You borrowed "  + tmp.getBookCopy().getBook().getTitle() + " and haven't returned yet\n");
+            }
         }
 
         bookGroupMap.forEach(
