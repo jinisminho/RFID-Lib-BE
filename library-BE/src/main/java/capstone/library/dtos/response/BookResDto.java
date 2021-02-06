@@ -50,7 +50,11 @@ public class BookResDto {
 
     public Set<AuthorResDto> author;
 
+    private String authorsString;
+
     public Set<GenreResDto> genres;
+
+    private String genresString;
 
     private String img;
 
