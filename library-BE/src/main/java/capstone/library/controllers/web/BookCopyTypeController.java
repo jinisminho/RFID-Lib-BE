@@ -16,19 +16,19 @@ import capstone.library.dtos.common.BookCopyTypeDto;
 
 @RestController
 @RequestMapping("/copyType")
-public class BookCopyTypeController
-{
+public class BookCopyTypeController {
     @Autowired
     BookCopyTypeService bookCopyTypeService;
 
     @GetMapping("/all")
-    public List<BookCopyTypeResponseDto> getCopiesList()
-    {
+    public List<BookCopyTypeResponseDto> getCopiesList() {
         return bookCopyTypeService.getAllCopyTypes();
     }
+
     //@Secured({LIBRARIAN, ADMIN})
     @ApiOperation(value = "This API get Book Copy Type for policy")
     @GetMapping("/getAll")
-    public List<BookCopyTypeDto> getAllBookCopyType(){
-        return copyTypeService.getAllBookCopyType();
+    public List<BookCopyTypeDto> getAllBookCopyType() {
+        return bookCopyTypeService.getAllBookCopyType();
     }
+}
