@@ -27,7 +27,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class BookServiceImpl implements BookService {
+public class BookServiceImpl implements BookService
+{
 
     @Autowired
     private BookCopyRepository bookCopyRepository;
@@ -54,9 +55,11 @@ public class BookServiceImpl implements BookService {
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
+    private static final String BOOK_NOT_FOUND = "Cannot find this book in databse";
 
     @Override
-    public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
+    public Page<BookResDto> findBooks(String searchValue, Pageable pageable)
+    {
 //        if (searchValue == null) {
 //            throw new MissingInputException("Missing search value for search book");
 //        }
@@ -69,17 +72,20 @@ public class BookServiceImpl implements BookService {
         totalSize = books.getTotalElements();
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
-        for (BookResDto book : res) {
+        for (BookResDto book : res)
+        {
             List<BookCopyResDto> copies = bookCopyRepository.findByBookId(book.getId()).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList());
             List<BookCopyResDto> stocks = copies.stream().filter(e -> e.getStatus().equals(BookCopyStatus.AVAILABLE)).collect(Collectors.toList());
             int copiesSize = copies.size();
             int stockSize = stocks.size();
 
-            if (copiesSize > 0) {
+            if (copiesSize > 0)
+            {
                 book.setTotalCopies(copiesSize);
                 book.setStock(stockSize);
                 book.setAvailable(true);
-            } else {
+            } else
+            {
                 book.setAvailable(false);
             }
             if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
@@ -90,25 +96,30 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public boolean reindexAll() {
+    public boolean reindexAll()
+    {
         bookRepository.reindexAll();
         return true;
     }
 
     @Override
-    public Page<BookResponseDto> findAllBooks(Pageable pageable) {
+    public Page<BookResponseDto> findAllBooks(Pageable pageable)
+    {
         Page<Book> books = myBookRepository.findAll(pageable);
         List<BookResponseDto> responseDtos = new ArrayList<>();
 
         /*Find if there's any copy of this book left
          * to check book's availability*/
-        for (Book book : books.getContent()) {
+        for (Book book : books.getContent())
+        {
             BookResponseDto dto = objectMapper.convertValue(book, BookResponseDto.class);
             int copies = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).size();
-            if (copies > 0) {
+            if (copies > 0)
+            {
                 dto.setAvailableCopies(copies);
                 dto.setAvailable(true);
-            } else {
+            } else
+            {
                 dto.setAvailable(false);
             }
             dto.setAuthors(book.getBookAuthors().toString().
@@ -128,9 +139,11 @@ public class BookServiceImpl implements BookService {
      * request DTO can be modified by FE to match their requirements*/
     @Override
     @Transactional
-    public String updateBookInfo(UpdateBookInfoRequestDto request) {
+    public String updateBookInfo(UpdateBookInfoRequestDto request)
+    {
         Optional<Book> bookOptional = myBookRepository.findById(request.getId());
-        if (bookOptional.isPresent()) {
+        if (bookOptional.isPresent())
+        {
             Book book = bookOptional.get();
 
             /*Validate and set data from requestDto to new Book*/
@@ -141,12 +154,16 @@ public class BookServiceImpl implements BookService {
 
             /*Remove old book authors and book relationships
              * to create new book authors and book relationships from the request*/
-            if (request.getAuthorIds() != null) {
+            if (request.getAuthorIds() != null)
+            {
                 setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
-                for (BookAuthor bookAuthor : book.getBookAuthors()) {
-                    try {
+                for (BookAuthor bookAuthor : book.getBookAuthors())
+                {
+                    try
+                    {
                         bookAuthorRepository.deleteById(bookAuthor.getId());
-                    } catch (Exception e) {
+                    } catch (Exception e)
+                    {
                         throw new CustomException(
                                 HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
                     }
@@ -156,12 +173,16 @@ public class BookServiceImpl implements BookService {
 
             /*Remove old book genres and book relationships
              * to create new book genres and book relationships from the request*/
-            if (request.getGenreIds() != null) {
+            if (request.getGenreIds() != null)
+            {
                 setBookGenre(book, bookGenreSet, request.getGenreIds());
-                for (BookGenre bookGenre : book.getBookGenres()) {
-                    try {
+                for (BookGenre bookGenre : book.getBookGenres())
+                {
+                    try
+                    {
                         bookGenreRepository.deleteById(bookGenre.getId());
-                    } catch (Exception e) {
+                    } catch (Exception e)
+                    {
                         throw new CustomException(
                                 HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
                     }
@@ -169,43 +190,71 @@ public class BookServiceImpl implements BookService {
                 book.setBookGenres(bookGenreSet);
             }
 
-            try {
+            try
+            {
                 myBookRepository.save(book);
                 return SUCCESS_MESSAGE;
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 throw new CustomException(
                         HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
             }
-        } else {
+        } else
+        {
             throw new ResourceNotFoundException("Book", "Book [" + request.getId() + "] not found");
         }
 
     }
 
-    private void setBookGenre(Book book, Set<BookGenre> bookGenreSet, List<Integer> genreIds) {
-        for (int id : genreIds) {
+    @Override
+    public BookResponseDto findByISBN(String isbn)
+    {
+        Optional<Book> bookOptional = myBookRepository.findByIsbn(isbn);
+        if (bookOptional.isPresent())
+        {
+            Book book = bookOptional.get();
+            BookResponseDto response = objectMapper.convertValue(book, BookResponseDto.class);
+            response.setAuthors(book.getBookAuthors().toString().
+                    replace("[", "").replace("]", ""));
+            response.setGenres(book.getBookGenres().toString().
+                    replace("[", "").replace("]", ""));
+            return response;
+        }
+        throw new ResourceNotFoundException("Book", BOOK_NOT_FOUND);
+    }
+
+    private void setBookGenre(Book book, Set<BookGenre> bookGenreSet, List<Integer> genreIds)
+    {
+        for (int id : genreIds)
+        {
             Optional<Genre> genreOptional = genreRepository.findById(id);
-            if (genreOptional.isPresent()) {
+            if (genreOptional.isPresent())
+            {
                 BookGenre bookGenre = new BookGenre();
                 bookGenre.setBook(book);
                 bookGenre.setGenre(genreOptional.get());
                 bookGenreSet.add(bookGenre);
-            } else {
+            } else
+            {
                 throw new ResourceNotFoundException("Genre", "Genre is not found");
             }
         }
 
     }
 
-    private void setBookAuthor(Book book, Set<BookAuthor> bookAuthorSet, List<Integer> authorIds) {
-        for (int id : authorIds) {
+    private void setBookAuthor(Book book, Set<BookAuthor> bookAuthorSet, List<Integer> authorIds)
+    {
+        for (int id : authorIds)
+        {
             Optional<Author> authorOptional = authorRepository.findById(id);
-            if (authorOptional.isPresent()) {
+            if (authorOptional.isPresent())
+            {
                 BookAuthor bookAuthor = new BookAuthor();
                 bookAuthor.setBook(book);
                 bookAuthor.setAuthor(authorOptional.get());
                 bookAuthorSet.add(bookAuthor);
-            } else {
+            } else
+            {
                 throw new ResourceNotFoundException("Author", "Author is not found");
             }
         }
@@ -214,65 +263,83 @@ public class BookServiceImpl implements BookService {
     /*Validate request fields before saving request to database.
      * I didn't validate on DTO because this request dto can be modified for other use cases,
      * making this API reusable*/
-    private void setBasicBookInfo(Book book, UpdateBookInfoRequestDto request) {
-        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+    private void setBasicBookInfo(Book book, UpdateBookInfoRequestDto request)
+    {
+        if (request.getTitle() != null && !request.getTitle().isBlank())
+        {
             book.setTitle(request.getTitle());
         }
-        if (request.getSubtitle() != null && !request.getSubtitle().isBlank()) {
+        if (request.getSubtitle() != null && !request.getSubtitle().isBlank())
+        {
             book.setSubtitle(request.getSubtitle());
         }
-        if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
+        if (request.getPublisher() != null && !request.getPublisher().isBlank())
+        {
             book.setPublisher(request.getPublisher());
         }
-        if (request.getPublishYear() != null && !book.getPublishYear().equals(request.getPublishYear())) {
+        if (request.getPublishYear() != null && !book.getPublishYear().equals(request.getPublishYear()))
+        {
             book.setPublishYear(request.getPublishYear());
         }
-        if (request.getEdition() != null && !book.getEdition().equals(request.getEdition()) && request.getEdition() > 0) {
+        if (request.getEdition() != null && !book.getEdition().equals(request.getEdition()) && request.getEdition() > 0)
+        {
             book.setEdition(request.getEdition());
         }
-        if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
+        if (request.getLanguage() != null && !request.getLanguage().isBlank())
+        {
             book.setLanguage(request.getLanguage());
         }
-        if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0) {
+        if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0)
+        {
             book.setPageNumber(request.getPageNumber());
         }
-        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
+        if (request.getCallNumber() != null && !request.getCallNumber().isBlank())
+        {
             book.setCallNumber(request.getCallNumber());
         }
-        if (request.getNumberOfCopy() != null && !book.getNumberOfCopy().equals(request.getNumberOfCopy())) {
+        if (request.getNumberOfCopy() != null && !book.getNumberOfCopy().equals(request.getNumberOfCopy()))
+        {
             book.setNumberOfCopy(request.getNumberOfCopy());
         }
-        if (request.getImg() != null && !request.getImg().isBlank()) {
+        if (request.getImg() != null && !request.getImg().isBlank())
+        {
             book.setImg(request.getImg());
         }
     }
 
     @Override
     @Transactional
-    public String addBook(CreateBookRequestDto request) {
-        if (request.getPageNumber() == 0) {
+    public String addBook(CreateBookRequestDto request)
+    {
+        if (request.getPageNumber() == 0)
+        {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Page number is 0", "Page number must be more than 0");
         }
         Book book = objectMapper.convertValue(request, Book.class);
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
-        if (bookAuthorSet.isEmpty()) {
+        if (bookAuthorSet.isEmpty())
+        {
             throw new ResourceNotFoundException("Author", "Author is not found");
         }
         setBookGenre(book, bookGenreSet, request.getGenreIds());
         book.setBookAuthors(bookAuthorSet);
         book.setBookGenres(bookGenreSet);
-        if (request.getImg().isBlank()) {
+        if (request.getImg().isBlank())
+        {
             book.setImg("img_url");
-        } else {
+        } else
+        {
             book.setImg(request.getImg());
         }
         book.setNumberOfCopy(0);
 
-        try {
+        try
+        {
             myBookRepository.save(book);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             throw new CustomException(
                     HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
         }
@@ -282,39 +349,51 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public String updateBookStatus(int id, BookStatus status) {
+    public String updateBookStatus(int id, BookStatus status)
+    {
         Optional<Book> bookOptional = myBookRepository.findById(id);
-        if (bookOptional.isPresent()) {
+        if (bookOptional.isPresent())
+        {
             Book book = bookOptional.get();
-            if (book.getStatus().equals(BookStatus.DISCARD)) {
+            if (book.getStatus().equals(BookStatus.DISCARD))
+            {
                 return "Cannot update DISCARD book";
-            } else if (status.equals(book.getStatus())) {
+            } else if (status.equals(book.getStatus()))
+            {
                 return "Book status is already " + status;
             }
 
             book.setStatus(status);
 
-            try {
+            try
+            {
                 myBookRepository.save(book);
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 throw new CustomException(
                         HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
             }
             return SUCCESS_MESSAGE;
-        } else {
+        } else
+        {
             throw new ResourceNotFoundException("Book", "Book [" + id + "] is not found");
         }
     }
 
     /*Only change status of copies that are "AVAILABLE"*/
-    private void updateCopiesStatusOnBookStatusChange(Book book) {
+    private void updateCopiesStatusOnBookStatusChange(Book book)
+    {
         List<BookCopy> bookCopies = bookCopyRepository.findByBookId(book.getId());
-        for (BookCopy bookCopy : bookCopies) {
-            if (bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE)) {
-                if (book.getStatus().equals(BookStatus.LIB_USE_ONLY)) {
+        for (BookCopy bookCopy : bookCopies)
+        {
+            if (bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE))
+            {
+                if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
+                {
                     bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
                 }
-                if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION)) {
+                if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
+                {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
                 }
             }

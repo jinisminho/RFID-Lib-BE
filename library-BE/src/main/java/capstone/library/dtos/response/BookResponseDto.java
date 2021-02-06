@@ -47,6 +47,8 @@ public class BookResponseDto implements Serializable
 
     private int availableCopies;
 
+    private int numberOfCopy;
+
     private String img;
 
     private String status;

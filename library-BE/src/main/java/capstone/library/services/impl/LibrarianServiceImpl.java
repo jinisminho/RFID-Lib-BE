@@ -408,6 +408,8 @@ public class LibrarianServiceImpl implements LibrarianService
         /*Check if the patron is borrowing any duplicate copies of the same book*/
         HashSet<Book> bookHashSet = new HashSet<>();
         List<Integer> bookIdList = new ArrayList<>();
+        //Add all scanned copy's book's ID to bookIdList (including all duplicates if present)
+        //Add the copy's book to a HashSet (excluding duplicating books)
         for (String rfid : request.getBookRfidTags())
         {
             BookCopy bookCopy = getBookCopyInfoByRFID(rfid);
@@ -417,6 +419,18 @@ public class LibrarianServiceImpl implements LibrarianService
                 bookHashSet.add(bookCopy.getBook());
             }
         }
+
+        //Add all BORROWED copy's book's ID to bookIdList (including all duplicates if present)
+        //Add the BORROWED copy's book to a HashSet (excluding duplicating books)
+        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
+                findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
+        for (BookBorrowing bookBorrowing : borrowingCopies)
+        {
+            bookIdList.add(bookBorrowing.getBookCopy().getBook().getId());
+            bookHashSet.add(bookBorrowing.getBookCopy().getBook());
+        }
+
+        //Check duplicate
         for (Book book : bookHashSet)
         {
             if (Collections.frequency(bookIdList, book.getId()) > 1)
