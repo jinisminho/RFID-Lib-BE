@@ -6,7 +6,7 @@ import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.exceptions.UnauthorizedException;
-import capstone.library.util.ConstantUtil;
+import capstone.library.util.constants.ConstantUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;

@@ -2,10 +2,7 @@ package capstone.library.services.impl;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
-import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
-import capstone.library.dtos.response.CheckoutResponseDto;
-import capstone.library.dtos.response.ReturnBookResponseDto;
+import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
@@ -17,6 +14,7 @@ import capstone.library.repositories.*;
 import capstone.library.services.LibrarianService;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,6 +42,10 @@ public class LibrarianServiceImpl implements LibrarianService
     FeePolicyRepository feePolicyRepository;
     @Autowired
     PatronTypeRepository patronTypeRepository;
+    @Autowired
+    MyBookRepository myBookRepository;
+    @Autowired
+    ObjectMapper objectMapper;
 
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
@@ -449,6 +451,31 @@ public class LibrarianServiceImpl implements LibrarianService
         response.setDuplicateBook(duplicateBook);
         response.setReasons(reasons);
         /*===============*/
+
+        return response;
+    }
+
+    @Override
+    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn)
+    {
+        GenerateBarcodesResponseDto response = new GenerateBarcodesResponseDto();
+
+        //Set Book Info
+        Optional<Book> bookOptional = myBookRepository.findByIsbn(isbn);
+        if (bookOptional.isPresent())
+        {
+            Book book = bookOptional.get();
+            BookResponseDto dto = objectMapper.convertValue(book, BookResponseDto.class);
+            dto.setAuthors(book.getBookAuthors().toString().
+                    replace("[", "").replace("]", ""));
+            dto.setGenres(book.getBookGenres().toString().
+                    replace("[", "").replace("]", ""));
+            response.setBookInfo(dto);
+        }
+        
+
+        //Generate barcodes
+
 
         return response;
     }

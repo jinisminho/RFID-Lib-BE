@@ -22,5 +22,7 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Integer>
 
     Optional<BookCopy> findByBarcode(String barcode);
 
-    List<BookCopy> findByBookIdAndStatusIn(int bookId,Set<BookCopyStatus> status);
+    List<BookCopy> findByBookIdAndStatusIn(int bookId, Set<BookCopyStatus> status);
+
+    Optional<BookCopy> findFirstByOrderByIdDesc();
 }

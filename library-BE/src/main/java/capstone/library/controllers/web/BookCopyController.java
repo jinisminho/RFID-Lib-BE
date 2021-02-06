@@ -44,4 +44,10 @@ public class BookCopyController
         return bookCopyService.getCopyByRFID(rfid, patronId);
     }
 
+    @GetMapping("/get/barcode/{barcode}")
+    public CopyResponseDto getCopyByBarcode(@PathVariable @NotEmpty String barcode)
+    {
+        return bookCopyService.getCopyByBarcode(barcode);
+    }
+
 }

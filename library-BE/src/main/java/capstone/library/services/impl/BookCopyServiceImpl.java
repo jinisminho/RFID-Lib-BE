@@ -44,6 +44,7 @@ public class BookCopyServiceImpl implements BookCopyService
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String COPY_NOT_FOUND = "Cannot find this book copy in database";
     private static final String BOOK_COPY = "Book copy";
+    private static final String BOOK_COPY_NOT_FOUND = "Book copy";
     private static final String BOOK = "Book";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy";
     private static final String POLICY_BOOK_STATUS = "This book is not in circulation";
@@ -218,6 +219,24 @@ public class BookCopyServiceImpl implements BookCopyService
 
 
         return response;
+    }
+
+    @Override
+    public CopyResponseDto getCopyByBarcode(String barcode)
+    {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
+        if (bookCopyOptional.isPresent())
+        {
+            BookCopy copy = bookCopyOptional.get();
+            CopyResponseDto dto = objectMapper.convertValue(copy, CopyResponseDto.class);
+            dto.getBook().setAuthors(copy.getBook().getBookAuthors().
+                    toString().replace("]", "").replace("[", ""));
+            dto.getBook().setGenres(copy.getBook().getBookGenres().
+                    toString().replace("]", "").replace("[", ""));
+            dto.setCopyType(copy.getBookCopyType().getName());
+            return dto;
+        }
+        throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
     }
 
     private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception
