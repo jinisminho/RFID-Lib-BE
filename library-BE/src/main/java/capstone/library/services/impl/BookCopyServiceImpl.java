@@ -3,6 +3,7 @@ package capstone.library.services.impl;
 import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.request.TagCopyRequestDto;
 import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
@@ -115,8 +116,17 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public String tagCopy(String barcode, String rfid)
+    public String tagCopy(TagCopyRequestDto request)
     {
+        String barcode = request.getBarcode();
+        String rfid = request.getRfid();
+
+        Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
+        if (updaterOptional.isEmpty())
+        {
+            throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+        }
+
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
         if (bookCopyOptional.isPresent())
         {
@@ -126,6 +136,7 @@ public class BookCopyServiceImpl implements BookCopyService
             {
                 Book book = bookOptional.get();
                 bookCopy.setRfid(rfid.toUpperCase());
+                bookCopy.setUpdater(updaterOptional.get());
                 if (book.getStatus().equals(BookStatus.IN_CIRCULATION))
                 {
                     bookCopy.setStatus(BookCopyStatus.AVAILABLE);

@@ -1,6 +1,7 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.request.TagCopyRequestDto;
 import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
@@ -35,9 +36,9 @@ public class BookCopyController
     }
 
     @PostMapping("/tag")
-    public String tagCopy(String barcode, String rfid)
+    public String tagCopy(@RequestBody @Valid @NotNull TagCopyRequestDto request)
     {
-        return bookCopyService.tagCopy(barcode, rfid);
+        return bookCopyService.tagCopy(request);
     }
 
     @GetMapping("/validate/{rfid}")
