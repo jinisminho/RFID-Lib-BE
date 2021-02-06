@@ -14,8 +14,9 @@ public interface BookCopyService
 
     String tagCopy(String barcode, String rfid);
 
-    CheckCopyPolicyResponseDto getCopyByRFID(String rfid, int patronId);
+    CheckCopyPolicyResponseDto validateCopyByRFID(String rfid, int patronId);
 
     CopyResponseDto getCopyByBarcode(String barcode);
 
+    CopyResponseDto getCopyByRfid(String rfid);
 }

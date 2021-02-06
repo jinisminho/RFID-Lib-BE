@@ -204,27 +204,39 @@ public class LibrarianServiceImpl implements LibrarianService
     }
 
 
+    @Override
+    public List<ReturnBookResponseDto> validateReturnRequest(ScannedRFIDCopiesRequestDto request)
+    {
+        return returnCopies(request);
+    }
+
     /*Is for librarians use
      * For returning multiple of book copies borrowed by patrons */
     @Override
     @Transactional
-    public List<ReturnBookResponseDto> returnBookCopies(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
+    public List<ReturnBookResponseDto> returnBookCopies(ScannedRFIDCopiesRequestDto request)
     {
+        return returnCopies(request);
+    }
+
+    private List<ReturnBookResponseDto> returnCopies(ScannedRFIDCopiesRequestDto request)
+    {
+
         List<BookCopy> bookCopies = new ArrayList<>();
         List<ReturnBookResponseDto> responseDtos = new ArrayList<>();
 
         /*Get librarian*/
-        Optional<Account> librarianOptional = accountRepository.findById(scannedRFIDCopiesRequestDto.getLibrarianId());
+        Optional<Account> librarianOptional = accountRepository.findById(request.getLibrarianId());
         if (librarianOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
-                    "Librarian", "Librarian with id: " + scannedRFIDCopiesRequestDto.getLibrarianId() + NOT_FOUND);
+                    "Librarian", "Librarian with id: " + request.getLibrarianId() + NOT_FOUND);
         }
         Account librarian = librarianOptional.get();
 
         /*Check to make sure book copy for each rfidTag is in DB.
          * Only update DB for book copies that are found*/
-        for (String rfidTag : scannedRFIDCopiesRequestDto.getBookRfidTags())
+        for (String rfidTag : request.getBookRfidTags())
         {
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.
                     findByRfidAndStatus(rfidTag, BookCopyStatus.BORROWED);
@@ -282,10 +294,21 @@ public class LibrarianServiceImpl implements LibrarianService
                 }
                 /*Update borrowing_book table
                  * Add return date and fine*/
-                bookBorrowing.setReturn_by(librarian);
-                bookBorrowing.setReturnedAt(now);
-                bookBorrowing.setFine(fine);
-                bookBorrowingRepository.save(bookBorrowing);
+                if (request.isCheckin())
+                {
+                    bookBorrowing.setReturn_by(librarian);
+                    bookBorrowing.setReturnedAt(now);
+                    bookBorrowing.setFine(fine);
+                    try
+                    {
+                        System.out.println("AAAAA " + request.isCheckin());
+                        bookBorrowingRepository.save(bookBorrowing);
+                    } catch (Exception e)
+                    {
+                        throw new CustomException(
+                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    }
+                }
 
                 /*update copy status based on book status:
                     if book is:
@@ -293,28 +316,34 @@ public class LibrarianServiceImpl implements LibrarianService
                         + OUT_OF_CIRCULATION => OUT_OF_CIRCULATION
                         + DISCARD => DISCARD
                         + LIB_USE_ONLY => LIB_USE_ONLY*/
-                if (bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
+                if (request.isCheckin())
                 {
-                    bookCopy.setStatus(BookCopyStatus.AVAILABLE);
-                } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
-                {
-                    bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                } else if (bookCopy.getBook().getStatus().equals(BookStatus.DISCARD))
-                {
-                    bookCopy.setStatus(BookCopyStatus.DISCARD);
-                } else if (bookCopy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY))
-                {
-                    bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
-                }
+                    if (bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+                    } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+                    } else if (bookCopy.getBook().getStatus().equals(BookStatus.DISCARD))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.DISCARD);
+                    } else if (bookCopy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
+                    }
 
-                //Insert return transaction to database
-                try
-                {
-                    bookCopyRepository.save(bookCopy);
-                } catch (Exception e)
-                {
-                    throw new CustomException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    //Insert return transaction to database
+                    try
+                    {
+
+                        System.out.println("AAAAA " + request.isCheckin());
+                        bookCopyRepository.save(bookCopy);
+
+                    } catch (Exception e)
+                    {
+                        throw new CustomException(
+                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    }
                 }
 
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
@@ -483,7 +512,6 @@ public class LibrarianServiceImpl implements LibrarianService
 
         return response;
     }
-
 
     private Account getAccountInfo(int id)
     {
