@@ -24,3 +24,5 @@ library-BE/src/test/java/capstone/library/LibrarianServiceTestCases.java
 SelfCheckOutReturnBE/.mvn/wrapper/
 
 library-BE/Book/
+
+library-BE/BookCopy/
