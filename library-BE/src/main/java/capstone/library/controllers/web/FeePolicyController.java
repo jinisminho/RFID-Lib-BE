@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 
-import static capstone.library.util.ConstantUtil.DATE_TIME_PATTERN;
+import static capstone.library.util.constants.ConstantUtil.DATE_TIME_PATTERN;
 
 @RestController
 @RequestMapping("/feePolicy")

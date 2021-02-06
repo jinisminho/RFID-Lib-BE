@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static capstone.library.util.ConstantUtil.UPDATE_SUCCESS;
+import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
 
 
 @Service

@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static capstone.library.util.ConstantUtil.DELETE_SUCCESS;
+import static capstone.library.util.constants.ConstantUtil.DELETE_SUCCESS;
 
 @Service
 public class BorrowPolicyServiceImpl implements BorrowPolicyService {
