@@ -3,6 +3,8 @@ package capstone.library.services.impl;
 import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.request.TagCopyRequestDto;
+import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.entities.*;
@@ -47,6 +49,7 @@ public class BookCopyServiceImpl implements BookCopyService
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String COPY_NOT_FOUND = "Cannot find this book copy in database";
     private static final String BOOK_COPY_NOT_FOUND = "Cannot find this book copy in the database";
+    private static final String BOOK_COPY_TYPE_NOT_FOUND = "Cannot find this book copy type in the database";
     private static final String BOOK_COPY = "Book copy";
     private static final String BOOK = "Book";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy";
@@ -113,8 +116,17 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public String tagCopy(String barcode, String rfid)
+    public String tagCopy(TagCopyRequestDto request)
     {
+        String barcode = request.getBarcode();
+        String rfid = request.getRfid();
+
+        Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
+        if (updaterOptional.isEmpty())
+        {
+            throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+        }
+
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
         if (bookCopyOptional.isPresent())
         {
@@ -123,7 +135,8 @@ public class BookCopyServiceImpl implements BookCopyService
             if (bookOptional.isPresent())
             {
                 Book book = bookOptional.get();
-                bookCopy.setRfid(rfid);
+                bookCopy.setRfid(rfid.toUpperCase());
+                bookCopy.setUpdater(updaterOptional.get());
                 if (book.getStatus().equals(BookStatus.IN_CIRCULATION))
                 {
                     bookCopy.setStatus(BookCopyStatus.AVAILABLE);
@@ -236,6 +249,46 @@ public class BookCopyServiceImpl implements BookCopyService
     {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfid);
         return getCopyResponseDto(bookCopyOptional);
+    }
+
+    @Override
+    public String updateCopy(UpdateCopyRequest request)
+    {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(request.getId());
+        if (bookCopyOptional.isPresent())
+        {
+            BookCopy bookCopy = bookCopyOptional.get();
+            bookCopy.setPrice(request.getPrice());
+            bookCopy.setRfid(request.getRfid());
+            Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
+            if (bookCopyTypeOptional.isPresent())
+            {
+                bookCopy.setBookCopyType(bookCopyTypeOptional.get());
+            } else
+            {
+                throw new ResourceNotFoundException("Copy type", BOOK_COPY_TYPE_NOT_FOUND);
+            }
+            Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
+            if (updaterOptional.isPresent())
+            {
+                bookCopy.setUpdater(updaterOptional.get());
+            } else
+            {
+                throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+            }
+            try
+            {
+                bookCopyRepository.save(bookCopy);
+                return "Success";
+            } catch (Exception e)
+            {
+                throw new CustomException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+            }
+        } else
+        {
+            throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
+        }
     }
 
     private CopyResponseDto getCopyResponseDto(Optional<BookCopy> bookCopyOptional)
