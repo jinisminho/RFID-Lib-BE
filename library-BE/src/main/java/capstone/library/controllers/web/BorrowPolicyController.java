@@ -3,7 +3,7 @@ package capstone.library.controllers.web;
 import capstone.library.dtos.request.CreateBorrowPolicyRequest;
 import capstone.library.dtos.request.UpdateBorrowPolicyRequest;
 import capstone.library.dtos.response.BorrowPolicyResponse;
-import capstone.library.services.PolicyService;
+import capstone.library.services.BorrowPolicyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,37 +12,37 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/policy")
-public class PolicyController {
+@RequestMapping("/borrowPolicy")
+public class BorrowPolicyController {
 
 
     @Autowired
-    PolicyService policyService;
+    BorrowPolicyService borrowPolicyService;
 
 
     //@Secured(ADMIN)
-    @GetMapping("/getBorrowPolicies")
+    @GetMapping("/get")
     public Page<BorrowPolicyResponse> getBorrowPolicies(Pageable pageable,
                                                         @RequestParam(required = false, name = "patronTypeId") Integer patronTypeId,
                                                         @RequestParam(required = false, name = "bookCopyTypeId") Integer bookCopyTypeId){
-        return policyService.getBorrowPolicies(pageable, patronTypeId, bookCopyTypeId);
+        return borrowPolicyService.getBorrowPolicies(pageable, patronTypeId, bookCopyTypeId);
     }
 
     //@Secured(ADMIN)
-    @PostMapping("/addBorrowPolicy")
+    @PostMapping("/add")
     public BorrowPolicyResponse addBorrowPolicy (@RequestBody @Valid CreateBorrowPolicyRequest request){
-        return policyService.addBorrowPolicy(request);
+        return borrowPolicyService.addBorrowPolicy(request);
     }
 
     //@Secured(ADMIN)
-    @PostMapping("/updateBorrowPolicy")
+    @PostMapping("/update")
     public BorrowPolicyResponse updateBorrowPolicy (@RequestBody @Valid UpdateBorrowPolicyRequest request){
-        return policyService.updateBorrowPolicy(request);
+        return borrowPolicyService.updateBorrowPolicy(request);
     }
 
     //@Secured(ADMIN)
-    @PostMapping("/deleteBorrowPolicy")
+    @PostMapping("/delete")
     public String deleteBorrowPolicy(@RequestParam(name = "id") int id){
-        return policyService.deleteBorrowPolicy(id);
+        return borrowPolicyService.deleteBorrowPolicy(id);
     }
 }

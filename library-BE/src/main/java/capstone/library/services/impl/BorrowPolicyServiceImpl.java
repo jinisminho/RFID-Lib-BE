@@ -12,7 +12,7 @@ import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.BookCopyTypeRepository;
 import capstone.library.repositories.BorrowPolicyRepository;
 import capstone.library.repositories.PatronTypeRepository;
-import capstone.library.services.PolicyService;
+import capstone.library.services.BorrowPolicyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,12 +21,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static capstone.library.util.ConstantUtil.DELETE_SUCCESS;
 
 @Service
-public class PolicyServiceImpl implements PolicyService {
+public class BorrowPolicyServiceImpl implements BorrowPolicyService {
 
     @Autowired
     ObjectMapper mapper;
