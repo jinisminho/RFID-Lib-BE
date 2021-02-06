@@ -8,7 +8,7 @@ import capstone.library.dtos.response.PatronCheckoutInfoResponseDto;
 import capstone.library.dtos.response.ProfileAccountResDto;
 import capstone.library.services.PatronService;
 import capstone.library.util.ApiPageable;
-import capstone.library.util.ConstantUtil;
+import capstone.library.util.constants.ConstantUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -56,14 +56,6 @@ public class PatronController
     public ProfileAccountResDto getProfile(@PathVariable Integer patronId)
     {
         return patronService.getProfile(patronId);
-    }
-
-    @ApiOperation(value = "This API get profile of patron by his/her Patron card")
-    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/profile/getCheckoutPatron/{rfid}")
-    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid)
-    {
-        return patronService.getProfileByRfid(rfid);
     }
 
     @ApiOperation(value = "This API update profile of patron by its ID")
@@ -122,5 +114,12 @@ public class PatronController
         return patronService.getBorrowingHistories(patronId, pageable);
     }
 
+    @ApiOperation(value = "Get patron info by RFID (Patron Card)")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @GetMapping("/profile/getCheckoutPatron/{rfid}")
+    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid)
+    {
+        return patronService.getProfileByRfid(rfid);
+    }
 }
 

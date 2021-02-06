@@ -2,10 +2,7 @@ package capstone.library.services.impl;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
-import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
-import capstone.library.dtos.response.CheckoutResponseDto;
-import capstone.library.dtos.response.ReturnBookResponseDto;
+import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
@@ -15,8 +12,10 @@ import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.LibrarianService;
+import capstone.library.util.tools.BookCopyBarcodeUtils;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,6 +43,12 @@ public class LibrarianServiceImpl implements LibrarianService
     FeePolicyRepository feePolicyRepository;
     @Autowired
     PatronTypeRepository patronTypeRepository;
+    @Autowired
+    MyBookRepository myBookRepository;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    BookCopyBarcodeUtils bookCopyBarcodeUtils;
 
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
@@ -199,27 +204,39 @@ public class LibrarianServiceImpl implements LibrarianService
     }
 
 
+    @Override
+    public List<ReturnBookResponseDto> validateReturnRequest(ScannedRFIDCopiesRequestDto request)
+    {
+        return returnCopies(request);
+    }
+
     /*Is for librarians use
      * For returning multiple of book copies borrowed by patrons */
     @Override
     @Transactional
-    public List<ReturnBookResponseDto> returnBookCopies(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto)
+    public List<ReturnBookResponseDto> returnBookCopies(ScannedRFIDCopiesRequestDto request)
     {
+        return returnCopies(request);
+    }
+
+    private List<ReturnBookResponseDto> returnCopies(ScannedRFIDCopiesRequestDto request)
+    {
+
         List<BookCopy> bookCopies = new ArrayList<>();
         List<ReturnBookResponseDto> responseDtos = new ArrayList<>();
 
         /*Get librarian*/
-        Optional<Account> librarianOptional = accountRepository.findById(scannedRFIDCopiesRequestDto.getLibrarianId());
+        Optional<Account> librarianOptional = accountRepository.findById(request.getLibrarianId());
         if (librarianOptional.isEmpty())
         {
             throw new ResourceNotFoundException(
-                    "Librarian", "Librarian with id: " + scannedRFIDCopiesRequestDto.getLibrarianId() + NOT_FOUND);
+                    "Librarian", "Librarian with id: " + request.getLibrarianId() + NOT_FOUND);
         }
         Account librarian = librarianOptional.get();
 
         /*Check to make sure book copy for each rfidTag is in DB.
          * Only update DB for book copies that are found*/
-        for (String rfidTag : scannedRFIDCopiesRequestDto.getBookRfidTags())
+        for (String rfidTag : request.getBookRfidTags())
         {
             Optional<BookCopy> bookCopyOptional = bookCopyRepository.
                     findByRfidAndStatus(rfidTag, BookCopyStatus.BORROWED);
@@ -277,10 +294,20 @@ public class LibrarianServiceImpl implements LibrarianService
                 }
                 /*Update borrowing_book table
                  * Add return date and fine*/
-                bookBorrowing.setReturn_by(librarian);
-                bookBorrowing.setReturnedAt(now);
-                bookBorrowing.setFine(fine);
-                bookBorrowingRepository.save(bookBorrowing);
+                if (request.isCheckin())
+                {
+                    bookBorrowing.setReturn_by(librarian);
+                    bookBorrowing.setReturnedAt(now);
+                    bookBorrowing.setFine(fine);
+                    try
+                    {
+                        bookBorrowingRepository.save(bookBorrowing);
+                    } catch (Exception e)
+                    {
+                        throw new CustomException(
+                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    }
+                }
 
                 /*update copy status based on book status:
                     if book is:
@@ -288,28 +315,34 @@ public class LibrarianServiceImpl implements LibrarianService
                         + OUT_OF_CIRCULATION => OUT_OF_CIRCULATION
                         + DISCARD => DISCARD
                         + LIB_USE_ONLY => LIB_USE_ONLY*/
-                if (bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
+                if (request.isCheckin())
                 {
-                    bookCopy.setStatus(BookCopyStatus.AVAILABLE);
-                } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
-                {
-                    bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                } else if (bookCopy.getBook().getStatus().equals(BookStatus.DISCARD))
-                {
-                    bookCopy.setStatus(BookCopyStatus.DISCARD);
-                } else if (bookCopy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY))
-                {
-                    bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
-                }
+                    if (bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+                    } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+                    } else if (bookCopy.getBook().getStatus().equals(BookStatus.DISCARD))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.DISCARD);
+                    } else if (bookCopy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY))
+                    {
+                        bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
+                    }
 
-                //Insert return transaction to database
-                try
-                {
-                    bookCopyRepository.save(bookCopy);
-                } catch (Exception e)
-                {
-                    throw new CustomException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    //Insert return transaction to database
+                    try
+                    {
+
+                        System.out.println("AAAAA " + request.isCheckin());
+                        bookCopyRepository.save(bookCopy);
+
+                    } catch (Exception e)
+                    {
+                        throw new CustomException(
+                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                    }
                 }
 
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
@@ -408,6 +441,8 @@ public class LibrarianServiceImpl implements LibrarianService
         /*Check if the patron is borrowing any duplicate copies of the same book*/
         HashSet<Book> bookHashSet = new HashSet<>();
         List<Integer> bookIdList = new ArrayList<>();
+        //Add all scanned copy's book's ID to bookIdList (including all duplicates if present)
+        //Add the copy's book to a HashSet (excluding duplicating books)
         for (String rfid : request.getBookRfidTags())
         {
             BookCopy bookCopy = getBookCopyInfoByRFID(rfid);
@@ -417,6 +452,18 @@ public class LibrarianServiceImpl implements LibrarianService
                 bookHashSet.add(bookCopy.getBook());
             }
         }
+
+        //Add all BORROWED copy's book's ID to bookIdList (including all duplicates if present)
+        //Add the BORROWED copy's book to a HashSet (excluding duplicating books)
+        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
+                findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
+        for (BookBorrowing bookBorrowing : borrowingCopies)
+        {
+            bookIdList.add(bookBorrowing.getBookCopy().getBook().getId());
+            bookHashSet.add(bookBorrowing.getBookCopy().getBook());
+        }
+
+        //Check duplicate
         for (Book book : bookHashSet)
         {
             if (Collections.frequency(bookIdList, book.getId()) > 1)
@@ -439,6 +486,31 @@ public class LibrarianServiceImpl implements LibrarianService
         return response;
     }
 
+    @Override
+    public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId)
+    {
+        GenerateBarcodesResponseDto response = new GenerateBarcodesResponseDto();
+
+        //Set Book Info
+        Optional<Book> bookOptional = myBookRepository.findByIsbn(isbn);
+        if (bookOptional.isPresent())
+        {
+            Book book = bookOptional.get();
+            BookResponseDto dto = objectMapper.convertValue(book, BookResponseDto.class);
+            dto.setAuthors(book.getBookAuthors().toString().
+                    replace("[", "").replace("]", ""));
+            dto.setGenres(book.getBookGenres().toString().
+                    replace("[", "").replace("]", ""));
+            response.setBookInfo(dto);
+        }
+
+        //Generate barcodes
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findFirstByOrderByIdDesc();
+        bookCopyOptional.ifPresent(bookCopy -> response.setGeneratedBarcodes(bookCopyBarcodeUtils.
+                generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies)));
+
+        return response;
+    }
 
     private Account getAccountInfo(int id)
     {

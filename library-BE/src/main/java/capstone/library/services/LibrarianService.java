@@ -1,10 +1,7 @@
 package capstone.library.services;
 
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
-import capstone.library.dtos.response.BookResponseDto;
-import capstone.library.dtos.response.CheckoutPolicyValidationResponseDto;
-import capstone.library.dtos.response.CheckoutResponseDto;
-import capstone.library.dtos.response.ReturnBookResponseDto;
+import capstone.library.dtos.response.*;
 
 import java.util.List;
 
@@ -18,4 +15,8 @@ public interface LibrarianService
     List<BookResponseDto> getOverdueBooksByBorrower(int patronId);
 
     CheckoutPolicyValidationResponseDto validateCheckoutPolicy(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
+
+    GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId);
+
+    List<ReturnBookResponseDto> validateReturnRequest(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
 }

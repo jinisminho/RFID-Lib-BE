@@ -1,4 +1,4 @@
-package capstone.library.util;
+package capstone.library.util.constants;
 
 public class ConstantUtil {
     private ConstantUtil() {
@@ -28,4 +28,8 @@ public class ConstantUtil {
     //Other
     public static final String PHONE_REGEXP = "^\\d{10}$";
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    //Barcode
+    public static final int LIBRARY_ID = 1234;
+
 }

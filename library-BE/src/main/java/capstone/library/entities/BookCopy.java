@@ -2,25 +2,30 @@ package capstone.library.entities;
 
 import capstone.library.enums.BookCopyStatus;
 import lombok.*;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 
+@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "book_copy")
-public class BookCopy extends Audit
-{
+public class BookCopy extends Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @KeywordField
     @Column(name = "barcode", length = 100, nullable = false)
     private String barcode;
 
+    @KeywordField
     @Column(name = "rfid", length = 80, nullable = false)
     private String rfid;
 
@@ -31,6 +36,7 @@ public class BookCopy extends Audit
     @Enumerated(EnumType.STRING)
     private BookCopyStatus status;
 
+    @IndexedEmbedded
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
     private Book book;

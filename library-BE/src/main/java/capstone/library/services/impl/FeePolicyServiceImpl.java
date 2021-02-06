@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static capstone.library.util.ConstantUtil.CREATE_SUCCESS;
+import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 
 @Service
 public class FeePolicyServiceImpl implements FeePolicyService {

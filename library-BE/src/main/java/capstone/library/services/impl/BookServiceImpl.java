@@ -2,7 +2,6 @@ package capstone.library.services.impl;
 
 import capstone.library.dtos.request.CreateBookRequestDto;
 import capstone.library.dtos.request.UpdateBookInfoRequestDto;
-import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.BookResDto;
 import capstone.library.dtos.response.BookResponseDto;
 import capstone.library.entities.*;
@@ -54,6 +53,7 @@ public class BookServiceImpl implements BookService {
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
+    private static final String BOOK_NOT_FOUND = "Cannot find this book in databse";
 
     @Override
     public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
@@ -70,13 +70,9 @@ public class BookServiceImpl implements BookService {
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
         for (BookResDto book : res) {
-            List<BookCopyResDto> copies = bookCopyRepository.findByBookId(book.getId()).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList());
-            List<BookCopyResDto> stocks = copies.stream().filter(e -> e.getStatus().equals(BookCopyStatus.AVAILABLE)).collect(Collectors.toList());
-            int copiesSize = copies.size();
-            int stockSize = stocks.size();
+            int stockSize = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
 
-            if (copiesSize > 0) {
-                book.setTotalCopies(copiesSize);
+            if (stockSize > 0) {
                 book.setStock(stockSize);
                 book.setAvailable(true);
             } else {
@@ -180,6 +176,21 @@ public class BookServiceImpl implements BookService {
             throw new ResourceNotFoundException("Book", "Book [" + request.getId() + "] not found");
         }
 
+    }
+
+    @Override
+    public BookResponseDto findByISBN(String isbn) {
+        Optional<Book> bookOptional = myBookRepository.findByIsbn(isbn);
+        if (bookOptional.isPresent()) {
+            Book book = bookOptional.get();
+            BookResponseDto response = objectMapper.convertValue(book, BookResponseDto.class);
+            response.setAuthors(book.getBookAuthors().toString().
+                    replace("[", "").replace("]", ""));
+            response.setGenres(book.getBookGenres().toString().
+                    replace("[", "").replace("]", ""));
+            return response;
+        }
+        throw new ResourceNotFoundException("Book", BOOK_NOT_FOUND);
     }
 
     private void setBookGenre(Book book, Set<BookGenre> bookGenreSet, List<Integer> genreIds) {

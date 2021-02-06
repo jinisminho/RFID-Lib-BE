@@ -1,7 +1,11 @@
 package capstone.library.services.impl;
 
+import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.request.TagCopyRequestDto;
+import capstone.library.dtos.request.UpdateCopyRequest;
+import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.entities.*;
@@ -11,6 +15,7 @@ import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,10 +28,10 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class BookCopyServiceImpl implements BookCopyService
-{
+public class BookCopyServiceImpl implements BookCopyService {
     @Autowired
     BookCopyRepository bookCopyRepository;
     @Autowired
@@ -38,22 +43,29 @@ public class BookCopyServiceImpl implements BookCopyService
     @Autowired
     BorrowPolicyRepository borrowPolicyRepository;
     @Autowired
+    BookBorrowingRepository bookBorrowingRepository;
+    @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    BookCopyMoreRepository bookCopyMoreRepository;
+    @Autowired
+    BookCopyMapper bookCopyMapper;
 
     private static final String PATRON_NOT_FOUND = "Cannot find this patron in database";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String COPY_NOT_FOUND = "Cannot find this book copy in database";
+    private static final String BOOK_COPY_NOT_FOUND = "Cannot find this book copy in the database";
+    private static final String BOOK_COPY_TYPE_NOT_FOUND = "Cannot find this book copy type in the database";
     private static final String BOOK_COPY = "Book copy";
     private static final String BOOK = "Book";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy";
     private static final String POLICY_BOOK_STATUS = "This book is not in circulation";
-    private static final String POLICY_COPY_STATUS = "This book is not in circulation";
+    private static final String POLICY_COPY_STATUS = "This copy is not available";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     @Override
     @Transactional
-    public String createCopies(CreateCopiesRequestDto request)
-    {
+    public String createCopies(CreateCopiesRequestDto request) {
         Book book;
         BookCopyType bookCopyType;
         Account creator;
@@ -64,22 +76,18 @@ public class BookCopyServiceImpl implements BookCopyService
         Optional<Book> bookOptional = myBookRepository.findById(request.getBookId());
         Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
         Optional<Account> accountOptional = accountRepository.findById(request.getCreatorId());
-        if (bookOptional.isPresent() && bookCopyTypeOptional.isPresent() && accountOptional.isPresent())
-        {
+        if (bookOptional.isPresent() && bookCopyTypeOptional.isPresent() && accountOptional.isPresent()) {
             book = bookOptional.get();
             bookCopyType = bookCopyTypeOptional.get();
             creator = accountOptional.get();
-        } else
-        {
+        } else {
             throw new ResourceNotFoundException("Book", ErrorStatus.RESOURCE_NOT_FOUND.getReason());
         }
 
-        try
-        {
+        try {
             insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
             updateBookNumberOfCopy(book);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new CustomException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
@@ -89,12 +97,10 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public Page<CopyResponseDto> getCopiesList(Pageable pageable)
-    {
+    public Page<CopyResponseDto> getCopiesList(Pageable pageable) {
         List<CopyResponseDto> response = new ArrayList<>();
         Page<BookCopy> bookCopiesPage = bookCopyRepository.findAll(pageable);
-        for (BookCopy copy : bookCopiesPage.getContent())
-        {
+        for (BookCopy copy : bookCopiesPage.getContent()) {
             CopyResponseDto dto;
             dto = objectMapper.convertValue(copy, CopyResponseDto.class);
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
@@ -109,47 +115,50 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public String tagCopy(String barcode, String rfid)
+    public String tagCopy(TagCopyRequestDto request)
     {
-        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
-        if (bookCopyOptional.isPresent())
+        String barcode = request.getBarcode();
+        String rfid = request.getRfid();
+
+        Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
+        if (updaterOptional.isEmpty())
         {
+            throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+        }
+
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
+        if (bookCopyOptional.isPresent()) {
             BookCopy bookCopy = bookCopyOptional.get();
             Optional<Book> bookOptional = myBookRepository.findById(bookCopy.getBook().getId());
-            if (bookOptional.isPresent())
-            {
+            if (bookOptional.isPresent()) {
                 Book book = bookOptional.get();
-                bookCopy.setRfid(rfid);
+                bookCopy.setRfid(rfid.toUpperCase());
+                bookCopy.setUpdater(updaterOptional.get());
                 if (book.getStatus().equals(BookStatus.IN_CIRCULATION))
                 {
                     bookCopy.setStatus(BookCopyStatus.AVAILABLE);
-                } else if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION))
-                {
+                } else if (book.getStatus().equals(BookStatus.OUT_OF_CIRCULATION)) {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-                } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
-                {
+                } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY)) {
                     bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
                 }
-                try
-                {
+                try {
                     bookCopyRepository.save(bookCopy);
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     throw new CustomException(
                             HttpStatus.INTERNAL_SERVER_ERROR,
                             ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
                 }
             }
 
-        } else
-        {
+        } else {
             throw new ResourceNotFoundException(BOOK_COPY, COPY_NOT_FOUND + ": " + barcode);
         }
         return "Success";
     }
 
     @Override
-    public CheckCopyPolicyResponseDto getCopyByRFID(String rfid, int patronId)
+    public CheckCopyPolicyResponseDto validateCopyByRFID(String rfid, int patronId)
     {
         boolean violatePolicy = false;
         List<String> reasons = new ArrayList<>();
@@ -159,24 +168,19 @@ public class BookCopyServiceImpl implements BookCopyService
 
         /*Get Patron and Copy*/
         Optional<Account> patronOptional = accountRepository.findById(patronId);
-        if (patronOptional.isPresent())
-        {
+        if (patronOptional.isPresent()) {
             patron = patronOptional.get();
-            if (patron.getRole().getId() != RoleIdEnum.ROLE_PATRON.getRoleId())
-            {
+            if (patron.getRole().getId() != RoleIdEnum.ROLE_PATRON.getRoleId()) {
                 throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
             }
-        } else
-        {
+        } else {
             throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
         }
 
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfid);
-        if (bookCopyOptional.isPresent())
-        {
+        if (bookCopyOptional.isPresent()) {
             bookCopy = bookCopyOptional.get();
-        } else
-        {
+        } else {
             throw new ResourceNotFoundException("Copy", COPY_NOT_FOUND);
         }
         /*=====================*/
@@ -187,20 +191,17 @@ public class BookCopyServiceImpl implements BookCopyService
         // 1
         Optional<BorrowPolicy> borrowPolicyOptional = borrowPolicyRepository.
                 findByPatronTypeIdAndBookCopyTypeId(patron.getPatronType().getId(), bookCopy.getBookCopyType().getId());
-        if (borrowPolicyOptional.isEmpty())
-        {
+        if (borrowPolicyOptional.isEmpty()) {
             violatePolicy = true;
             reasons.add(POLICY_PATRON_TYPE_COPY_TYPE);
         }
         // 2
-        if (!bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION))
-        {
+        if (!bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION)) {
             violatePolicy = true;
             reasons.add(POLICY_BOOK_STATUS);
         }
         // 3
-        if (!bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE))
-        {
+        if (!bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE)) {
             violatePolicy = true;
             reasons.add(POLICY_COPY_STATUS);
         }
@@ -220,11 +221,116 @@ public class BookCopyServiceImpl implements BookCopyService
         return response;
     }
 
-    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception
+    @Override
+    public CopyResponseDto getCopyByBarcode(String barcode) {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
+        return getCopyResponseDto(bookCopyOptional);
+    }
+
+    @Override
+    public CopyResponseDto getCopyByRfid(String rfid)
     {
-        Set<BookCopy> bookCopies = new HashSet<>();
-        for (String barcode : barcodes)
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfid);
+        return getCopyResponseDto(bookCopyOptional);
+    }
+
+    @Override
+    public String updateCopy(UpdateCopyRequest request)
+    {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(request.getId());
+        if (bookCopyOptional.isPresent())
         {
+            BookCopy bookCopy = bookCopyOptional.get();
+            bookCopy.setPrice(request.getPrice());
+            bookCopy.setRfid(request.getRfid());
+            Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
+            if (bookCopyTypeOptional.isPresent())
+            {
+                bookCopy.setBookCopyType(bookCopyTypeOptional.get());
+            } else
+            {
+                throw new ResourceNotFoundException("Copy type", BOOK_COPY_TYPE_NOT_FOUND);
+            }
+            Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
+            if (updaterOptional.isPresent())
+            {
+                bookCopy.setUpdater(updaterOptional.get());
+            } else
+            {
+                throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+            }
+            try
+            {
+                bookCopyRepository.save(bookCopy);
+                return "Success";
+            } catch (Exception e)
+            {
+                throw new CustomException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+            }
+        } else
+        {
+            throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
+        }
+    }
+
+    private CopyResponseDto getCopyResponseDto(Optional<BookCopy> bookCopyOptional)
+    {
+        if (bookCopyOptional.isPresent())
+        {
+            BookCopy copy = bookCopyOptional.get();
+            CopyResponseDto dto = objectMapper.convertValue(copy, CopyResponseDto.class);
+            dto.getBook().setAuthors(copy.getBook().getBookAuthors().
+                    toString().replace("]", "").replace("[", ""));
+            dto.getBook().setGenres(copy.getBook().getBookGenres().
+                    toString().replace("]", "").replace("[", ""));
+            dto.setCopyType(copy.getBookCopyType().getName());
+            if (copy.getStatus().equals(BookCopyStatus.BORROWED))
+            {
+                Optional<BookBorrowing> bookBorrowingOptional =
+                        bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(copy.getId());
+                if (bookBorrowingOptional.isPresent())
+                {
+                    Account borrower = bookBorrowingOptional.get().getBorrower();
+                    dto.setBorrower(objectMapper.convertValue(borrower, MyAccountDto.class));
+                    dto.getBorrower().setPatronTypeName(borrower.getPatronType().getName());
+                    dto.getBorrower().setRoleName(borrower.getRole().getName());
+                }
+            }
+            return dto;
+        }
+        throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
+    }
+
+    @Override
+    public Page<BookCopyResDto> findBookCopies(String searchValue, Pageable pageable) {
+        List<BookCopyResDto> res = new ArrayList<>();
+        long totalSize = 0;
+        searchValue = searchValue.trim();
+        searchValue = searchValue == null ? "" : searchValue;
+        Page<BookCopy> books = searchValue.isEmpty() ? bookCopyRepository.findAll(pageable) : bookCopyMoreRepository.findBookCopies(searchValue, pageable);
+        totalSize = books.getTotalElements();
+        res = books.stream().map(book -> bookCopyMapper.toResDto(book)).collect(Collectors.toList());
+
+        for (BookCopyResDto copy : res) {
+            int stockSize = bookCopyRepository.findByBookIdAndStatus(copy.getBook().getId(), BookCopyStatus.AVAILABLE).stream().map(cop -> bookCopyMapper.toResDto(cop)).collect(Collectors.toList()).size();
+
+            if (stockSize > 0) {
+                copy.getBook().setStock(stockSize);
+                copy.getBook().setAvailable(true);
+            } else {
+                copy.getBook().setAvailable(false);
+            }
+            if (copy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY))
+                copy.getBook().setOnlyInLibrary(true);
+        }
+
+        return new PageImpl<BookCopyResDto>(res, pageable, totalSize);
+    }
+
+    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception {
+        Set<BookCopy> bookCopies = new HashSet<>();
+        for (String barcode : barcodes) {
             BookCopy bookCopy = new BookCopy();
             bookCopy.setBook(book);
             bookCopy.setBookCopyType(bookCopyType);
@@ -238,8 +344,7 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
 
-    private void updateBookNumberOfCopy(Book book) throws Exception
-    {
+    private void updateBookNumberOfCopy(Book book) throws Exception {
         book.setNumberOfCopy(bookCopyRepository.findByBookId(book.getId()).size());
         myBookRepository.save(book);
     }

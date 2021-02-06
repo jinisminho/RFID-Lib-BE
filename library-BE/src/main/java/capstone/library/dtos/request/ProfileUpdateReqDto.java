@@ -1,6 +1,6 @@
 package capstone.library.dtos.request;
 
-import capstone.library.util.ConstantUtil;
+import capstone.library.util.constants.ConstantUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

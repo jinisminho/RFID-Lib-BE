@@ -59,6 +59,4 @@ public class BookResDto {
     private boolean available;
 
     private boolean onlyInLibrary;
-
-    private Integer totalCopies;
 }

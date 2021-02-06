@@ -1,10 +1,9 @@
 package capstone.library.dtos.response;
 
 
+import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
-import capstone.library.entities.Role;
 import capstone.library.enums.BookCopyStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,22 +31,5 @@ public class CopyResponseDto implements Serializable
 
     private String copyType;
 
-    @JsonIgnore
-    private AccountDto creator;
-
-    @JsonIgnore
-    private AccountDto updater;
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private static class AccountDto
-    {
-        private int id;
-
-        private String email;
-
-        private Role role;
-    }
+    private MyAccountDto borrower;
 }
