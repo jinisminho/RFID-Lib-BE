@@ -3,14 +3,17 @@ package capstone.library.controllers.web;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
 import capstone.library.dtos.request.TagCopyRequestDto;
 import capstone.library.dtos.request.UpdateCopyRequest;
+import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.services.BookCopyService;
 import io.swagger.annotations.ApiOperation;
+import capstone.library.util.ApiPageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -18,20 +21,17 @@ import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/copy")
-public class BookCopyController
-{
+public class BookCopyController {
     @Autowired
     BookCopyService bookCopyService;
 
     @PostMapping("/add")
-    public String addCopies(@RequestBody @Valid CreateCopiesRequestDto request)
-    {
+    public String addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
         return bookCopyService.createCopies(request);
     }
 
     @GetMapping("/list")
-    public Page<CopyResponseDto> getCopiesList(Pageable pageable)
-    {
+    public Page<CopyResponseDto> getCopiesList(Pageable pageable) {
         return bookCopyService.getCopiesList(pageable);
     }
 
@@ -49,8 +49,7 @@ public class BookCopyController
     }
 
     @GetMapping("/get/barcode/{barcode}")
-    public CopyResponseDto getCopyByBarcode(@PathVariable @NotEmpty String barcode)
-    {
+    public CopyResponseDto getCopyByBarcode(@PathVariable @NotEmpty String barcode) {
         return bookCopyService.getCopyByBarcode(barcode);
     }
 
@@ -65,6 +64,13 @@ public class BookCopyController
     public String updateCopy(@RequestBody @Valid @NotNull UpdateCopyRequest request)
     {
         return bookCopyService.updateCopy(request);
+    }
+
+    @ApiOperation(value = "This API use to search book copy by like title-subtitle and exact ISBN, barcode, RFID")
+    @ApiPageable
+    @GetMapping("/search")
+    public Page<BookCopyResDto> findBookCopies(@RequestParam(required = false, value = "searchValue") String searchValue, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
+        return bookCopyService.findBookCopies(searchValue, pageable);
     }
 
 }

@@ -29,13 +29,14 @@ public interface BookMapper {
             @Mapping(target = "id", source = "genre.id"),
             @Mapping(target = "name", source = "genre.name"),
     })
-    GenreResDto toCategoryDto(BookGenre entity);
+    GenreResDto toGenreResDto(BookGenre entity);
 
-    Set<GenreResDto> toCategoryDtos(Set<BookGenre> entities);
+    Set<GenreResDto> toGenreResDtos(Set<BookGenre> entities);
 
     @Mappings({
+
             @Mapping(target = "genres", source = "bookGenres"),
-            @Mapping(target = "author", source = "bookAuthors")
+            @Mapping(target = "author", source = "bookAuthors"),
     })
     BookResDto toResDto(Book entity);
 
