@@ -1,5 +1,6 @@
 package capstone.library.services.impl;
 
+import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
@@ -38,17 +39,19 @@ public class BookCopyServiceImpl implements BookCopyService
     @Autowired
     BorrowPolicyRepository borrowPolicyRepository;
     @Autowired
+    BookBorrowingRepository bookBorrowingRepository;
+    @Autowired
     ObjectMapper objectMapper;
 
     private static final String PATRON_NOT_FOUND = "Cannot find this patron in database";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String COPY_NOT_FOUND = "Cannot find this book copy in database";
+    private static final String BOOK_COPY_NOT_FOUND = "Cannot find this book copy in the database";
     private static final String BOOK_COPY = "Book copy";
-    private static final String BOOK_COPY_NOT_FOUND = "Book copy";
     private static final String BOOK = "Book";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy";
     private static final String POLICY_BOOK_STATUS = "This book is not in circulation";
-    private static final String POLICY_COPY_STATUS = "This book is not in circulation";
+    private static final String POLICY_COPY_STATUS = "This copy is not available";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     @Override
@@ -150,7 +153,7 @@ public class BookCopyServiceImpl implements BookCopyService
     }
 
     @Override
-    public CheckCopyPolicyResponseDto getCopyByRFID(String rfid, int patronId)
+    public CheckCopyPolicyResponseDto validateCopyByRFID(String rfid, int patronId)
     {
         boolean violatePolicy = false;
         List<String> reasons = new ArrayList<>();
@@ -225,6 +228,18 @@ public class BookCopyServiceImpl implements BookCopyService
     public CopyResponseDto getCopyByBarcode(String barcode)
     {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
+        return getCopyResponseDto(bookCopyOptional);
+    }
+
+    @Override
+    public CopyResponseDto getCopyByRfid(String rfid)
+    {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfid);
+        return getCopyResponseDto(bookCopyOptional);
+    }
+
+    private CopyResponseDto getCopyResponseDto(Optional<BookCopy> bookCopyOptional)
+    {
         if (bookCopyOptional.isPresent())
         {
             BookCopy copy = bookCopyOptional.get();
@@ -234,6 +249,18 @@ public class BookCopyServiceImpl implements BookCopyService
             dto.getBook().setGenres(copy.getBook().getBookGenres().
                     toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
+            if (copy.getStatus().equals(BookCopyStatus.BORROWED))
+            {
+                Optional<BookBorrowing> bookBorrowingOptional =
+                        bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(copy.getId());
+                if (bookBorrowingOptional.isPresent())
+                {
+                    Account borrower = bookBorrowingOptional.get().getBorrower();
+                    dto.setBorrower(objectMapper.convertValue(borrower, MyAccountDto.class));
+                    dto.getBorrower().setPatronTypeName(borrower.getPatronType().getName());
+                    dto.getBorrower().setRoleName(borrower.getRole().getName());
+                }
+            }
             return dto;
         }
         throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);

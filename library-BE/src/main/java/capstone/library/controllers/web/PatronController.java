@@ -58,14 +58,6 @@ public class PatronController
         return patronService.getProfile(patronId);
     }
 
-    @ApiOperation(value = "This API get profile of patron by his/her Patron card")
-    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/profile/getCheckoutPatron/{rfid}")
-    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid)
-    {
-        return patronService.getProfileByRfid(rfid);
-    }
-
     @ApiOperation(value = "This API update profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/profile/updateProfile/{patronId}")
@@ -122,5 +114,12 @@ public class PatronController
         return patronService.getBorrowingHistories(patronId, pageable);
     }
 
+    @ApiOperation(value = "Get patron info by RFID (Patron Card)")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @GetMapping("/profile/getCheckoutPatron/{rfid}")
+    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid)
+    {
+        return patronService.getProfileByRfid(rfid);
+    }
 }
 

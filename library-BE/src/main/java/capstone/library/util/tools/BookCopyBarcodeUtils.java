@@ -30,11 +30,9 @@ public class BookCopyBarcodeUtils
             tmp += String.format("%04d", LIBRARY_ID);
         }
 
-        String barcode = "";
         for (int i = 0; i < numberOfCopies; i++)
         {
-            barcode = tmp;
-            barcode += String.format("%08d", ++copyId);
+            String barcode = tmp + String.format("%08d", ++copyId);
             barcodes.add(barcode);
         }
 

@@ -1,5 +1,6 @@
 package capstone.library.dtos.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,9 @@ public class ScannedRFIDCopiesRequestDto implements Serializable
 
     @NotNull(message = "{BookCheckoutRequestDto.patronId.notNull}")
     private int librarianId;
+
+    @JsonIgnore
+    private boolean checkin;
 
     private List<String> bookRfidTags;
 }
