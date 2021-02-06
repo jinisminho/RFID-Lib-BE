@@ -301,7 +301,6 @@ public class LibrarianServiceImpl implements LibrarianService
                     bookBorrowing.setFine(fine);
                     try
                     {
-                        System.out.println("AAAAA " + request.isCheckin());
                         bookBorrowingRepository.save(bookBorrowing);
                     } catch (Exception e)
                     {

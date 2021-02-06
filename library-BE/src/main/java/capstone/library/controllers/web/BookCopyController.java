@@ -1,9 +1,11 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.services.BookCopyService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/copy")
@@ -54,6 +57,13 @@ public class BookCopyController
     public CopyResponseDto getCopyByRfid(@PathVariable @NotEmpty String rfid)
     {
         return bookCopyService.getCopyByRfid(rfid);
+    }
+
+    @PostMapping("/update")
+    @ApiOperation("Update a book copy by id")
+    public String updateCopy(@RequestBody @Valid @NotNull UpdateCopyRequest request)
+    {
+        return bookCopyService.updateCopy(request);
     }
 
 }
