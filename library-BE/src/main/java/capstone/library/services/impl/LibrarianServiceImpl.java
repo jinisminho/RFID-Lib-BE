@@ -1,6 +1,8 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
+import capstone.library.dtos.common.MyAccountDto;
+import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.ScannedRFIDCopiesRequestDto;
 import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
@@ -311,17 +313,24 @@ public class LibrarianServiceImpl implements LibrarianService {
                     }
                 }
 
+                // Prepare dto
+
+                MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
+                myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
+                        replace("]", "").replace("[", ""));
+                myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
+                        replace("]", "").replace("[", ""));
+                dto.setBook(myBookDto);
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
-                dto.setTitle(bookCopy.getBook().getTitle());
-                dto.setSubtitle(bookCopy.getBook().getSubtitle());
                 dto.setOverdueDays(overdueDays);
                 dto.setBookPrice(bookCopy.getPrice());
-                String authors = bookCopy.getBook().getBookAuthors().toString();
-                authors = authors.replace("[", "");
-                authors = authors.replace("]", "");
-                dto.setAuthors(authors);
-                dto.setIsbn(bookCopy.getBook().getIsbn());
                 dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
+                dto.setPrice(bookCopy.getPrice());
+                dto.setBarcode(bookCopy.getBarcode());
+                dto.setRfid(bookCopy.getRfid());
+                dto.setId(bookCopy.getId());
+                dto.setBorrower(objectMapper.convertValue(bookBorrowing.getBorrower(), MyAccountDto.class));
+                dto.setCopyType(bookCopy.getBookCopyType().getName());
 
                 responseDtos.add(dto);
             }

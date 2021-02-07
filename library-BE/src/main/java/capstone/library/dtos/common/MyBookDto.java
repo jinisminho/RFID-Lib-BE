@@ -12,9 +12,10 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyBookDto implements Serializable
-{
+public class MyBookDto implements Serializable {
     private int id;
+
+    private String barcode;
 
     private String rfid;
 
