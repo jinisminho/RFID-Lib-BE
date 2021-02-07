@@ -243,19 +243,16 @@ public class PatronServiceImpl implements PatronService
     }
 
     @Override
-    public PatronCheckoutInfoResponseDto getProfileByRfid(String rfid)
-    {
+    public PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid) {
         PatronCheckoutInfoResponseDto response = new PatronCheckoutInfoResponseDto();
 
         /*Get patron*/
         Optional<Account> patronOptional = accountRepository.findByRfid(rfid);
-        if (patronOptional.isEmpty())
-        {
+        if (patronOptional.isEmpty()) {
             throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
         }
         Account patron = patronOptional.get();
-        if (patron.getPatronType() == null)
-        {
+        if (patron.getPatronType() == null) {
             throw new ResourceNotFoundException("Patron", NOT_PATRON);
         }
         /*=========*/
@@ -268,6 +265,7 @@ public class PatronServiceImpl implements PatronService
         {
             ReturnBookResponseDto dto = new ReturnBookResponseDto();
             dto.setRfid(bookCopy.getRfid());
+            dto.setEdition(bookCopy.getBook().getEdition());
             dto.setTitle(bookCopy.getBook().getTitle());
             dto.setSubtitle(bookCopy.getBook().getSubtitle());
             dto.setAuthors(bookCopy.getBook().getBookAuthors().

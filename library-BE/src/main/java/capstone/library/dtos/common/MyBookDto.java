@@ -16,6 +16,8 @@ public class MyBookDto implements Serializable
 {
     private int id;
 
+    private String rfid;
+
     private String img;
 
     private String isbn;
