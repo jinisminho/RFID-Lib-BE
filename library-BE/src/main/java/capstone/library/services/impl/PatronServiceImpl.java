@@ -1,6 +1,7 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.BorrowPolicyDto;
+import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
@@ -261,24 +262,20 @@ public class PatronServiceImpl implements PatronService
         LocalDate now = LocalDate.now();
         List<BookCopy> overdueBooks = overdueBooksFinder.findOverdueBookCopiesByPatronId(patron.getId());
         List<ReturnBookResponseDto> dtos = new ArrayList<>();
-        for (BookCopy bookCopy : overdueBooks)
-        {
+        for (BookCopy bookCopy : overdueBooks) {
             ReturnBookResponseDto dto = new ReturnBookResponseDto();
             dto.setRfid(bookCopy.getRfid());
-            dto.setEdition(bookCopy.getBook().getEdition());
-            dto.setTitle(bookCopy.getBook().getTitle());
-            dto.setSubtitle(bookCopy.getBook().getSubtitle());
-            dto.setAuthors(bookCopy.getBook().getBookAuthors().
-                    toString().replace("]", "").replace("[", ""));
-            dto.setIsbn(bookCopy.getBook().getIsbn());
+            dto.setBook(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class));
+            dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().toString().
+                    replace("]", "").replace("[", ""));
+            dto.getBook().setGenres(bookCopy.getBook().getBookGenres().toString().
+                    replace("]", "").replace("[", ""));
             Optional<BookBorrowing> bookBorrowingOptional =
                     bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
-            if (bookBorrowingOptional.isPresent())
-            {
+            if (bookBorrowingOptional.isPresent()) {
                 BookBorrowing bookBorrowing = bookBorrowingOptional.get();
                 int overdueDays = (int) dateTimeUtils.getOverdueDays(now, bookBorrowing.getDueAt());
-                if (overdueDays > 0)
-                {
+                if (overdueDays > 0) {
                     dto.setOverdueDays(overdueDays);
                     dto.setOverdue(true);
                     //Calculate fine

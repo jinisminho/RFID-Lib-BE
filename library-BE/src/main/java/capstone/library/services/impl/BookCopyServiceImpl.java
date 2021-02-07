@@ -19,6 +19,7 @@ import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
+import capstone.library.util.tools.DateTimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,7 +53,10 @@ public class BookCopyServiceImpl implements BookCopyService {
     @Autowired
     BookCopyMoreRepository bookCopyMoreRepository;
     @Autowired
+    FeePolicyRepository feePolicyRepository;
+    @Autowired
     BookCopyMapper bookCopyMapper;
+    DateTimeUtils dateTimeUtils;
 
     private static final String PATRON_NOT_FOUND = "Cannot find this patron in database";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
@@ -212,8 +218,15 @@ public class BookCopyServiceImpl implements BookCopyService {
                 replace("]", "").replace("[", ""));
         response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                 replace("]", "").replace("[", ""));
+        response.getCopy().setBarcode(bookCopy.getBarcode());
         response.setViolatePolicy(violatePolicy);
         response.setReasons(reasons);
+        int borrowDuration = borrowPolicyOptional.get().getDueDuration();
+        LocalDate dueAt = LocalDate.now().plusDays(borrowDuration);
+        while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            dueAt = dueAt.plusDays(1);
+        }
+        response.setDueAt(dueAt.toString());
         /*=================*/
 
 
@@ -337,7 +350,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         }
         bookCopyRepository.saveAll(bookCopies);
     }
-
 
     private void updateBookNumberOfCopy(Book book) throws Exception {
         book.setNumberOfCopy(bookCopyRepository.findByBookId(book.getId()).size());

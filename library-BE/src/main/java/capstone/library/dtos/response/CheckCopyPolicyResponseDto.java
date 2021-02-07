@@ -12,9 +12,10 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckCopyPolicyResponseDto
-{
+public class CheckCopyPolicyResponseDto {
     private MyBookDto copy;
+
+    String dueAt;
 
     private boolean violatePolicy;
 
