@@ -190,6 +190,9 @@ public class BookServiceImpl implements BookService {
                     replace("[", "").replace("]", ""));
             response.setGenres(book.getBookGenres().toString().
                     replace("[", "").replace("]", ""));
+            int availableCopies = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).size();
+            availableCopies += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).size();
+            response.setAvailableCopies(availableCopies);
             return response;
         }
         throw new ResourceNotFoundException("Book", BOOK_NOT_FOUND);
@@ -252,12 +255,13 @@ public class BookServiceImpl implements BookService {
         if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
             book.setCallNumber(request.getCallNumber());
         }
-        if (request.getNumberOfCopy() != null && !book.getNumberOfCopy().equals(request.getNumberOfCopy())) {
-            book.setNumberOfCopy(request.getNumberOfCopy());
-        }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg());
         }
+        if (request.getStatus() != null) {
+            book.setStatus(request.getStatus());
+        }
+
     }
 
     @Override

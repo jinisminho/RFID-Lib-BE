@@ -1,5 +1,6 @@
 package capstone.library.dtos.request;
 
+import capstone.library.enums.BookStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,8 +36,6 @@ public class UpdateBookInfoRequestDto implements Serializable
 
     private Integer pageNumber;
 
-    private Integer numberOfCopy;
-
     private Integer publishYear;
 
     private Integer edition;
@@ -45,8 +44,8 @@ public class UpdateBookInfoRequestDto implements Serializable
 
     private List<Integer> genreIds;
 
-    @Length(min = 1, max = 30, message = "{UpdateBookInfoRequestDto.status.length}")
-    private String status;
+    private BookStatus status;
 
     private List<Integer> authorIds;
+
 }
