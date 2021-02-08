@@ -1,5 +1,7 @@
 package capstone.library.dtos.response;
 
+import capstone.library.dtos.common.MyAccountDto;
+import capstone.library.dtos.common.MyBookDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,19 +13,16 @@ import java.io.Serializable;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReturnBookResponseDto implements Serializable
-{
+public class ReturnBookResponseDto implements Serializable {
+    private int id;
+
+    private String barcode;
+
     private String rfid;
 
-    private String title;
+    private Double price;
 
-    private String subtitle;
-
-    private String authors;
-
-    private String isbn;
-
-    private boolean overdue;
+    private MyBookDto book;
 
     private int overdueDays;
 
@@ -35,5 +34,11 @@ public class ReturnBookResponseDto implements Serializable
 
     private double bookPrice;
 
+    private boolean overdue;
+
     private String borrowedAt;
+
+    private String copyType;
+
+    private MyAccountDto borrower;
 }

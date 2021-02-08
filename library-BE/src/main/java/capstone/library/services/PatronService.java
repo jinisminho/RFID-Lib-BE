@@ -23,5 +23,5 @@ public interface PatronService {
 
     Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable);
 
-    PatronCheckoutInfoResponseDto getProfileByRfid(String rfid);
+    PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid);
 }

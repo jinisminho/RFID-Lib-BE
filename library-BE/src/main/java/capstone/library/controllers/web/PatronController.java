@@ -119,7 +119,7 @@ public class PatronController
     @GetMapping("/profile/getCheckoutPatron/{rfid}")
     public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid)
     {
-        return patronService.getProfileByRfid(rfid);
+        return patronService.getCheckoutAccountByRfid(rfid);
     }
 }
 

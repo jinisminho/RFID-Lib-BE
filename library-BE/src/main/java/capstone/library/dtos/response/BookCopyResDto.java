@@ -1,5 +1,6 @@
 package capstone.library.dtos.response;
 
+import capstone.library.dtos.common.BookCopyTypeDto;
 import capstone.library.enums.BookCopyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,4 +33,6 @@ public class BookCopyResDto {
     private BookCopyStatus status;
 
     private BookResDto book;
+
+    private BookCopyTypeDto bookCopyTypeDto;
 }
