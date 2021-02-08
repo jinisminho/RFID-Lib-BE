@@ -58,7 +58,6 @@ public class LibrarianServiceImpl implements LibrarianService {
     private static final String BOOK_NOT_FOUND = "Cannot find this book in database";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String PATRON_TYPE_NOT_FOUND = "Cannot find this patron type in system";
-    private static final String PATRON_TYPE_NOT_FOUND = "Cannot find this patron type in system";
     private static final String BORROW_COPY_NOT_FOUND = "Cannot find this book copy in borrowing list";
     private static final String POLICY_KEEPING_OVERDUE = "This patron is keeping overdue book";
     private static final String POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE = "Total borrow allowance for this patron is: ";
