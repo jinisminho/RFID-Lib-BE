@@ -1,7 +1,8 @@
 package capstone.library.entities;
 
 import capstone.library.enums.Gender;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,9 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "profile")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Profile {
 
     @Id
@@ -33,7 +37,6 @@ public class Profile {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     @MapsId
-    @JsonBackReference
     private Account account;
     
 }

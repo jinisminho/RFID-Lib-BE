@@ -1,6 +1,8 @@
 package capstone.library.entities;
 
 import capstone.library.enums.BookCopyStatus;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
@@ -15,6 +17,9 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "book_copy")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class BookCopy extends Audit {
 
     @Id
