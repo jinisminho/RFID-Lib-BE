@@ -54,16 +54,16 @@ public class LibrarianServiceImpl implements LibrarianService {
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
     private static final String NOT_FOUND = " not found";
-    private static final String PATRON_NOT_FOUND = "Cannot find this patron in database";
+    private static final String PATRON_NOT_FOUND = "Cannot find this patron in system";
     private static final String BOOK_NOT_FOUND = "Cannot find this book in database";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
-    private static final String PATRON_TYPE_NOT_FOUND = "Cannot find this patron type in database";
-    private static final String COPY_NOT_FOUND = "Cannot find this book copy in database";
+    private static final String PATRON_TYPE_NOT_FOUND = "Cannot find this patron type in system";
+    private static final String BORROW_COPY_NOT_FOUND = "Cannot find this book copy in borrowing list";
     private static final String POLICY_KEEPING_OVERDUE = "This patron is keeping overdue book";
     private static final String POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE = "Total borrow allowance for this patron is: ";
     private static final String POLICY_INVALID_RFID = "Cannot find copy based on this RFID: ";
     private static final String POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE = "Exceeding borrowing allowance for copy type: ";
-    private static final String POLICY_DUPLICATE_BOOK = "Borrwing more than 1 copy of same book ISBN: ";
+    private static final String POLICY_DUPLICATE_BOOK = "Borrowing more than 1 copy of same book ISBN: ";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy type: ";
 
     /*Renew Index is used to determine if this book has been renew this time.
@@ -195,8 +195,75 @@ public class LibrarianServiceImpl implements LibrarianService {
 
 
     @Override
-    public List<ReturnBookResponseDto> validateReturnRequest(ScannedRFIDCopiesRequestDto request) {
-        return returnCopies(request);
+    public ReturnBookResponseDto validateReturnRequest(String rfid) {
+        {
+            BookCopy bookCopy;
+
+            /*Check to make sure book copy for each rfidTag is in DB.
+             * Only update DB for book copies that are found*/
+            Optional<BookCopy> bookCopyOptional = bookCopyRepository.
+                    findByRfidAndStatus(rfid, BookCopyStatus.BORROWED);
+            if (bookCopyOptional.isPresent()) {
+                bookCopy = bookCopyOptional.get();
+            } else {
+                throw new ResourceNotFoundException("Book Copy", BORROW_COPY_NOT_FOUND);
+            }
+
+            /*Return book copies found in DB earlier
+             * Update book_borrowing table & book_copy table
+             * If book copy is overdue, calculate fine*/
+            ReturnBookResponseDto dto = new ReturnBookResponseDto();
+            dto.setOverdue(false);
+            Optional<BookBorrowing> bookBorrowingOptional = bookBorrowingRepository.
+                    findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
+            if (bookBorrowingOptional.isPresent()) {
+                BookBorrowing bookBorrowing = bookBorrowingOptional.get();
+                double fineRate;
+                double fine = 0;
+                //Returns >0 if today has passed overdue date
+                int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+                if (overdueDays > 0) {
+                    Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());
+                    if (feePolicyOptional.isPresent()) {
+                        double bookCopyPrice = bookCopy.getPrice();
+                        fineRate = feePolicyOptional.get().getOverdueFinePerDay();
+                        fine = fineRate * overdueDays;
+                        int maxOverdueFinePercentage = feePolicyOptional.get().getMaxPercentageOverdueFine();
+                        double maxOverdueFine = bookCopyPrice * ((double) maxOverdueFinePercentage / 100);
+                        if (fine >= maxOverdueFine) {
+                            fine = maxOverdueFine;
+                        }
+                        dto.setFine(fine);
+                        dto.setReason("Return late: " + overdueDays + " (days)");
+                        dto.setOverdue(true);
+                    }
+                }
+
+                // Prepare dto
+                MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
+                myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
+                        replace("]", "").replace("[", ""));
+                myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
+                        replace("]", "").replace("[", ""));
+                myBookDto.setBarcode(bookCopy.getBarcode());
+                myBookDto.setRfid(bookCopy.getRfid());
+                dto.setBook(myBookDto);
+                dto.setDueDate(bookBorrowing.getDueAt().toString());
+                dto.setOverdueDays(overdueDays);
+                dto.setBookPrice(bookCopy.getPrice());
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
+                dto.setPrice(bookCopy.getPrice());
+                dto.setBarcode(bookCopy.getBarcode());
+                dto.setRfid(bookCopy.getRfid());
+                dto.setId(bookCopy.getId());
+                dto.setBorrower(objectMapper.convertValue(bookBorrowing.getBorrower(), MyAccountDto.class));
+                dto.getBorrower().setRoleName(bookBorrowing.getBorrower().getRole().getName());
+                dto.getBorrower().setPatronTypeName(bookBorrowing.getBorrower().getPatronType().getName());
+                dto.setCopyType(bookCopy.getBookCopyType().getName());
+            }
+
+            return dto;
+        }
     }
 
     /*Is for librarians use
@@ -228,10 +295,7 @@ public class LibrarianServiceImpl implements LibrarianService {
             if (bookCopyOptional.isPresent()) {
                 bookCopies.add(bookCopyOptional.get());
             } else {
-                ReturnBookResponseDto dto = new ReturnBookResponseDto();
-                dto.setRfid(rfidTag);
-                dto.setReason("Cannot find this book in borrowed-book list");
-                responseDtos.add(dto);
+                throw new ResourceNotFoundException("Book copy", BORROW_COPY_NOT_FOUND);
             }
 
         }
@@ -251,9 +315,6 @@ public class LibrarianServiceImpl implements LibrarianService {
                 double fine = 0;
                 //Returns >0 if today has passed overdue date
                 int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
-                System.out.println("Now: " + LocalDate.now());
-                System.out.println(("Due at: " + bookBorrowing.getDueAt()));
-                System.out.println("OVERDUE DAYS: " + overdueDays);
                 if (overdueDays > 0) {
                     Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());
                     if (feePolicyOptional.isPresent()) {
@@ -304,7 +365,6 @@ public class LibrarianServiceImpl implements LibrarianService {
                     //Insert return transaction to database
                     try {
 
-                        System.out.println("AAAAA " + request.isCheckin());
                         bookCopyRepository.save(bookCopy);
 
                     } catch (Exception e) {

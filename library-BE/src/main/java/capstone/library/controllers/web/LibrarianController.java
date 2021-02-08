@@ -30,12 +30,10 @@ public class LibrarianController
         return librarianService.validateCheckoutPolicy(request);
     }
 
-    @PostMapping("/return/validate")
+    @GetMapping("/return/validate")
     @ApiOperation(value = "Validate return request")
-    public List<ReturnBookResponseDto> valildateReturnRequest(@RequestBody ScannedRFIDCopiesRequestDto request)
-    {
-        request.setCheckin(false);
-        return librarianService.validateReturnRequest(request);
+    public ReturnBookResponseDto valildateReturnRequest(String rfid) {
+        return librarianService.validateReturnRequest(rfid);
     }
 
 

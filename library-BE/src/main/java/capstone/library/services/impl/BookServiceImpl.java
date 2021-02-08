@@ -63,22 +63,23 @@ public class BookServiceImpl implements BookService {
 
         List<BookResDto> res = new ArrayList<>();
         long totalSize = 0;
-        searchValue = searchValue.trim();
         searchValue = searchValue == null ? "" : searchValue;
+        searchValue = searchValue.trim();
         Page<Book> books = searchValue.isEmpty() ? bookJpaRepository.findAll(pageable) : bookRepository.findBooks(searchValue, pageable);
         totalSize = books.getTotalElements();
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
         for (BookResDto book : res) {
             int stockSize = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
-
+            stockSize += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             if (stockSize > 0) {
                 book.setStock(stockSize);
                 book.setAvailable(true);
             } else {
                 book.setAvailable(false);
+                book.setStock(0);
             }
-            if (book.getStatus().equals(BookStatus.LIB_USE_ONLY))
+            if (book.getStatus().equals(BookStatus.LIB_USE_ONLY.toString()))
                 book.setOnlyInLibrary(true);
         }
 
@@ -101,6 +102,7 @@ public class BookServiceImpl implements BookService {
         for (Book book : books.getContent()) {
             BookResponseDto dto = objectMapper.convertValue(book, BookResponseDto.class);
             int copies = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).size();
+            copies += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).size();
             if (copies > 0) {
                 dto.setAvailableCopies(copies);
                 dto.setAvailable(true);
