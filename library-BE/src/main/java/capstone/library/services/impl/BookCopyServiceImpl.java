@@ -304,8 +304,8 @@ public class BookCopyServiceImpl implements BookCopyService {
     public Page<BookCopyResDto> findBookCopies(String searchValue, Pageable pageable) {
         List<BookCopyResDto> res = new ArrayList<>();
         long totalSize = 0;
-        searchValue = searchValue.trim();
         searchValue = searchValue == null ? "" : searchValue;
+        searchValue = searchValue.trim();
         Page<BookCopy> books = searchValue.isEmpty() ? bookCopyRepository.findAll(pageable) : bookCopyMoreRepository.findBookCopies(searchValue, pageable);
         totalSize = books.getTotalElements();
 //        res = books.stream().map(book -> bookCopyMapper.toResDto(book)).collect(Collectors.toList());
@@ -327,9 +327,10 @@ public class BookCopyServiceImpl implements BookCopyService {
                 copy.getBook().setStock(stockSize);
                 copy.getBook().setAvailable(true);
             } else {
+                copy.getBook().setStock(0);
                 copy.getBook().setAvailable(false);
             }
-            if (copy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY))
+            if (copy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY.toString()))
                 copy.getBook().setOnlyInLibrary(true);
         }
 
