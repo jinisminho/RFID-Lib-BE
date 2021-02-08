@@ -18,5 +18,5 @@ public interface LibrarianService
 
     GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId);
 
-    List<ReturnBookResponseDto> validateReturnRequest(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
+    ReturnBookResponseDto validateReturnRequest(String rfid);
 }
