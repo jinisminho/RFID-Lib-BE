@@ -18,8 +18,19 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
 
     Optional<BookBorrowing> findById(Integer bookBorrowingId);
 
-
-    Page<BookBorrowing> findAllByBorrower_Id(Integer patronId, Pageable pageable);
+    /* Trâm fix lại của Kiên*/
+    @Query(
+            value = "select d.* \n" +
+                    "from book_borrowing d\n" +
+                    "join borrowing b on d.borrow_id = b.id\n" +
+                    "where b.borrowed_by = :borrower_id;",
+            countQuery = "select count(*) \n" +
+                    "from book_borrowing d\n" +
+                    "join borrowing b on d.borrow_id = b.id\n" +
+                    "where b.borrowed_by = :borrower_id;",
+            nativeQuery = true
+    )
+    Page<BookBorrowing> findAllByBorrower_Id(@Param("borrower_id") Integer patronId, Pageable pageable);
 
     Optional<BookBorrowing> findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(int bookCopyId);
 

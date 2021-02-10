@@ -51,7 +51,7 @@ public class Account extends Audit {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToOne(mappedBy = "account", cascade = CascadeType.PERSIST)
+    @OneToOne(mappedBy = "account", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Profile profile;
 
     @ManyToOne(fetch = FetchType.LAZY)
