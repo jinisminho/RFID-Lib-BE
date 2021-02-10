@@ -76,8 +76,12 @@ public class EmailServiceImpl  implements EmailService {
         if(books == null){
             throw  new MissingInputException("books is missing");
         }
+        List<BookReturnResponse> successfulReturns = books
+                .stream()
+                .filter(s -> s.getStatus() == BookReturnStatus.RETURNED)
+                .collect(Collectors.toList());
         Map<String, List<BookReturnResponse>> patronMap = new HashMap<>();
-        for(BookReturnResponse book : books){
+        for(BookReturnResponse book : successfulReturns){
             String patron = book.getPatron();
             List<BookReturnResponse> tmp = new ArrayList<>();
             if(patronMap.containsKey(patron)){

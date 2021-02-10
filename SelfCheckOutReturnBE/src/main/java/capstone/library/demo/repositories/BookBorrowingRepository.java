@@ -13,9 +13,10 @@ import java.util.Optional;
 public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, Integer> {
 
     @Query(
-            value = "select *  \n" +
-                    "from  library_rfid.book_borrowing \n" +
-                    "where borrowed_by = :borrowed_by and due_at < curdate() and returned_at is null and lost_at is null;",
+            value = "select d.* \n" +
+                    "from book_borrowing d\n" +
+                    "join borrowing b on d.borrow_id = b.id\n" +
+                    "where b.borrowed_by = :borrowed_by and due_at < curdate() and d.returned_at is null and d.lost_at is null;",
             nativeQuery = true
     )
     List<BookBorrowing> findOverDueTransactionByPatronId (@Param("borrowed_by") int patronId);
@@ -32,6 +33,13 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
 
     Optional<BookBorrowing> findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(int bookCopyId);
 
-    List<BookBorrowing> findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(int patronId);
+    @Query(
+            value = "select d.* \n" +
+                    "from book_borrowing d\n" +
+                    "join borrowing b on d.borrow_id = b.id\n" +
+                    "where b.borrowed_by = :borrower_id and d.returned_at is null and d.lost_at is null;",
+            nativeQuery = true
+    )
+    List<BookBorrowing> findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(@Param("borrower_id") int patronId);
 
 }
