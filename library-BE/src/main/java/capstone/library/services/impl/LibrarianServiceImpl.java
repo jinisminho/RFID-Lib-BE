@@ -13,6 +13,7 @@ import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
+import capstone.library.services.BorrowingService;
 import capstone.library.services.LibrarianService;
 import capstone.library.util.tools.BookCopyBarcodeUtils;
 import capstone.library.util.tools.DateTimeUtils;
@@ -50,6 +51,8 @@ public class LibrarianServiceImpl implements LibrarianService {
     ObjectMapper objectMapper;
     @Autowired
     BookCopyBarcodeUtils bookCopyBarcodeUtils;
+    @Autowired
+    BorrowingService borrowingService;
 
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
@@ -144,13 +147,19 @@ public class LibrarianServiceImpl implements LibrarianService {
 
                         /*Create new book borrowing record in db*/
                         BookBorrowing bookBorrowing = new BookBorrowing();
-                        bookBorrowing.setBorrower(borrowingPatron);
                         bookBorrowing.setIssued_by(issuingLibrarian);
                         bookBorrowing.setBookCopy(bookCopy);
-                        bookBorrowing.setBorrowedAt(now);
                         bookBorrowing.setDueAt(dueAt);
                         bookBorrowing.setExtendIndex(DEFAULT_RENEW_INDEX);
                         bookBorrowing.setFeePolicy(feePolicy);
+
+                        //Create new borrowing for book_borrowing
+                        Borrowing borrowing = new Borrowing();
+                        borrowing.setBorrower(borrowingPatron);
+                        borrowing.setBorrowedAt(now);
+                        borrowing.setNote(request.getCheckoutNote());
+
+                        bookBorrowing.setBorrowing(borrowing);
                         /*===========================*/
 
                         //Save bookBorrowing to db
@@ -251,14 +260,15 @@ public class LibrarianServiceImpl implements LibrarianService {
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
                 dto.setOverdueDays(overdueDays);
                 dto.setBookPrice(bookCopy.getPrice());
-                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
                 dto.setPrice(bookCopy.getPrice());
                 dto.setBarcode(bookCopy.getBarcode());
                 dto.setRfid(bookCopy.getRfid());
                 dto.setId(bookCopy.getId());
-                dto.setBorrower(objectMapper.convertValue(bookBorrowing.getBorrower(), MyAccountDto.class));
-                dto.getBorrower().setRoleName(bookBorrowing.getBorrower().getRole().getName());
-                dto.getBorrower().setPatronTypeName(bookBorrowing.getBorrower().getPatronType().getName());
+                //Get Borrower and Borrowed_at in Borrowing table
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowing().getBorrowedAt()));
+                dto.setBorrower(objectMapper.convertValue(bookBorrowing.getBorrowing().getBorrower(), MyAccountDto.class));
+                dto.getBorrower().setRoleName(bookBorrowing.getBorrowing().getBorrower().getRole().getName());
+                dto.getBorrower().setPatronTypeName(bookBorrowing.getBorrowing().getBorrower().getPatronType().getName());
                 dto.setCopyType(bookCopy.getBookCopyType().getName());
             }
 
@@ -384,12 +394,12 @@ public class LibrarianServiceImpl implements LibrarianService {
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
                 dto.setOverdueDays(overdueDays);
                 dto.setBookPrice(bookCopy.getPrice());
-                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowing().getBorrowedAt()));
                 dto.setPrice(bookCopy.getPrice());
                 dto.setBarcode(bookCopy.getBarcode());
                 dto.setRfid(bookCopy.getRfid());
                 dto.setId(bookCopy.getId());
-                dto.setBorrower(objectMapper.convertValue(bookBorrowing.getBorrower(), MyAccountDto.class));
+                dto.setBorrower(objectMapper.convertValue(bookBorrowing.getBorrowing().getBorrower(), MyAccountDto.class));
                 dto.setCopyType(bookCopy.getBookCopyType().getName());
 
                 responseDtos.add(dto);

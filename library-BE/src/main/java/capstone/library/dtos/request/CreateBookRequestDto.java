@@ -22,8 +22,7 @@ public class CreateBookRequestDto implements Serializable
     @NotNull(message = "{AddBookRequestDto.title.notNull}")
     @Length(min = 1, max = 255, message = "{AddBookRequestDto.tile.length}")
     private String title;
-    @NotNull(message = "{AddBookRequestDto.subtitle.notNull}")
-    @Length(min = 1, max = 255, message = "{AddBookRequestDto.subtitle.length}")
+    @Length(max = 255, message = "{AddBookRequestDto.subtitle.length}")
     private String subtitle;
     @NotNull(message = "{AddBookRequestDto.callNumber.notNull}")
 //    @Length(min = 1, max = 255, message = "{AddBookRequestDto.callNumber.length}")
