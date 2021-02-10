@@ -1,5 +1,6 @@
 package capstone.library;
 
+import capstone.library.util.tools.PasswordUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,7 +17,14 @@ class LibraryApplicationTests
     void contextLoads()
     {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        System.out.println(encoder.encode("4123"));
+        System.out.println(encoder.encode("123456"));
+    }
+
+
+    @Test
+    void testGenerateRawPassword()
+    {
+        System.out.println(PasswordUtil.generatePassword());
     }
 
 }

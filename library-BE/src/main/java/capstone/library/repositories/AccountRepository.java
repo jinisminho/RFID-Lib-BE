@@ -1,6 +1,7 @@
 package capstone.library.repositories;
 
 import capstone.library.entities.Account;
+import io.swagger.models.auth.In;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,7 @@ public interface AccountRepository extends JpaRepository<Account, Integer>
     Page<Account> findAccountsByRoleId(Integer roleId, Pageable pageable);
 
     Optional<Account> findByEmail(String email);
+
+    Page<Account> findByEmailContainsAndRoleId(String email, int roleId, Pageable pageable);
 
 }

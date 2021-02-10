@@ -10,11 +10,12 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePatronRequest {
+public class CreateLibrarianRequest {
 
     @Email(message = "{account.email.invalid}")
     @NotNull(message = "{account.email.notNull}")
@@ -29,9 +30,6 @@ public class CreatePatronRequest {
 
     @NotNull(message = "{account.creatorId.notNull}")
     private Integer creatorId;
-
-    @NotNull(message = "{account.patronTypeId.notNull}")
-    private Integer patronTypeId;
 
     @NotNull(message = "{account.fullName.notNull}")
     @Length(min = 1, max = 50)
