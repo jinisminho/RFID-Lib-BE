@@ -1,6 +1,6 @@
-package capstone.library.demo.repositories;
+package capstone.library.repositories;
 
-import capstone.library.demo.entities.Borrowing;
+import capstone.library.entities.Borrowing;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
