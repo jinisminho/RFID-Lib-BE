@@ -209,7 +209,7 @@ public class MailServiceImpl implements MailService {
         if(borrowing == null){
             throw  new MissingInputException("cannot find borrowing transaction");
         }
-        Account patron = borrowing.getBorrower();
+        Account patron = borrowing.getBorrowing().getBorrower();
         double fineRate = borrowing.getFeePolicy().getOverdueFinePerDay();
         Map<String, Object> templateModel = new HashMap<>();
         templateModel.put("patron", patron.getProfile().getFullName());
