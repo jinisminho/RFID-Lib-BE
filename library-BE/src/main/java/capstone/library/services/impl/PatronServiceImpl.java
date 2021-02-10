@@ -237,7 +237,7 @@ public class PatronServiceImpl implements PatronService
             throw new MissingInputException("Missing input");
         }
         Page<BookBorrowing> histories = bookBorrowingRepository
-                .findAllByBorrower_Id(patronId, pageable);
+                .findAllByBorrowerId(patronId, pageable);
         return new PageImpl<>(histories
                 .stream()
                 .map(bookBorrowing -> bookBorrowingMapper.toDto(bookBorrowing))

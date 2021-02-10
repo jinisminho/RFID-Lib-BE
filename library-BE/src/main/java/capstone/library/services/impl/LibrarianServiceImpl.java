@@ -59,6 +59,7 @@ public class LibrarianServiceImpl implements LibrarianService {
     private static final String NOT_FOUND = " not found";
     private static final String PATRON_NOT_FOUND = "Cannot find this patron in system";
     private static final String BOOK_NOT_FOUND = "Cannot find this book in database";
+    private static final String COPY_NOT_AVAILABLE = "This book copy is not available (barcode): ";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String PATRON_TYPE_NOT_FOUND = "Cannot find this patron type in system";
     private static final String BORROW_COPY_NOT_FOUND = "Cannot find this book copy in borrowing list";
@@ -66,7 +67,7 @@ public class LibrarianServiceImpl implements LibrarianService {
     private static final String POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE = "Total borrow allowance for this patron is: ";
     private static final String POLICY_INVALID_RFID = "Cannot find copy based on this RFID: ";
     private static final String POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE = "Exceeding borrowing allowance for copy type: ";
-    private static final String POLICY_DUPLICATE_BOOK = "Borrowing more than 1 copy of same book ISBN: ";
+    private static final String POLICY_DUPLICATE_BOOK = "Borrowing or keeping more than 1 copy of same book ISBN: ";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy type: ";
 
     /*Renew Index is used to determine if this book has been renew this time.
@@ -114,6 +115,11 @@ public class LibrarianServiceImpl implements LibrarianService {
         CheckoutResponseDto response = new CheckoutResponseDto();
         List<CheckoutCopyDto> dtos = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
+        //Create new borrowing for book_borrowing
+        Borrowing borrowing = new Borrowing();
+        borrowing.setBorrower(borrowingPatron);
+        borrowing.setBorrowedAt(now);
+        borrowing.setNote(request.getCheckoutNote());
         for (String rfidTag :
                 rfidTags) {
             CheckoutCopyDto dto = new CheckoutCopyDto();
@@ -152,13 +158,6 @@ public class LibrarianServiceImpl implements LibrarianService {
                         bookBorrowing.setDueAt(dueAt);
                         bookBorrowing.setExtendIndex(DEFAULT_RENEW_INDEX);
                         bookBorrowing.setFeePolicy(feePolicy);
-
-                        //Create new borrowing for book_borrowing
-                        Borrowing borrowing = new Borrowing();
-                        borrowing.setBorrower(borrowingPatron);
-                        borrowing.setBorrowedAt(now);
-                        borrowing.setNote(request.getCheckoutNote());
-
                         bookBorrowing.setBorrowing(borrowing);
                         /*===========================*/
 
@@ -419,6 +418,7 @@ public class LibrarianServiceImpl implements LibrarianService {
         boolean haveOverdueCopies = false;
         boolean violatePolicy = false;
         boolean duplicateBook = false;
+        boolean copyIsAvailable = true;
         List<String> reasons = new ArrayList<>();
 
         /*Get patron account*/
@@ -442,7 +442,9 @@ public class LibrarianServiceImpl implements LibrarianService {
         }
         /*===============*/
 
-        /*Check if patron is borrowing exceeding allowance for each copy_type*/
+        /*Check:
+            + Each copy status
+            + if patron is borrowing exceeding allowance for each copy_type*/
         // key = copy type id; value = number of copies
         HashSet<BookCopyType> copyTypeIdHashSet = new HashSet<>();
         List<Integer> copyTypeIdList = new ArrayList<>();
@@ -455,11 +457,15 @@ public class LibrarianServiceImpl implements LibrarianService {
                 violatePolicy = true;
                 reasons.add(POLICY_INVALID_RFID + rfid);
             }
+            // check copy status
+            if (!bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE)) {
+                violatePolicy = true;
+                reasons.add(COPY_NOT_AVAILABLE + bookCopy.getBarcode());
+            }
         }
         for (BookCopyType type : copyTypeIdHashSet) {
             BorrowPolicy tmp = getBorrowPolicy(patron.getPatronType().getId(), type.getId());
             int max = tmp.getMaxNumberCopyBorrow();
-            System.out.println(type.getName() + " - " + max);
             if (max <= 0) {
                 violatePolicy = true;
                 reasons.add(POLICY_PATRON_TYPE_COPY_TYPE + type.getName());
