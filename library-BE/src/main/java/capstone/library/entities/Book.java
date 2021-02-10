@@ -82,6 +82,14 @@ public class Book extends Audit {
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
     public Set<BookCopy> bookCopies;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private Account creator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private Account updater;
+
 
     @Override
     public String toString() {
