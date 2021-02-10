@@ -200,7 +200,6 @@ create  table book_copy_position (
     floor int not null,
     shelf varchar(50) not null,
     from_call_number varchar(50) not null,
-    to_call_number varchar(50) not null,
     
     book_copy_type_id int,
 	primary key (id)
@@ -438,7 +437,7 @@ insert into book_copy_type (id, name) values
 
 /*admin*/
 insert into account (id, email, password, rfid, avatar, isActive, created_at, updated_at, created_by, updated_by, role_id) values
-(1, 'tuongnt1@fpt.edu.vn', '123', '123', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),1, 1, 2);
+(1, 'tuongnt1@fpt.edu.vn', '123', '123', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),1, 1, 1);
 
 insert into profile (fullname, phone, gender, account_id) values
 ('Pham Minh Tuong', '0912685441', 'M', 1);
@@ -468,7 +467,7 @@ insert into profile (fullname, phone, gender, account_id) values
 ('Phan Hoang Tram', '0965457000', 'F', 6),
 ('Pham Minh Hoang', '0657111000', 'M', 7),
 ('Nguyen Trung Kien', '0948634000', 'M', 8),
-('Phan Hoang Oanh', '0916741000', 'M', 9);
+('Nguyen Do Nhat Khang', '0916741000', 'M', 9);
 
 
 /********/
@@ -487,12 +486,12 @@ insert into author(id, name) values
 
 
 insert into book (id, ISBN, title, subtitle, publisher, publish_year, edition, language, page_number, call_number, number_of_copy, status, created_at, updated_at, created_by, updated_by, img) values
-(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, 'A1-1', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, 'A2-1', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, 'A2-1', 1, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, 'A2-1', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, 'A2-1', 3, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, 'A2-1', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg");
+(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '000.123', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
+(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '000.564', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
+(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '100.895', 1, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
+(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '200.986', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
+(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '300.999', 3, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
+(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '000.574', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg");
 
 
 insert into genre (id, name) values
@@ -557,10 +556,12 @@ insert into borrow_policy (	id,
 (5, 7, 4, 2, 7,  now(), now(), 2, 2 ),
 (6, 7, 4, 2, 7, now(), now(), 2, 3 );
 
-insert into book_copy_position (id, floor, shelf, from_call_number, to_call_number, book_copy_type_id) values
-(1, 1, 'Henry', 'A1', 'B1', 1),
-(2, 1, 'Lucy', 'A1', 'B1', 2),
-(3, 1, 'Mars', 'A1', 'B1', 3);
+insert into book_copy_position (id, floor, shelf, from_call_number, book_copy_type_id) values
+(1, 1, 'Henry', '000', 1),
+(2, 1, 'Lucy', '100', 2),
+(3, 1, 'Mars', '200', 3),
+(4, 1, 'Silver', '300', 3);
+
 
 
 insert into fee_policy (id,

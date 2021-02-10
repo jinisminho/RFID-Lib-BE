@@ -168,28 +168,29 @@ public class PatronServiceImpl implements PatronService
         {
 
             //Check if it is overdue
-            if (bookBorrowing.getDueAt().isBefore(LocalDate.now()))
-            {
+            if (bookBorrowing.getDueAt().isBefore(LocalDate.now())) {
                 throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "The requested item is overdue");
             }
 
             //if issued by Librarian get the librarian account, if not get the patron one
+            /*Hoang*/
             Account isssuedBy =
                     librarianId != null
                             ? accountRepository.findById(librarianId).orElseThrow(() -> new ResourceNotFoundException("Account", "Librarian Account with Id " + librarianId + " not found"))
-                            : bookBorrowing.getBorrower();
+                            : bookBorrowing.getBorrowing().getBorrower();
+            /*===========*/
 
             //Get extendHistory if it exists
             ExtendHistory extendHistory = extendHistoryRepository.findFirstByBookBorrowing_IdOrderByDueAtDesc(bookBorrowing.getId())
                     .orElse(new ExtendHistory());
 
             //Extend only if index under max extend time
-            if (extendHistory.getExtendIndex() < policy.getMaxExtendTime())
-            {
+            if (extendHistory.getExtendIndex() < policy.getMaxExtendTime()) {
                 //If the bookBorrowing is extended for the first time, create the first history
-                if (bookBorrowing.getExtendIndex() == 0)
-                {
-                    extendHistory.setBorrowedAt(bookBorrowing.getBorrowedAt());
+                if (bookBorrowing.getExtendIndex() == 0) {
+                    /*Hoang*/
+                    extendHistory.setBorrowedAt(bookBorrowing.getBorrowing().getBorrowedAt());
+                    /*========*/
                     extendHistory.setExtendIndex(bookBorrowing.getExtendIndex());
                     extendHistory.setDueAt(bookBorrowing.getDueAt());
                     extendHistory.setBookBorrowing(bookBorrowing);
@@ -236,7 +237,7 @@ public class PatronServiceImpl implements PatronService
             throw new MissingInputException("Missing input");
         }
         Page<BookBorrowing> histories = bookBorrowingRepository
-                .findAllByBorrower_Id(patronId, pageable);
+                .findAllByBorrowerId(patronId, pageable);
         return new PageImpl<>(histories
                 .stream()
                 .map(bookBorrowing -> bookBorrowingMapper.toDto(bookBorrowing))
@@ -289,15 +290,16 @@ public class PatronServiceImpl implements PatronService
                         fine = fineRate * overdueDays;
                         int maxOverdueFinePercentage = feePolicyOptional.get().getMaxPercentageOverdueFine();
                         double maxOverdueFine = bookCopyPrice * ((double) maxOverdueFinePercentage / 100);
-                        if (fine >= maxOverdueFine)
-                        {
+                        if (fine >= maxOverdueFine) {
                             fine = maxOverdueFine;
                         }
                         dto.setFine(fine);
                         dto.setReason("Return late: " + overdueDays + " (days)");
                     }
                 }
-                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowedAt()));
+                /*Hoang*/
+                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowing().getBorrowedAt()));
+                /*========*/
                 dto.setDueDate(bookBorrowing.getDueAt().toString());
             }
             dto.setBookPrice(bookCopy.getPrice());

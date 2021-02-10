@@ -2,10 +2,7 @@ package capstone.library.exceptions.handler;
 
 import capstone.library.dtos.common.ErrorDto;
 import capstone.library.enums.ErrorStatus;
-import capstone.library.exceptions.CustomException;
-import capstone.library.exceptions.InvalidRequestException;
-import capstone.library.exceptions.ResourceNotFoundException;
-import capstone.library.exceptions.UnauthorizedException;
+import capstone.library.exceptions.*;
 import capstone.library.util.constants.ConstantUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -192,6 +189,17 @@ public class ApplicationExceptionHandler {
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 exception.getHttpStatus().value(),
                 exception.getError(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = EmailException.class)
+    public ResponseEntity<ErrorDto> handleException(EmailException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.SYSTEM_ERROR.getCode(),
+                ErrorStatus.SYSTEM_ERROR.getReason(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

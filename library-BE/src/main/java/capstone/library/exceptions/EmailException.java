@@ -1,4 +1,4 @@
-package capstone.library.dtos.request;
+package capstone.library.exceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,9 +7,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class CreateAccountRequest {
-
-
+@NoArgsConstructor
+public class EmailException  extends RuntimeException{
+    private String message;
 }

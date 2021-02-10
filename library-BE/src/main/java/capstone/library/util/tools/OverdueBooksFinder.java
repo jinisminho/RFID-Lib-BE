@@ -38,7 +38,7 @@ public class OverdueBooksFinder
                 dto.setGenres(bookBorrowing.getBookCopy().getBook().getBookGenres().
                         toString().replace("]", "").replace("[", ""));
                 dto.setBarcode(bookBorrowing.getBookCopy().getBarcode());
-                dto.setBorrowedAt(bookBorrowing.getBorrowedAt().toString());
+                dto.setBorrowedAt(bookBorrowing.getBorrowing().getBorrowedAt().toString());
                 dto.setDueAt(bookBorrowing.getDueAt().toString());
                 dto.setOverdueDays(overdueDays);
                 dto.setBookCopyId(bookBorrowing.getBookCopy().getId());
