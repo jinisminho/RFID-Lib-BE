@@ -6,9 +6,10 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.enums.BookCopyStatus;
 import capstone.library.services.BookCopyService;
-import io.swagger.annotations.ApiOperation;
 import capstone.library.util.ApiPageable;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,15 +37,13 @@ public class BookCopyController {
     }
 
     @PostMapping("/tag")
-    public String tagCopy(@RequestBody @Valid @NotNull TagCopyRequestDto request)
-    {
+    public String tagCopy(@RequestBody @Valid @NotNull TagCopyRequestDto request) {
         return bookCopyService.tagCopy(request);
     }
 
     @GetMapping("/validate/{rfid}")
     public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable @NotEmpty String rfid,
-                                                      @RequestParam @NotEmpty int patronId)
-    {
+                                                      @RequestParam @NotEmpty int patronId) {
         return bookCopyService.validateCopyByRFID(rfid, patronId);
     }
 
@@ -54,23 +53,21 @@ public class BookCopyController {
     }
 
     @GetMapping("/get/rfid/{rfid}")
-    public CopyResponseDto getCopyByRfid(@PathVariable @NotEmpty String rfid)
-    {
+    public CopyResponseDto getCopyByRfid(@PathVariable @NotEmpty String rfid) {
         return bookCopyService.getCopyByRfid(rfid);
     }
 
     @PostMapping("/update")
     @ApiOperation("Update a book copy by id")
-    public String updateCopy(@RequestBody @Valid @NotNull UpdateCopyRequest request)
-    {
+    public String updateCopy(@RequestBody @Valid @NotNull UpdateCopyRequest request) {
         return bookCopyService.updateCopy(request);
     }
 
-    @ApiOperation(value = "This API use to search book copy by like title-subtitle and exact ISBN, barcode, RFID")
+    @ApiOperation(value = "This API use to search book copy by like title-subtitle and exact ISBN, barcode, RFID. Filter by status")
     @ApiPageable
     @GetMapping("/search")
-    public Page<BookCopyResDto> findBookCopies(@RequestParam(required = false, value = "searchValue") String searchValue, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
-        return bookCopyService.findBookCopies(searchValue, pageable);
+    public Page<BookCopyResDto> findBookCopies(@RequestParam(required = false, value = "searchValue") String searchValue, @RequestParam(required = false, value = "status") BookCopyStatus status, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
+        return bookCopyService.findBookCopies(searchValue, status, pageable);
     }
 
 }

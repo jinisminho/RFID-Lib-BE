@@ -2,6 +2,7 @@ package capstone.library.repositories.impl;
 
 import capstone.library.entities.Book;
 import capstone.library.entities.BookCopy;
+import capstone.library.enums.BookCopyStatus;
 import capstone.library.repositories.BookCopyMoreRepository;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
@@ -70,6 +71,79 @@ public class BookCopyMoreRepositoryImpl implements BookCopyMoreRepository {
                             .matching(searchValue)
                             .analyzer("keyword")
                     ).fetchTotalHitCount();
+            res = result2.hits();
+        }
+
+        List<BookCopy> resWithoutDuplicates = new ArrayList<>(
+                new LinkedHashSet<>(res));
+        return new PageImpl<BookCopy>(resWithoutDuplicates, pageable, totalSize);
+    }
+
+    @Override
+    public Page<BookCopy> findBookCopiesWithStatus(String searchValue, BookCopyStatus status, Pageable pageable) {
+        SearchSession searchSession = Search.session(entityManager);
+
+        SearchResult<BookCopy> result1, result2;
+
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int offset = page * size;
+        int limit = size;
+
+        long totalSize = 0;
+        totalSize = searchSession.search(BookCopy.class)
+                .where(f -> f.bool()
+                        .must(f.match()
+                                .fields("book.title", "book.title_2", "book.sub", "book.sub_2")
+                                .matching(searchValue)
+                                .analyzer("default"))
+                        .must(f.match()
+                                .fields("status")
+                                .matching(status)
+                                .analyzer("keyword"))
+                )
+                .fetchTotalHitCount();
+        result1 = searchSession.search(BookCopy.class)
+                .where(f -> f.bool()
+                        .must(f.match()
+                                .fields("book.title", "book.title_2", "book.sub", "book.sub_2")
+                                .matching(searchValue)
+                                .analyzer("default"))
+                        .must(f.match()
+                                .fields("status")
+                                .matching(status)
+                                .analyzer("keyword"))
+                )
+                .fetch(offset, limit);
+
+        result2 = searchSession.search(BookCopy.class)
+                .where(f -> f.bool()
+                        .must(f.match()
+                                .fields("book.isbn", "barcode", "rfid")
+                                .matching(searchValue)
+                                .analyzer("keyword"))
+                        .must(f.match()
+                                .fields("status")
+                                .matching(status)
+                                .analyzer("keyword"))
+                )
+                .fetch(offset, limit);
+
+        List<BookCopy> res = new ArrayList<>();
+        if (result1.total().hitCount() > 0) res.addAll(result1.hits());
+        if (result2.total().hitCount() > 0) {
+            totalSize = searchSession.search(Book.class)
+                    .where(f -> f.bool()
+                            .must(f.match()
+                                    .fields("book.isbn", "barcode", "rfid")
+                                    .matching(searchValue)
+                                    .analyzer("keyword"))
+                            .must(f.match()
+                                    .fields("status")
+                                    .matching(status)
+                                    .analyzer("keyword"))
+                    )
+                    .fetchTotalHitCount();
             res = result2.hits();
         }
 

@@ -6,6 +6,7 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.enums.BookCopyStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,7 +22,8 @@ public interface BookCopyService {
     CopyResponseDto getCopyByBarcode(String barcode);
 
     CopyResponseDto getCopyByRfid(String rfid);
+
     String updateCopy(UpdateCopyRequest request);
 
-    Page<BookCopyResDto> findBookCopies(String searchValue, Pageable pageable);
+    Page<BookCopyResDto> findBookCopies(String searchValue, BookCopyStatus status, Pageable pageable);
 }

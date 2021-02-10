@@ -301,12 +301,14 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     @Override
-    public Page<BookCopyResDto> findBookCopies(String searchValue, Pageable pageable) {
+    public Page<BookCopyResDto> findBookCopies(String searchValue, BookCopyStatus status, Pageable pageable) {
         List<BookCopyResDto> res = new ArrayList<>();
         long totalSize = 0;
         searchValue = searchValue == null ? "" : searchValue;
         searchValue = searchValue.trim();
-        Page<BookCopy> books = searchValue.isEmpty() ? bookCopyRepository.findAll(pageable) : bookCopyMoreRepository.findBookCopies(searchValue, pageable);
+
+        Page<BookCopy> books = doFindBookCopies(searchValue, status, pageable);
+
         totalSize = books.getTotalElements();
 //        res = books.stream().map(book -> bookCopyMapper.toResDto(book)).collect(Collectors.toList());
 
@@ -335,6 +337,16 @@ public class BookCopyServiceImpl implements BookCopyService {
         }
 
         return new PageImpl<BookCopyResDto>(res, pageable, totalSize);
+    }
+
+    private Page<BookCopy> doFindBookCopies(String searchValue, BookCopyStatus status, Pageable pageable) {
+        Page<BookCopy> books;
+        if (searchValue.isEmpty()) {
+            books = bookCopyRepository.findAll(pageable);
+        } else {
+            books = status == null ? bookCopyMoreRepository.findBookCopies(searchValue, pageable) : bookCopyMoreRepository.findBookCopiesWithStatus(searchValue, status, pageable);
+        }
+        return books;
     }
 
     private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception {
