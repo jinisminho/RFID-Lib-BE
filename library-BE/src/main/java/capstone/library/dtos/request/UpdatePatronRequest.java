@@ -1,5 +1,6 @@
 package capstone.library.dtos.request;
 
+
 import capstone.library.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,11 +15,10 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePatronRequest {
+public class UpdatePatronRequest {
 
-    @Email(message = "{account.email.invalid}")
-    @NotNull(message = "{account.email.notNull}")
-    private String email;
+    @NotNull(message = "{account.id.notNull}")
+    private Integer id;
 
     @NotNull(message = "{account.rfid.notNull}")
     @Length(max = 80)
@@ -28,7 +28,7 @@ public class CreatePatronRequest {
     private String avatar;
 
     @NotNull(message = "{account.creatorId.notNull}")
-    private Integer creatorId;
+    private Integer updaterId;
 
     @NotNull(message = "{account.patronTypeId.notNull}")
     private Integer patronTypeId;

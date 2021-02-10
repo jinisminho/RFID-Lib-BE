@@ -23,11 +23,11 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
             value = "select d.* \n" +
                     "from book_borrowing d\n" +
                     "join borrowing b on d.borrow_id = b.id\n" +
-                    "where b.borrowed_by = :borrower_id;",
+                    "where b.borrowed_by = :borrower_id",
             countQuery = "select count(*) \n" +
                     "from book_borrowing d\n" +
                     "join borrowing b on d.borrow_id = b.id\n" +
-                    "where b.borrowed_by = :borrower_id;",
+                    "where b.borrowed_by = :borrower_id",
             nativeQuery = true
     )
     Page<BookBorrowing> findAllByBorrower_Id(@Param("borrower_id") Integer patronId, Pageable pageable);

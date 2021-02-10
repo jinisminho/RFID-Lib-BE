@@ -1,5 +1,6 @@
 package capstone.library.dtos.request;
 
+
 import capstone.library.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,18 +8,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePatronRequest {
+public class UpdateLibrarianRequest {
 
-    @Email(message = "{account.email.invalid}")
-    @NotNull(message = "{account.email.notNull}")
-    private String email;
+    @NotNull(message = "{account.id.notNull}")
+    private Integer id;
 
     @NotNull(message = "{account.rfid.notNull}")
     @Length(max = 80)
@@ -28,10 +27,7 @@ public class CreatePatronRequest {
     private String avatar;
 
     @NotNull(message = "{account.creatorId.notNull}")
-    private Integer creatorId;
-
-    @NotNull(message = "{account.patronTypeId.notNull}")
-    private Integer patronTypeId;
+    private Integer updaterId;
 
     @NotNull(message = "{account.fullName.notNull}")
     @Length(min = 1, max = 50)
