@@ -344,23 +344,4 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-//    @Override
-//    public boolean tagRfidToBookCopy(Integer bookCopyId, String rfid) {
-//        if (bookCopyId == null || rfid == null) {
-//            throw new MissingInputException("Missing input");
-//        }
-//
-//        BookCopyDto bookCopy = bookCopyMapper.toDto(bookCopyRepository.findById(bookCopyId)
-//                .orElseThrow(() -> new ResourceNotFoundException("BookCopy", "BookCopy with id: " + bookCopyId + " not found")));
-//
-//        if (bookCopy != null) {
-//            bookCopy.setRfid(rfid);
-//            BookCopy result = bookCopyMapper.toEntity(bookCopy);
-//            bookCopyRepository.saveAndFlush(result);
-//            return true;
-//        }
-//
-//        return false;
-//    }
-
 }

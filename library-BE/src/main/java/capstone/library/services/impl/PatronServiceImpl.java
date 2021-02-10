@@ -34,8 +34,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class PatronServiceImpl implements PatronService
-{
+public class PatronServiceImpl implements PatronService {
 
     @Autowired
     private WishlistRepository wishlistRepository;
@@ -72,10 +71,8 @@ public class PatronServiceImpl implements PatronService
     private static final String NOT_PATRON = "This is not a patron account";
 
     @Override
-    public boolean addWishlist(Integer bookId, Integer patronId)
-    {
-        if (bookId == null || patronId == null)
-        {
+    public boolean addWishlist(Integer bookId, Integer patronId) {
+        if (bookId == null || patronId == null) {
             throw new MissingInputException("Missing input");
         }
 
@@ -83,8 +80,7 @@ public class PatronServiceImpl implements PatronService
         Book book = bookJpaRepository.getBookById(bookId).orElseThrow(() -> new ResourceNotFoundException("Book", "Book with id: " + bookId + " not found"));
         Account patron = accountRepository.findById(patronId).orElseThrow(() -> new ResourceNotFoundException("Patron", "Patron with id: " + patronId + " not found"));
 
-        if (patron != null && book != null)
-        {
+        if (patron != null && book != null) {
             wishList.setBook(book);
             wishList.setBorrower(patron);
             wishList.setStatus(WishListStatus.NOT_EMAIL_YET);
@@ -96,10 +92,8 @@ public class PatronServiceImpl implements PatronService
         return false;
     }
 
-    public ProfileAccountResDto getProfile(Integer patronId)
-    {
-        if (patronId == null)
-        {
+    public ProfileAccountResDto getProfile(Integer patronId) {
+        if (patronId == null) {
             throw new MissingInputException("Missing input");
         }
 
@@ -108,18 +102,15 @@ public class PatronServiceImpl implements PatronService
 
     }
 
-    public boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile)
-    {
-        if (newProfile == null || patronId == null)
-        {
+    public boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile) {
+        if (newProfile == null || patronId == null) {
             throw new MissingInputException("Missing input");
         }
 
         ProfileAccountResDto oldProfile = profileMapper.toResDto(profileRepository.findById(patronId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron", "Patron with id: " + patronId + " not found")));
 
-        if (oldProfile != null)
-        {
+        if (oldProfile != null) {
             oldProfile.setPhone(newProfile.getPhone());
             Profile prof = profileMapper.toEntity(oldProfile);
             profileRepository.saveAndFlush(prof);
@@ -130,10 +121,8 @@ public class PatronServiceImpl implements PatronService
     }
 
     @Override
-    public Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable)
-    {
-        if (bookBorrowingId == null)
-        {
+    public Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable) {
+        if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
@@ -149,10 +138,8 @@ public class PatronServiceImpl implements PatronService
     }
 
     @Override
-    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus)
-    {
-        if (bookBorrowingId == null)
-        {
+    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus) {
+        if (bookBorrowingId == null) {
             throw new MissingInputException("Missing input");
         }
 
@@ -164,8 +151,7 @@ public class PatronServiceImpl implements PatronService
         BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id " + bookBorrowingId + " not found"));
 
         //If bookBorrowing exists
-        if (bookBorrowing != null)
-        {
+        if (bookBorrowing != null) {
 
             //Check if it is overdue
             if (bookBorrowing.getDueAt().isBefore(LocalDate.now())) {
@@ -220,8 +206,7 @@ public class PatronServiceImpl implements PatronService
                 extendHistoryRepository.save(newExtendHistory);
                 bookBorrowingRepository.save(bookBorrowing);
                 return true;
-            } else
-            {
+            } else {
                 throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "Reached the limit for extension");
             }
         }
@@ -230,17 +215,15 @@ public class PatronServiceImpl implements PatronService
     }
 
     @Override
-    public Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable)
-    {
-        if (patronId == null)
-        {
+    public Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable) {
+        if (patronId == null) {
             throw new MissingInputException("Missing input");
         }
         Page<BookBorrowing> histories = bookBorrowingRepository
                 .findAllByBorrowerId(patronId, pageable);
         return new PageImpl<>(histories
                 .stream()
-                .map(bookBorrowing -> bookBorrowingMapper.toDto(bookBorrowing))
+                .map(bookBorrowing -> bookBorrowingMapper.toResDtoWithoutBookBorrowingsInBorrowing(bookBorrowing))
                 .collect(Collectors.toList()), pageable, histories.getTotalElements());
     }
 
@@ -281,8 +264,7 @@ public class PatronServiceImpl implements PatronService
                     dto.setOverdue(true);
                     //Calculate fine
                     Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());
-                    if (feePolicyOptional.isPresent())
-                    {
+                    if (feePolicyOptional.isPresent()) {
                         double fineRate;
                         double fine = 0;
                         double bookCopyPrice = bookCopy.getPrice();

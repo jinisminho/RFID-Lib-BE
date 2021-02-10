@@ -39,6 +39,7 @@ public class BookCopy extends Audit {
 
     @Column(name = "status", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
+    @KeywordField
     private BookCopyStatus status;
 
     @IndexedEmbedded
