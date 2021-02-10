@@ -289,7 +289,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 Optional<BookBorrowing> bookBorrowingOptional =
                         bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(copy.getId());
                 if (bookBorrowingOptional.isPresent()) {
-                    Account borrower = bookBorrowingOptional.get().getBorrower();
+                    Account borrower = bookBorrowingOptional.get().getBorrowing().getBorrower();
                     dto.setBorrower(objectMapper.convertValue(borrower, MyAccountDto.class));
                     dto.getBorrower().setPatronTypeName(borrower.getPatronType().getName());
                     dto.getBorrower().setRoleName(borrower.getRole().getName());
