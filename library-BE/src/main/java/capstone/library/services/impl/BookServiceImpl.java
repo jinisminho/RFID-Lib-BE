@@ -50,10 +50,13 @@ public class BookServiceImpl implements BookService {
     private BookGenreRepository bookGenreRepository;
     @Autowired
     private BookJpaRepository bookJpaRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
-    private static final String BOOK_NOT_FOUND = "Cannot find this book in databse";
+    private static final String BOOK_NOT_FOUND = "Cannot find this book in the system";
+    private static final String ACCOUNT_NOT_FOUND = "Cannot find this updater account in the system";
 
     @Override
     public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
@@ -280,6 +283,8 @@ public class BookServiceImpl implements BookService {
         setBookGenre(book, bookGenreSet, request.getGenreIds());
         book.setBookAuthors(bookAuthorSet);
         book.setBookGenres(bookGenreSet);
+        book.setCreator(accountRepository.findById(request.getCreatorId()).
+                orElseThrow(() -> new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND)));
         if (request.getImg().isBlank()) {
             book.setImg("img_url");
         } else {

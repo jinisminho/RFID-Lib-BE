@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, Integer>
-{
+public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, Integer> {
 
     Optional<BookBorrowing> findById(Integer bookBorrowingId);
 
-    /* Trâm fix lại của Kiên*/
+    /* Trâm fix lại của Kiên
+     * Update(Hoang): remove ";" from "borrower_id;" + rename to finAllByBorrowerId*/
     @Query(
             value = "select d.* \n" +
                     "from book_borrowing d\n" +
@@ -30,7 +30,7 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
                     "where b.borrowed_by = :borrower_id",
             nativeQuery = true
     )
-    Page<BookBorrowing> findAllByBorrower_Id(@Param("borrower_id") Integer patronId, Pageable pageable);
+    Page<BookBorrowing> findAllByBorrowerId(@Param("borrower_id") Integer patronId, Pageable pageable);
     /*==========================*/
 
     Optional<BookBorrowing> findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(int bookCopyId);

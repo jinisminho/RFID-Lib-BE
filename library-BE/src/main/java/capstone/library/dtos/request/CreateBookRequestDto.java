@@ -14,15 +14,14 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateBookRequestDto implements Serializable
-{
+public class CreateBookRequestDto implements Serializable {
     @NotNull(message = "{AddBookRequestDto.isbn.notNull}")
     @Length(min = 10, max = 13, message = "{AddBookRequestDto.isbn.length}")
     private String isbn;
     @NotNull(message = "{AddBookRequestDto.title.notNull}")
     @Length(min = 1, max = 255, message = "{AddBookRequestDto.tile.length}")
     private String title;
-    @Length(max = 255, message = "{AddBookRequestDto.subtitle.length}")
+    @Length(min = 1, max = 255, message = "{AddBookRequestDto.subtitle.length}")
     private String subtitle;
     @NotNull(message = "{AddBookRequestDto.callNumber.notNull}")
 //    @Length(min = 1, max = 255, message = "{AddBookRequestDto.callNumber.length}")
@@ -48,7 +47,8 @@ public class CreateBookRequestDto implements Serializable
     private String status;
     @NotNull(message = "{AddBookRequestDto.authors.notNull}")
     private List<Integer> authorIds;
-
+    @NotNull(message = "{AddBookRequestDto.creator.notNull}")
+    private int creatorId;
     @Length(min = 1, max = 500, message = "{AddBookRequestDto.img.length}")
     private String img;
 }
