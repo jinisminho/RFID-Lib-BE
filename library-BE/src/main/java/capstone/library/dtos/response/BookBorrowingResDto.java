@@ -17,9 +17,6 @@ public class BookBorrowingResDto {
 
     private Integer id;
 
-    @NotNull(message = "{bookBorrowing.borrowedAt.notNull}")
-    private LocalDateTime borrowedAt;
-
     private LocalDateTime returnedAt;
 
     @NotNull(message = "{bookBorrowing.dueAt.notNull}")
@@ -29,12 +26,12 @@ public class BookBorrowingResDto {
 
     private Integer extendIndex;
 
-    private ProfileAccountResDto borrower;
-
     private ProfileAccountResDto issued_by;
 
     private ProfileAccountResDto return_by;
 
     private BookCopyResDto bookCopy;
+
+    private BorrowingResDto borrowing;
 
 }
