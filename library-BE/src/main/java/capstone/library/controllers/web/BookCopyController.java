@@ -6,7 +6,6 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
-import capstone.library.enums.BookCopyStatus;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.ApiPageable;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +18,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/copy")
@@ -63,10 +63,10 @@ public class BookCopyController {
         return bookCopyService.updateCopy(request);
     }
 
-    @ApiOperation(value = "This API use to search book copy by like title-subtitle and exact ISBN, barcode, RFID. Filter by status")
+    @ApiOperation(value = "This API use to search book copy by like title-subtitle and exact ISBN, barcode, RFID. Filter by status. e.g. [http://localhost:8091/copy/search?page=0&searchValue=hobit&size=5&status=IN_PROCESS,AVAILABLE]")
     @ApiPageable
     @GetMapping("/search")
-    public Page<BookCopyResDto> findBookCopies(@RequestParam(required = false, value = "searchValue") String searchValue, @RequestParam(required = false, value = "status") BookCopyStatus status, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
+    public Page<BookCopyResDto> findBookCopies(@RequestParam(required = false, value = "searchValue") String searchValue, @RequestParam(required = false, value = "status") List<String> status, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
         return bookCopyService.findBookCopies(searchValue, status, pageable);
     }
 
