@@ -7,7 +7,9 @@ import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.WishListStatus;
+import capstone.library.exceptions.EmailException;
 import capstone.library.exceptions.MissingInputException;
+import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookBorrowingRepository;
 import capstone.library.repositories.BookCopyRepository;
@@ -42,6 +44,9 @@ public class MailServiceImpl implements MailService {
     private  static  final  String WISHLIST_EMAIL_SUBJECT = "[no-reply] WISHLIST BOOK IS AVAILABLE";
 
     private  static  final  String DUE_DATE_EMAIL_SUBJECT = "[no-reply] REMIND BORROWING BOOK WILL BE DUE ON";
+
+    private  static  final  String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
+
 
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
@@ -147,6 +152,28 @@ public class MailServiceImpl implements MailService {
                 }
             }
         }
+    }
+
+    @Override
+    public void sendAccountPassword(String email, String password) {
+        Account account = accountRepo
+                .findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Account",
+                        "Cannot find account with email: " + email));
+
+        Map<String, Object> templateModel = new HashMap<>();
+        templateModel.put("patron", account.getProfile().getFullName());
+        templateModel.put("username", email);
+        templateModel.put("password", password);
+        Context thymeleafContext = new Context();
+        thymeleafContext.setVariables(templateModel);
+        String htmlBody = thymeleafTemplateEngine.process("createAccount.html", thymeleafContext);
+        try {
+            sendHtmlMessage(email, CREATE_ACCOUNT_EMAIL_SUBJECT, htmlBody);
+        }catch(MessagingException e){
+            throw new EmailException(e.getMessage());
+        }
+
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {

@@ -15,12 +15,14 @@ import capstone.library.enums.BookStatus;
 import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.CustomException;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -289,7 +291,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 Optional<BookBorrowing> bookBorrowingOptional =
                         bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(copy.getId());
                 if (bookBorrowingOptional.isPresent()) {
-                    Account borrower = bookBorrowingOptional.get().getBorrower();
+                    Account borrower = bookBorrowingOptional.get().getBorrowing().getBorrower();
                     dto.setBorrower(objectMapper.convertValue(borrower, MyAccountDto.class));
                     dto.getBorrower().setPatronTypeName(borrower.getPatronType().getName());
                     dto.getBorrower().setRoleName(borrower.getRole().getName());
@@ -301,14 +303,24 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     @Override
-    public Page<BookCopyResDto> findBookCopies(String searchValue, Pageable pageable) {
+    public Page<BookCopyResDto> findBookCopies(String searchValue, List<String> status, Pageable pageable) {
         List<BookCopyResDto> res = new ArrayList<>();
         long totalSize = 0;
         searchValue = searchValue == null ? "" : searchValue;
         searchValue = searchValue.trim();
-        Page<BookCopy> books = searchValue.isEmpty() ? bookCopyRepository.findAll(pageable) : bookCopyMoreRepository.findBookCopies(searchValue, pageable);
+
+        List<BookCopyStatus> statusEnums = new ArrayList<>();
+        if (status != null)
+            status.forEach(s -> {
+                if (s != null ? EnumUtils.isValidEnumIgnoreCase(BookCopyStatus.class, s.trim()) : false)
+                    statusEnums.add(BookCopyStatus.valueOf(s.trim()));
+                else
+                    throw new InvalidRequestException(" Param [status:" + s + "] is not a valid book copy status enum.");
+            });
+
+        Page<BookCopy> books = doFindBookCopies(searchValue, statusEnums, pageable);
+
         totalSize = books.getTotalElements();
-//        res = books.stream().map(book -> bookCopyMapper.toResDto(book)).collect(Collectors.toList());
 
         for (BookCopy bookCopy : books) {
             BookCopyResDto dto = bookCopyMapper.toResDto(bookCopy);
@@ -335,6 +347,16 @@ public class BookCopyServiceImpl implements BookCopyService {
         }
 
         return new PageImpl<BookCopyResDto>(res, pageable, totalSize);
+    }
+
+    private Page<BookCopy> doFindBookCopies(String searchValue, List<BookCopyStatus> statusEnums, Pageable pageable) {
+        Page<BookCopy> books;
+        if (searchValue.isEmpty()) {
+            books = statusEnums == null || statusEnums.isEmpty() ? bookCopyRepository.findAll(pageable) : bookCopyRepository.findAllByStatusIn(statusEnums, pageable);
+        } else {
+            books = statusEnums == null || statusEnums.isEmpty() ? bookCopyMoreRepository.findBookCopies(searchValue, pageable) : bookCopyMoreRepository.findBookCopiesWithStatus(searchValue, statusEnums, pageable);
+        }
+        return books;
     }
 
     private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception {

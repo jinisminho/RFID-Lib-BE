@@ -21,8 +21,7 @@ import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/book")
-public class BookController
-{
+public class BookController {
 
     @Autowired
     private BookService bookService;
@@ -30,64 +29,39 @@ public class BookController
     @ApiOperation(value = "This API use to search book by like title-subtitle and exact ISBN")
     @ApiPageable
     @GetMapping("/search")
-    public Page<BookResDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable)
-    {
+    public Page<BookResDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
         return bookService.findBooks(searchValue, pageable);
     }
 
-//    @ApiOperation(value = "This API add/update RFID tag to bookCopy by bookCopyId")
-//    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-//    @PostMapping("/bookCopy/tagRfid/{bookCopyId}")
-//    public ResponseEntity<?> tagRfidToBookCopy(@PathVariable Integer bookCopyId,
-//                                               @RequestParam(required = false, value = "rfid") String rfid)
-//    {
-//
-//        boolean bool = bookService.tagRfidToBookCopy(bookCopyId, rfid);
-//
-//        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-//                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-//                "INTERNAL SERVER ERROR",
-//                "Failed to tag a rfid to bookCopy");
-//
-//        return new ResponseEntity(bool ? ConstantUtil.UPDATE_SUCCESS : error,
-//                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-
     @ApiOperation(value = "This API use to reindex all for Hibernate Search")
     @PostMapping("/reindex")
-    public ResponseEntity<?> reindexAll()
-    {
+    public ResponseEntity<?> reindexAll() {
         boolean bool = bookService.reindexAll();
         return new ResponseEntity(bool ? "Reindexed" : "Failed to reindex", bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/all")
-    public Page<BookResponseDto> findAllBooks(Pageable pageable)
-    {
+    public Page<BookResponseDto> findAllBooks(Pageable pageable) {
         return bookService.findAllBooks(pageable);
     }
 
     @PostMapping("/add")
-    public String addBook(@RequestBody @Valid CreateBookRequestDto request)
-    {
+    public String addBook(@RequestBody @Valid CreateBookRequestDto request) {
         return bookService.addBook(request);
     }
 
     @PostMapping("/update/status/{id}")
-    public String updateBookStatus(@NotNull @PathVariable int id, @RequestParam(value = "status") BookStatus status)
-    {
+    public String updateBookStatus(@NotNull @PathVariable int id, @RequestParam(value = "status") BookStatus status) {
         return bookService.updateBookStatus(id, status);
     }
 
     @PostMapping("/update")
-    public String updateBookInfo(@RequestBody @Valid UpdateBookInfoRequestDto request)
-    {
+    public String updateBookInfo(@RequestBody @Valid UpdateBookInfoRequestDto request) {
         return bookService.updateBookInfo(request);
     }
 
     @GetMapping("/findByISBN")
-    public BookResponseDto findByISBN(String isbn)
-    {
+    public BookResponseDto findByISBN(String isbn) {
         return bookService.findByISBN(isbn);
     }
 }

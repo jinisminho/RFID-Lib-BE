@@ -3,6 +3,7 @@ package capstone.library.mappers;
 import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.entities.BookBorrowing;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(uses = {BookMapper.class, AccountMapper.class}, componentModel = "spring")
 public interface BookBorrowingMapper {
@@ -11,5 +12,6 @@ public interface BookBorrowingMapper {
 
 //    BookBorrowing toEntity(BookBorrowingResDto dto);
 
-    BookBorrowingResDto toDto(BookBorrowing entity);
+    @Mapping(target = "borrowing.bookBorrowings", ignore = true)
+    BookBorrowingResDto toResDtoWithoutBookBorrowingsInBorrowing(BookBorrowing entity);
 }

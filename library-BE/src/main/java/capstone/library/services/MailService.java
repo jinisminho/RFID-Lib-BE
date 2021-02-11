@@ -15,4 +15,6 @@ public interface MailService {
     void sendRemindOverdueBook();
 
     void sendNotifyWishlistAvailable();
+
+    void sendAccountPassword(String email, String password);
 }
