@@ -39,10 +39,12 @@ public class LibrarianController
 
     @PostMapping("/return")
     @ApiOperation(value = "Return (Checkin) a list of book copies")
-    public List<ReturnBookResponseDto> returnBookCopies(@RequestBody ScannedRFIDCopiesRequestDto request)
+    public ReturnBooksResponse returnBookCopies(@RequestBody ScannedRFIDCopiesRequestDto request)
     {
         request.setCheckin(true);
-        return librarianService.returnBookCopies(request);
+        ReturnBooksResponse rs = new ReturnBooksResponse();
+        rs.setReturnedBooks(librarianService.returnBookCopies(request));
+        return rs;
     }
 
     @GetMapping("/overdue/{patronId}")
