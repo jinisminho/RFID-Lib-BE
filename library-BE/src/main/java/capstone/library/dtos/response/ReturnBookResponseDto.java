@@ -38,6 +38,8 @@ public class ReturnBookResponseDto implements Serializable {
 
     private String borrowedAt;
 
+    private String returnedAt;
+
     private String copyType;
 
     private MyAccountDto borrower;
