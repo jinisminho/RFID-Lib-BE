@@ -394,6 +394,7 @@ public class LibrarianServiceImpl implements LibrarianService {
                 dto.setOverdueDays(overdueDays);
                 dto.setBookPrice(bookCopy.getPrice());
                 dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowing().getBorrowedAt()));
+                dto.setReturnedAt(dateTimeUtils.convertDateTimeToString(now));
                 dto.setPrice(bookCopy.getPrice());
                 dto.setBarcode(bookCopy.getBarcode());
                 dto.setRfid(bookCopy.getRfid());
