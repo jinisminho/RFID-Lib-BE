@@ -28,8 +28,6 @@ public class BookCopyPosition {
     @Column(name = "from_call_number", length = 50, nullable = false)
     private String fromCallNumber;
 
-    @Column(name = "to_call_number", length = 50, nullable = false)
-    private String toCallNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_copy_type_id")

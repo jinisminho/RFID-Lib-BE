@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p th:text="#{greetings(${patron})}"></p>
+
+<p> This is your smart library account
+</p>
+<ul>
+    <li>Username: <span th:text="${username}"></span></li>
+    <li>Password: <span th:text="${password}"></span></li>
+</ul>
+<br/>
+<p th:text="#{regards}"></p>
+<p>
+    <em th:text="#{signature}"></em> <br />
+</p>
+</body>
+</html>

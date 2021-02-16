@@ -4,10 +4,13 @@ import capstone.library.dtos.common.CheckoutCopyDto;
 import capstone.library.dtos.email.EmailCheckOutBookDto;
 import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
+import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.WishListStatus;
+import capstone.library.exceptions.EmailException;
 import capstone.library.exceptions.MissingInputException;
+import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookBorrowingRepository;
 import capstone.library.repositories.BookCopyRepository;
@@ -42,6 +45,9 @@ public class MailServiceImpl implements MailService {
     private  static  final  String WISHLIST_EMAIL_SUBJECT = "[no-reply] WISHLIST BOOK IS AVAILABLE";
 
     private  static  final  String DUE_DATE_EMAIL_SUBJECT = "[no-reply] REMIND BORROWING BOOK WILL BE DUE ON";
+
+    private  static  final  String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
+
 
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
@@ -95,15 +101,15 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendReturnMail(List<EmailReturnBookDto> books) {
+    public void sendReturnMail(List<ReturnBookResponseDto> books) {
 
         if(books == null){
             throw  new MissingInputException("books is missing");
         }
-        Map<String, List<EmailReturnBookDto>> patronMap = new HashMap<>();
-        for(EmailReturnBookDto book : books){
-            String patronEmail = book.getPatronEmail();
-            List<EmailReturnBookDto> tmp = new ArrayList<>();
+        Map<String, List<ReturnBookResponseDto>> patronMap = new HashMap<>();
+        for(ReturnBookResponseDto book : books){
+            String patronEmail = book.getBorrower().getEmail();
+            List<ReturnBookResponseDto> tmp = new ArrayList<>();
             if(patronMap.containsKey(patronEmail)){
                 tmp.addAll(patronMap.get(patronEmail));
                 tmp.add(book);
@@ -149,6 +155,28 @@ public class MailServiceImpl implements MailService {
         }
     }
 
+    @Override
+    public void sendAccountPassword(String email, String password) {
+        Account account = accountRepo
+                .findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Account",
+                        "Cannot find account with email: " + email));
+
+        Map<String, Object> templateModel = new HashMap<>();
+        templateModel.put("patron", account.getProfile().getFullName());
+        templateModel.put("username", email);
+        templateModel.put("password", password);
+        Context thymeleafContext = new Context();
+        thymeleafContext.setVariables(templateModel);
+        String htmlBody = thymeleafTemplateEngine.process("createAccount.html", thymeleafContext);
+        try {
+            sendHtmlMessage(email, CREATE_ACCOUNT_EMAIL_SUBJECT, htmlBody);
+        }catch(MessagingException e){
+            throw new EmailException(e.getMessage());
+        }
+
+    }
+
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -159,7 +187,7 @@ public class MailServiceImpl implements MailService {
         emailSender.send(message);
     }
 
-    private void sendReturnEmailForOnePatron(String patronEmail,List<EmailReturnBookDto> books ){
+    private void sendReturnEmailForOnePatron(String patronEmail,List<ReturnBookResponseDto> books ){
         if(books == null){
             throw new MissingInputException("books is missing");
         }
@@ -209,7 +237,7 @@ public class MailServiceImpl implements MailService {
         if(borrowing == null){
             throw  new MissingInputException("cannot find borrowing transaction");
         }
-        Account patron = borrowing.getBorrower();
+        Account patron = borrowing.getBorrowing().getBorrower();
         double fineRate = borrowing.getFeePolicy().getOverdueFinePerDay();
         Map<String, Object> templateModel = new HashMap<>();
         templateModel.put("patron", patron.getProfile().getFullName());

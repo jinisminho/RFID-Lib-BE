@@ -47,6 +47,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
     @Autowired
     FeePolicyRepository feePolicyRepo;
 
+    @Autowired
+    BorrowingRepository borrowingRepo;
+
     @Override
     @Transactional
     public List<BookCheckOutResponse> checkout(int patronId, List<CheckOutBookRequest> bookCodeList) {
@@ -63,6 +66,10 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
 
         LocalDateTime curDateTime = LocalDateTime.now();
         LocalDate curDate = LocalDate.now();
+
+        Borrowing borrowing = new Borrowing();
+        borrowing.setBorrower(patron);
+        borrowing.setBorrowedAt(curDateTime);
 
         for (CheckOutBookRequest book : bookCodeList){
             BookCopy copy = bookCopyRepo.findByRfid(book.getRfid())
@@ -91,15 +98,15 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                         .stream()
                         .findFirst()
                         .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
-                BookBorrowing borrowing = new BookBorrowing();
-                borrowing.setBorrower(patron);
-                borrowing.setBorrowedAt(curDateTime);
-                borrowing.setDueAt(dueDate);
-                borrowing.setIssued_by(patron);
-                borrowing.setBookCopy(copy);
-                borrowing.setFeePolicy(feePolicy);
-                borrowing.setNote("");
-                bookBorrowingRepo.save(borrowing);
+
+                BookBorrowing borrowingDetail = new BookBorrowing();
+                borrowingDetail.setDueAt(dueDate);
+                borrowingDetail.setIssued_by(patron);
+                borrowingDetail.setBookCopy(copy);
+                borrowingDetail.setFeePolicy(feePolicy);
+                borrowingDetail.setNote("");
+                borrowingDetail.setBorrowing(borrowing);
+                bookBorrowingRepo.save(borrowingDetail);
             }else{
                 dto.setAbleToBorrow(false);
                 dto.setDueDate("");
@@ -138,13 +145,13 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
         if(copy.getStatus() != BookCopyStatus.BORROWED){
             dto.setStatus(BookReturnStatus.INVALID);
         }else{
-            BookBorrowing borrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException(("Cannot find borrowing transaction with book id" + copy.getId())));
-            dto.setPatron(borrowing.getBorrower().getEmail());
-            long overdueDays = (int) DateTimeUtil.getOverdueDays(LocalDate.now(), borrowing.getDueAt());
+            BookBorrowing bookBorrowing = bookBorrowingRepo.findBorrowedTransactionByBookCopyId(copy.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(("Cannot find bookBorrowing transaction with book id" + copy.getId())));
+            dto.setPatron(bookBorrowing.getBorrowing().getBorrower().getEmail());
+            long overdueDays = (int) DateTimeUtil.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
             //check if overdue : not allow to return
             if(overdueDays > 0){
-                FeePolicy feePolicy = borrowing.getFeePolicy();
+                FeePolicy feePolicy = bookBorrowing.getFeePolicy();
 
                 double fine = overdueDays * feePolicy.getOverdueFinePerDay();
                 double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine() / 100;
@@ -166,8 +173,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 }else if (bookStatus == BookStatus.IN_CIRCULATION){
                     copy.setStatus(BookCopyStatus.AVAILABLE);
                 }
-                borrowing.setReturn_by(borrowing.getBorrower());
-                borrowing.setReturnedAt(curDateTime);
+                bookBorrowing.setReturn_by(bookBorrowing.getBorrowing().getBorrower());
+                bookBorrowing.setReturnedAt(curDateTime);
                 dto.setReturnedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
                 dto.setStatus(BookReturnStatus.RETURNED);
             }
