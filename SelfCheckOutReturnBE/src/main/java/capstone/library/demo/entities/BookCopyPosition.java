@@ -26,7 +26,7 @@ public class BookCopyPosition {
     private String shelf;
 
     @Column(name = "from_call_number", length = 50, nullable = false)
-    private String fromCallNumber;
+    private Integer fromCallNumber;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
