@@ -3,6 +3,7 @@ package capstone.library.controllers.web;
 import capstone.library.dtos.email.EmailCheckOutBookDto;
 import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
+import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.services.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -30,7 +31,7 @@ public class MailController {
 
     //@Secured({LIBRARIAN, ADMIN})
     @PostMapping("/return")
-    void sendReturnEmail (@RequestBody @Valid List<EmailReturnBookDto> books){
+    void sendReturnEmail (@RequestBody @Valid List<ReturnBookResponseDto> books){
         mailService.sendReturnMail(books);
     }
 

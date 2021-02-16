@@ -19,7 +19,7 @@
     </tr>
     <tr th:each="book : ${books}">
         <td th:text="${bookStat.index + 1}"></td>
-        <td th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></td>
+        <td th:text="${book.book.title +  ' - ' + book.book.subtitle + ' - ' + book.book.edition +  ' edt'}"></td>
         <td th:text="${book.returnedAt}"></td>
         <td th:text="${book.overdueDays}"></td>
         <td th:text="${book.fine + ' VND'}"></td>

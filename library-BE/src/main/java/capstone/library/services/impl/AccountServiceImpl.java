@@ -152,7 +152,6 @@ public class AccountServiceImpl  implements AccountService {
         profile.setAccount(newAccount);
 
         accountRepo.save(newAccount);
-        System.out.println("----------" + rawPassword);
         mailService.sendAccountPassword(request.getEmail(), rawPassword);
         return CREATE_SUCCESS;
     }
@@ -163,8 +162,8 @@ public class AccountServiceImpl  implements AccountService {
         if(request == null){
             throw new MissingInputException("missing create patron account request");
         }
-        Role role = roleRepo.findByName(RoleIdEnum.ROLE_PATRON.name())
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "Cannot find role: " + RoleIdEnum.ROLE_PATRON.name()));
+        Role role = roleRepo.findByName(RoleIdEnum.ROLE_LIBRARIAN.name())
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "Cannot find role: " + RoleIdEnum.ROLE_LIBRARIAN.name()));
 
         Account creator = accountRepo.findById(request.getCreatorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
@@ -193,7 +192,6 @@ public class AccountServiceImpl  implements AccountService {
 
         profile.setAccount(newAccount);
         accountRepo.save(newAccount);
-        System.out.println("----------" + rawPassword);
 
         mailService.sendAccountPassword(request.getEmail(), rawPassword);
 
