@@ -18,9 +18,9 @@ public interface AccountService {
 
     Page<PatronAccountResponse> findPatronByEmail(Pageable pageable, String email);
 
-    String activateAccount(int id);
+    String activateAccount(int accountId, int auditorId);
 
-    String deactivateAccount(int id);
+    String deactivateAccount(int accountId, int auditorId);
 
     Page<LibrarianAccountResponse> findAllLibrarianAccount(Pageable pageable);
 
