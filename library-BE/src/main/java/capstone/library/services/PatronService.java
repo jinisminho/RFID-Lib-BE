@@ -11,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface PatronService {
 
-    boolean addWishlist(Integer bookId, Integer patronId);
-
     ProfileAccountResDto getProfile(Integer patronId);
 
     boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile);

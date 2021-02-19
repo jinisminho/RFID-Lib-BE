@@ -5,7 +5,6 @@ import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
-import capstone.library.enums.WishListStatus;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
@@ -36,8 +35,6 @@ import java.util.stream.Collectors;
 @Service
 public class PatronServiceImpl implements PatronService {
 
-    @Autowired
-    private WishlistRepository wishlistRepository;
     @Autowired
     private BookJpaRepository bookJpaRepository;
     @Autowired
@@ -70,27 +67,6 @@ public class PatronServiceImpl implements PatronService {
     private static final String PATRON_NOT_FOUND = "Cannot find patron";
     private static final String NOT_PATRON = "This is not a patron account";
 
-    @Override
-    public boolean addWishlist(Integer bookId, Integer patronId) {
-        if (bookId == null || patronId == null) {
-            throw new MissingInputException("Missing input");
-        }
-
-        WishlistBook wishList = new WishlistBook();
-        Book book = bookJpaRepository.getBookById(bookId).orElseThrow(() -> new ResourceNotFoundException("Book", "Book with id: " + bookId + " not found"));
-        Account patron = accountRepository.findById(patronId).orElseThrow(() -> new ResourceNotFoundException("Patron", "Patron with id: " + patronId + " not found"));
-
-        if (patron != null && book != null) {
-            wishList.setBook(book);
-            wishList.setBorrower(patron);
-            wishList.setStatus(WishListStatus.NOT_EMAIL_YET);
-            wishList.setEmail(patron.getEmail());
-            wishlistRepository.save(wishList);
-            return true;
-        }
-
-        return false;
-    }
 
     public ProfileAccountResDto getProfile(Integer patronId) {
         if (patronId == null) {
