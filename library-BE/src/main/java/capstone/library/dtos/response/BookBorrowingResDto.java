@@ -1,5 +1,6 @@
 package capstone.library.dtos.response;
 
+import capstone.library.dtos.common.FeePolicyDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,5 +34,11 @@ public class BookBorrowingResDto {
     private BookCopyResDto bookCopy;
 
     private BorrowingResDto borrowing;
+
+    private FeePolicyDto feePolicy;
+
+    private Integer overdueDays;
+
+    private Double fine;
 
 }

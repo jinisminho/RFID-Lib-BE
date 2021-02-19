@@ -6,6 +6,7 @@ import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
 import capstone.library.dtos.response.PatronCheckoutInfoResponseDto;
 import capstone.library.dtos.response.ProfileAccountResDto;
+import capstone.library.enums.BorrowingStatus;
 import capstone.library.services.PatronService;
 import capstone.library.util.ApiPageable;
 import capstone.library.util.constants.ConstantUtil;
@@ -31,7 +32,7 @@ public class PatronController {
     @Autowired
     private PatronService patronService;
 
-    
+
     @ApiOperation(value = "This API get profile of patron by its ID")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @GetMapping("/profile/getProfile/{patronId}")
@@ -85,11 +86,21 @@ public class PatronController {
     @ApiPageable
     @ApiOperation(value = "This API get borrowing history of 1 patron by patronId")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/borrowingHistory/getBorrowingHistories/{patronId}")
-    public Page<BookBorrowingResDto> getBorrowingHistories(@ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable,
-                                                           @PathVariable Integer patronId) {
-        return patronService.getBorrowingHistories(patronId, pageable);
+    @GetMapping("/borrowingHistory/getBorrowingHistoriesWithStatus/{patronId}")
+    public Page<BookBorrowingResDto> getBorrowingHistoriesWithStatus(@ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable,
+                                                                     @PathVariable Integer patronId,
+                                                                     @RequestParam(required = false, value = "status") BorrowingStatus status) {
+        return patronService.getBorrowingHistoriesWithStatus(patronId, pageable, status);
     }
+
+//    @ApiPageable
+//    @ApiOperation(value = "This API get borrowing history with  of 1 patron by patronId")
+//    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+//    @GetMapping("/borrowingHistory/getBorrowingHistories/{patronId}")
+//    public BookBorrowingsResDto getBorrowingHistories(@ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable,
+//                                                      @PathVariable Integer patronId) {
+//        return patronService.getBorrowingHistories(patronId, pageable);
+//    }
 
     @ApiOperation(value = "Get patron info by RFID (Patron Card)")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})

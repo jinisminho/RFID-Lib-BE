@@ -5,6 +5,7 @@ import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
+import capstone.library.enums.BorrowingStatus;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
@@ -15,6 +16,7 @@ import capstone.library.mappers.ProfileMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
 import capstone.library.util.constants.ConstantUtil;
+import capstone.library.util.tools.CommonUtil;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -191,16 +193,53 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
-    public Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable) {
+    public BookBorrowingsResDto getBorrowingHistories(Integer patronId, Pageable pageable) {
         if (patronId == null) {
             throw new MissingInputException("Missing input");
         }
-        Page<BookBorrowing> histories = bookBorrowingRepository
-                .findAllByBorrowerId(patronId, pageable);
-        return new PageImpl<>(histories
+        BookBorrowingsResDto res = new BookBorrowingsResDto();
+        res.setBorrowing(this.getBorrowingHistoriesWithStatus(patronId, pageable, BorrowingStatus.BORROWING));
+        res.setReturned(this.getBorrowingHistoriesWithStatus(patronId, pageable, BorrowingStatus.RETURNED));
+        res.setOverdued(this.getBorrowingHistoriesWithStatus(patronId, pageable, BorrowingStatus.OVERDUED));
+
+        return res;
+    }
+
+    @Override
+    public Page<BookBorrowingResDto> getBorrowingHistoriesWithStatus(Integer patronId, Pageable pageable, BorrowingStatus status) {
+        if (patronId == null) {
+            throw new MissingInputException("Missing input");
+        }
+
+        Page<BookBorrowing> histories;
+
+        switch (status) {
+            case RETURNED:
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNotNull(patronId, pageable);
+                break;
+            case BORROWING:
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtAfterCurrentDate(patronId, pageable);
+                break;
+            case OVERDUED:
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDate(patronId, pageable);
+                break;
+            default:
+                histories = new PageImpl<>(new ArrayList<>(), pageable, 0);
+                break;
+        }
+        List<BookBorrowingResDto> list = histories
                 .stream()
                 .map(bookBorrowing -> bookBorrowingMapper.toResDtoWithoutBookBorrowingsInBorrowing(bookBorrowing))
-                .collect(Collectors.toList()), pageable, histories.getTotalElements());
+                .collect(Collectors.toList());
+        list.forEach(el -> setFineAndOverdueDays(el));
+        return new PageImpl<>(list, pageable, histories.getTotalElements());
+    }
+
+    private void setFineAndOverdueDays(BookBorrowingResDto dto) {
+        long overdueDays = DateTimeUtils.getOverdueDaysStatic(LocalDate.now(), dto.getDueAt());
+        Double fine = CommonUtil.fineCalc(dto.getFeePolicy(), dto.getBookCopy().getPrice(), ((int) (overdueDays)));
+        dto.setOverdueDays(((int) (overdueDays)));
+        dto.setFine(fine);
     }
 
     @Override
