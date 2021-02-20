@@ -27,13 +27,15 @@ public class AccountController {
 
 
     @PostMapping("/deactivate")
-    public String deactivateAccount(@RequestParam(name = "id")int id){
-        return accountService.deactivateAccount(id);
+    public String deactivateAccount(@RequestParam(name = "id")int id,
+                                    @RequestParam(name = "auditorId")int auditorId){
+        return accountService.deactivateAccount(id, auditorId);
     }
 
     @PostMapping("/activate")
-    public String activateAccount(@RequestParam(name = "id")int id){
-        return accountService.activateAccount(id);
+    public String activateAccount(@RequestParam(name = "id")int id,
+                                  @RequestParam(name = "auditorId")int auditorId ){
+        return accountService.activateAccount(id, auditorId);
     }
 
     @GetMapping("/patron/getAll")

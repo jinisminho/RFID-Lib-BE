@@ -1,0 +1,18 @@
+package capstone.library.dtos.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+public class ValidateRenewDto {
+    List<String> reasons;
+    boolean ableToRenew;
+    String newDueDate;
+}

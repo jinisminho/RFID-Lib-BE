@@ -103,8 +103,8 @@ public class DateTimeUtils {
 
     }
 
-    public String convertDateTimeToString(LocalDateTime date) {
+    public String convertDateTimeToString(LocalDateTime dateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(ConstantUtil.DATE_TIME_PATTERN);
-        return date.format(formatter);
+        return dateTime.format(formatter);
     }
 }

@@ -1,8 +1,6 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
-import capstone.library.dtos.email.EmailCheckOutBookDto;
-import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.*;
@@ -29,7 +27,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -47,7 +44,6 @@ public class MailServiceImpl implements MailService {
     private  static  final  String DUE_DATE_EMAIL_SUBJECT = "[no-reply] REMIND BORROWING BOOK WILL BE DUE ON";
 
     private  static  final  String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
-
 
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
@@ -74,10 +70,7 @@ public class MailServiceImpl implements MailService {
         if(request == null || request.getCheckoutCopyDto() == null){
             throw new MissingInputException("books is missing");
         }
-        List<CheckoutCopyDto> books =  request.getCheckoutCopyDto()
-                .stream()
-                .filter(CheckoutCopyDto::isAbleToBorrow)
-                .collect(Collectors.toList());
+        List<CheckoutCopyDto> books = request.getCheckoutCopyDto();
         if(!books.isEmpty()){
             Optional<Account> receiverOpt = accountRepo.findByEmail(patronEmail);
             if(receiverOpt.isPresent()){
@@ -124,7 +117,7 @@ public class MailServiceImpl implements MailService {
 
     }
 
-
+    /*Function to send remind overdue email*/
     @Override
     public void sendRemindOverdueBook() {
         LocalDate dueDate = LocalDate.now().plusDays(DAY_NUMBER_REMIND_BEFORE_DUE);
@@ -134,6 +127,7 @@ public class MailServiceImpl implements MailService {
         }
     }
 
+    /*Function to notify wishlisted book is available*/
     @Override
     public void sendNotifyWishlistAvailable() {
         List<WishlistBook> curWishlistBooks = wishlistRepo.findByStatus(WishListStatus.NOT_EMAIL_YET);
@@ -142,7 +136,6 @@ public class MailServiceImpl implements MailService {
             availableCopyStatus.add(BookCopyStatus.AVAILABLE);
             availableCopyStatus.add(BookCopyStatus.LIB_USE_ONLY);
             for(WishlistBook wish : curWishlistBooks){
-                Book book = wish.getBook();
                 List<BookCopy> copies = copyRepo.findByBookIdAndStatusIn(wish.getBook().getId(),availableCopyStatus);
                 //if book is available / lib_use_only
                 if(!copies.isEmpty()){
