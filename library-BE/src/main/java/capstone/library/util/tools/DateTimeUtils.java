@@ -15,40 +15,32 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @NoArgsConstructor
-public class DateTimeUtils
-{
+public class DateTimeUtils {
 
-    public long getOverdueDays(LocalDate today, LocalDate dueDate)
-    {
+    public long getOverdueDays(LocalDate today, LocalDate dueDate) {
         /*Get overdue days disregard of holidays.
          * In case of wanting to include holidays, replace 3rd param with List<LocalDate> holidays*/
         return countBusinessDaysBetween(today, dueDate, Optional.empty());
     }
 
     /*https://howtodoinjava.com/java/date-time/calculate-business-days/*/
-    private long countBusinessDaysBetween(LocalDate today, LocalDate dueDate, Optional<List<LocalDate>> holidaysOptional)
-    {
+    private long countBusinessDaysBetween(LocalDate today, LocalDate dueDate, Optional<List<LocalDate>> holidaysOptional) {
         List<LocalDate> holidays = new ArrayList<>();
 
-        if (today == null || dueDate == null || holidaysOptional == null)
-        {
+        if (today == null || dueDate == null || holidaysOptional == null) {
             throw new IllegalArgumentException("Invalid method argument(s) to countBusinessDaysBetween(" + today
                     + "," + dueDate + "," + holidaysOptional + ")");
-        } else if (holidaysOptional.isPresent())
-        {
+        } else if (holidaysOptional.isPresent()) {
             holidays = holidaysOptional.get();
 
-            for (LocalDate holiday : holidays)
-            {
-                if (holiday.equals(dueDate))
-                {
+            for (LocalDate holiday : holidays) {
+                if (holiday.equals(dueDate)) {
                     dueDate = dueDate.plusDays(1);
                 }
             }
         }
 
-        while (dueDate.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueDate.getDayOfWeek().equals(DayOfWeek.SUNDAY))
-        {
+        while (dueDate.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueDate.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             dueDate = dueDate.plusDays(1);
         }
 
@@ -59,21 +51,18 @@ public class DateTimeUtils
 
         long daysBetween = ChronoUnit.DAYS.between(today, dueDate);
 
-        if (daysBetween < 0)
-        {
+        if (daysBetween < 0) {
             daysBetween = -daysBetween;
             return (Stream.iterate(today, date -> date.minusDays(1)).limit(daysBetween)
                     .filter(isHoliday.or(isWeekend).negate()).count());
-        } else
-        {
+        } else {
             return -daysBetween;
         }
 
     }
 
-    public String convertDateTimeToString(LocalDateTime date)
-    {
+    public String convertDateTimeToString(LocalDateTime dateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(ConstantUtil.DATE_TIME_PATTERN);
-        return date.format(formatter);
+        return dateTime.format(formatter);
     }
 }

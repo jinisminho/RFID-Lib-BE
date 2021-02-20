@@ -1,8 +1,6 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
-import capstone.library.dtos.email.EmailCheckOutBookDto;
-import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.*;
@@ -123,7 +121,7 @@ public class MailServiceImpl implements MailService {
 
     }
 
-
+    /*Function to send remind overdue email*/
     @Override
     public void sendRemindOverdueBook() {
         LocalDate dueDate = LocalDate.now().plusDays(DAY_NUMBER_REMIND_BEFORE_DUE);
@@ -133,6 +131,7 @@ public class MailServiceImpl implements MailService {
         }
     }
 
+    /*Function to notify wishlisted book is available*/
     @Override
     public void sendNotifyWishlistAvailable() {
         List<WishlistBook> curWishlistBooks = wishlistRepo.findByStatus(WishListStatus.NOT_EMAIL_YET);

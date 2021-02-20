@@ -109,16 +109,14 @@ public class PatronController
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @GetMapping("/borrowingHistory/getBorrowingHistories/{patronId}")
     public Page<BookBorrowingResDto> getBorrowingHistories(@ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable,
-                                                           @PathVariable Integer patronId)
-    {
+                                                           @PathVariable Integer patronId) {
         return patronService.getBorrowingHistories(patronId, pageable);
     }
 
     @ApiOperation(value = "Get patron info by RFID (Patron Card)")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @GetMapping("/profile/getCheckoutPatron/{rfid}")
-    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid)
-    {
+    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid) {
         return patronService.getCheckoutAccountByRfid(rfid);
     }
 }
