@@ -79,17 +79,21 @@ public class AccountServiceImpl  implements AccountService {
     }
 
     @Override
-    public String activateAccount(int id) {
-        Account account = findAccountById(id);
+    public String activateAccount(int accountId, int auditorId) {
+        Account account = findAccountById(accountId);
+        Account auditor = findAccountById(auditorId);
         account.setActive(true);
+        account.setUpdater(auditor);
         accountRepo.save(account);
         return UPDATE_SUCCESS;
     }
 
     @Override
-    public String deactivateAccount(int id) {
-        Account account = findAccountById(id);
+    public String deactivateAccount(int accountId, int auditorId) {
+        Account account = findAccountById(accountId);
+        Account auditor = findAccountById(auditorId);
         account.setActive(false);
+        account.setUpdater(auditor);
         accountRepo.save(account);
         return UPDATE_SUCCESS;
     }
@@ -256,7 +260,6 @@ public class AccountServiceImpl  implements AccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
                         "Cannot find account with id: " + id ));
     }
-
 
 
 }
