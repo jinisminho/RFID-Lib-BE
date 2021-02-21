@@ -44,7 +44,7 @@ public class RenewServiceImpl implements RenewService {
         ValidateRenewDto response = new ValidateRenewDto();
         List<String> reasons = new ArrayList<>();
         boolean ableToRenew = true;
-        String newDueDate = "";
+        LocalDate newDueDate = LocalDate.now();
 
         Optional<BookBorrowing> bookBorrowingOptional = bookBorrowingRepository.findById(bookBorrowingId);
         if (bookBorrowingOptional.isPresent()) {
@@ -82,7 +82,7 @@ public class RenewServiceImpl implements RenewService {
                 while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
                     dueAt = dueAt.plusDays(1);
                 }
-                newDueDate = dueAt.toString();
+                newDueDate = dueAt;
             }
         } else {
             throw new ResourceNotFoundException("Book Borrowing", BOOK_BORROWING_NOT_FOUND_ERROR);
