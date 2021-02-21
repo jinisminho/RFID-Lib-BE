@@ -110,7 +110,7 @@ public class RenewServiceImpl implements RenewService {
     }
 
     @Override
-    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus) {
+    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus, String reason) {
         List<String> policiViolations = new ArrayList();
 
         if (bookBorrowingId == null) {
@@ -186,8 +186,8 @@ public class RenewServiceImpl implements RenewService {
         if (!policiViolations.isEmpty()) {
             String errorStr = "";
             int i = 1;
-            for (String reason : policiViolations) {
-                errorStr += "[" + i + "]" + reason + ";";
+            for (String violation : policiViolations) {
+                errorStr += "[" + i + "]" + violation + ";";
             }
             throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "Policy violation: " + errorStr);
         }

@@ -32,9 +32,10 @@ public class RenewController {
     @PostMapping("/createExtendHistory/{bookBorrowingId}")
     public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer bookBorrowingId,
                                                    @RequestParam(required = false, value = "librarianId") Integer librarianId,
-                                                   @RequestParam(required = false, value = "numberOfDayToPlus") Integer numberOfDayToPlus) {
+                                                   @RequestParam(required = false, value = "numberOfDayToPlus") Integer numberOfDayToPlus,
+                                                   @RequestBody(required = false) String reason) {
 
-        boolean bool = renewService.addNewExtendHistory(bookBorrowingId, librarianId, numberOfDayToPlus);
+        boolean bool = renewService.addNewExtendHistory(bookBorrowingId, librarianId, numberOfDayToPlus, reason);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
