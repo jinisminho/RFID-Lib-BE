@@ -1,22 +1,22 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.response.ValidateRenewDto;
-import capstone.library.entities.Account;
-import capstone.library.entities.BookBorrowing;
-import capstone.library.entities.BookCopy;
-import capstone.library.entities.BorrowPolicy;
+import capstone.library.entities.*;
+import capstone.library.exceptions.CustomException;
+import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
-import capstone.library.repositories.BookBorrowingRepository;
-import capstone.library.repositories.BorrowPolicyRepository;
-import capstone.library.repositories.BorrowingRepository;
+import capstone.library.repositories.*;
 import capstone.library.services.RenewService;
+import capstone.library.util.constants.ConstantUtil;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +31,12 @@ public class RenewServiceImpl implements RenewService {
     BorrowPolicyRepository borrowPolicyRepository;
     @Autowired
     OverdueBooksFinder overdueBooksFinder;
+    @Autowired
+    private ExtendHistoryRepository extendHistoryRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+
+
     DateTimeUtils dateTimeUtils;
 
     private static final String BOOK_BORROWING_NOT_FOUND_ERROR = "Cannot find this book in borrowing list";
@@ -76,14 +82,21 @@ public class RenewServiceImpl implements RenewService {
             }
 
             //New due date = today + extend_due_durations (excluding saturdays and sundays)
-            if (ableToRenew) {
-                LocalDate dueAt = bookBorrowing.getDueAt();
-                dueAt = dueAt.plusDays(borrowPolicyOptional.get().getMaxExtendTime());
-                while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-                    dueAt = dueAt.plusDays(1);
-                }
-                newDueDate = dueAt;
+//            if (ableToRenew) {
+//                LocalDate dueAt = bookBorrowing.getDueAt();
+//                dueAt = dueAt.plusDays(borrowPolicyOptional.get().getMaxExtendTime());
+//                while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+//                    dueAt = dueAt.plusDays(1);
+//                }
+//                newDueDate = dueAt;
+//            }
+            LocalDate dueAt = bookBorrowing.getDueAt();
+            dueAt = dueAt.plusDays(borrowPolicyOptional.get().getMaxExtendTime());
+            while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+                dueAt = dueAt.plusDays(1);
             }
+            newDueDate = dueAt;
+
         } else {
             throw new ResourceNotFoundException("Book Borrowing", BOOK_BORROWING_NOT_FOUND_ERROR);
         }
@@ -94,5 +107,92 @@ public class RenewServiceImpl implements RenewService {
         response.setNewDueDate(newDueDate);
 
         return response;
+    }
+
+    @Override
+    public boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus) {
+        List<String> policiViolations = new ArrayList();
+
+        if (bookBorrowingId == null) {
+            throw new MissingInputException("Missing input");
+        }
+
+        //Find and check if bookBorrowing exists
+        BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id " + bookBorrowingId + " not found"));
+
+        //If bookBorrowing exists
+        if (bookBorrowing != null) {
+
+            //Check if it is overdue
+            if (bookBorrowing.getDueAt().isBefore(LocalDate.now())) {
+//                    throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "The requested item is overdue");
+                policiViolations.add("The requested item is overdue");
+            }
+
+            //Validate this request
+            ValidateRenewDto validateRenewDto = this.validateRenew(bookBorrowingId);
+            policiViolations.addAll(validateRenewDto.getReasons());
+
+            if (validateRenewDto.isAbleToRenew() || librarianId != null) {
+                //if issued by Librarian get the librarian account, if not get the patron one
+                /*Hoang*/
+                Account isssuedBy =
+                        librarianId != null
+                                ? accountRepository.findById(librarianId).orElseThrow(() -> new ResourceNotFoundException("Account", "Librarian Account with Id " + librarianId + " not found"))
+                                : bookBorrowing.getBorrowing().getBorrower();
+                /*===========*/
+
+                //Get extendHistory if it exists
+                ExtendHistory extendHistory = extendHistoryRepository.findFirstByBookBorrowing_IdOrderByDueAtDesc(bookBorrowing.getId())
+                        .orElse(new ExtendHistory());
+
+                //If the bookBorrowing is extended for the first time, create the first history
+                if (bookBorrowing.getExtendIndex() == 0) {
+                    /*Hoang*/
+                    extendHistory.setBorrowedAt(bookBorrowing.getBorrowing().getBorrowedAt());
+                    /*========*/
+                    extendHistory.setExtendIndex(bookBorrowing.getExtendIndex());
+                    extendHistory.setDueAt(bookBorrowing.getDueAt());
+                    extendHistory.setBookBorrowing(bookBorrowing);
+                    extendHistory.setIssuedBy(bookBorrowing.getIssued_by());
+                    extendHistory = extendHistoryRepository.saveAndFlush(extendHistory);
+                }
+
+                //Create new history -----
+                ExtendHistory newExtendHistory = new ExtendHistory();
+
+                newExtendHistory.setBorrowedAt(extendHistory.getBorrowedAt());
+                newExtendHistory.setExtendedAt(LocalDateTime.now());
+                newExtendHistory.setExtendIndex(extendHistory.getExtendIndex() + 1);
+                newExtendHistory.setBookBorrowing(bookBorrowing);
+                newExtendHistory.setIssuedBy(isssuedBy);
+
+                //Get Day to Plus by request or policy. Default is policy
+                newExtendHistory.setDueAt(numberOfDayToPlus != null ? extendHistory.getDueAt().plusDays(numberOfDayToPlus) : validateRenewDto.getNewDueDate());
+
+                //------------------------ Create new history END
+
+                //Update bookBorrowing
+                bookBorrowing.setExtendedAt(newExtendHistory.getExtendedAt());
+                bookBorrowing.setExtendIndex(newExtendHistory.getExtendIndex());
+                bookBorrowing.setDueAt(newExtendHistory.getDueAt());
+
+                extendHistoryRepository.save(newExtendHistory);
+                bookBorrowingRepository.save(bookBorrowing);
+                return true;
+            }
+        }
+
+        if (!policiViolations.isEmpty()) {
+            String errorStr = "";
+            int i = 1;
+            for (String reason : policiViolations) {
+                errorStr += "[" + i + "]" + reason + ";";
+            }
+            throw new CustomException(HttpStatus.BAD_REQUEST, ConstantUtil.EXCEPTION_POLICY_VIOLATION, "Policy violation: " + errorStr);
+        }
+
+        return false;
+
     }
 }

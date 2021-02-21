@@ -65,23 +65,6 @@ public class PatronController {
         return patronService.getExtendHistories(bookBorrowingId, pageable);
     }
 
-    @ApiOperation(value = "This API extend due date of 1 borrowing book by bookBorrowingId")
-    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @PostMapping("/extendHistory/createExtendHistory/{bookBorrowingId}")
-    public ResponseEntity<?> AddNewExtendedDueDate(@PathVariable Integer bookBorrowingId,
-                                                   @RequestParam(required = false, value = "librarianId") Integer librarianId,
-                                                   @RequestParam(required = false, value = "numberOfDayToPlus") Integer numberOfDayToPlus) {
-
-        boolean bool = patronService.addNewExtendHistory(bookBorrowingId, librarianId, numberOfDayToPlus);
-
-        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "INTERNAL SERVER ERROR",
-                "Failed to Added new extended due date");
-
-        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
-                bool ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     @ApiPageable
     @ApiOperation(value = "This API get borrowing history of 1 patron by patronId")

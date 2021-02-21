@@ -15,8 +15,6 @@ public interface PatronService {
 
     Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable);
 
-    boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus);
-
     BookBorrowingsResDto getBorrowingHistories(Integer patronId, Pageable pageable);
 
     Page<BookBorrowingResDto> getBorrowingHistoriesWithStatus(Integer patronId, Pageable pageable, BorrowingStatus status);
