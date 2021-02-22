@@ -91,5 +91,13 @@ public class PatronController {
     public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid) {
         return patronService.getCheckoutAccountByRfid(rfid);
     }
+
+    @ApiOperation(value = "This API get profile of patron by its RFID or Email")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+    @GetMapping("/profile/findProfile/")
+    public ProfileAccountResDto findProfileByRfidOrEmail(@RequestParam String searchValue) {
+        return patronService.findProfileByRfidOrEmail(searchValue);
+    }
+
 }
 
