@@ -166,6 +166,9 @@ public class RenewServiceImpl implements RenewService {
                 newExtendHistory.setExtendIndex(extendHistory.getExtendIndex() + 1);
                 newExtendHistory.setBookBorrowing(bookBorrowing);
                 newExtendHistory.setIssuedBy(isssuedBy);
+                if (librarianId != null && (reason != null ? !reason.isEmpty() : false)) {
+                    newExtendHistory.setNote(reason);
+                }
 
                 //Get Day to Plus by request or policy. Default is policy
                 newExtendHistory.setDueAt(numberOfDayToPlus != null ? extendHistory.getDueAt().plusDays(numberOfDayToPlus) : validateRenewDto.getNewDueDate());
