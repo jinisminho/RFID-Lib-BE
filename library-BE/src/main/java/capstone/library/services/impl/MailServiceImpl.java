@@ -67,6 +67,7 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendCheckoutMail(String patronEmail, CheckoutResponseDto request) {
+        System.out.println(("---------------------"+request.getCheckoutCopyDto()));
         if(request == null || request.getCheckoutCopyDto() == null){
             throw new MissingInputException("books is missing");
         }
