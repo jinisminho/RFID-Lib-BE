@@ -46,4 +46,13 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
 
     List<BookBorrowing> findByDueAtAndReturnedAtIsNullAndLostAtIsNull(LocalDate dueAt);
 
+    @Query("SELECT b FROM BookBorrowing b WHERE b.returnedAt IS NOT NULL AND b.borrowing.borrower.id = :borrower_id")
+    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNotNull(@Param("borrower_id") Integer patronId, Pageable pageable);
+
+    @Query("SELECT b FROM BookBorrowing b WHERE b.returnedAt IS NULL AND b.borrowing.borrower.id = :borrower_id AND b.dueAt <= CURRENT_DATE")
+    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDate(@Param("borrower_id") Integer patronId, Pageable pageable);
+
+    @Query("SELECT b FROM BookBorrowing b WHERE b.returnedAt IS NULL AND b.borrowing.borrower.id = :borrower_id AND b.dueAt > CURRENT_DATE")
+    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNullAndDueAtAfterCurrentDate(@Param("borrower_id") Integer patronId, Pageable pageable);
+
 }
