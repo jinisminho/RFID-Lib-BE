@@ -33,6 +33,9 @@ public class ExtendHistory {
     @Column(name = "due_at", nullable = false)
     private LocalDate dueAt;
 
+    @Column(name = "note")
+    private String note;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_borrowing_id")
     private BookBorrowing bookBorrowing;

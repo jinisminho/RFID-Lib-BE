@@ -29,7 +29,7 @@ public class BookBorrowing {
     @Column(name = "returned_at")
     private LocalDateTime returnedAt;
 
-    @Column(name = "due_at", nullable = false)
+    @Column(name = "due_at", nullable = false, columnDefinition = "DATE")
     private LocalDate dueAt;
 
     @Column(name = "extended_at")

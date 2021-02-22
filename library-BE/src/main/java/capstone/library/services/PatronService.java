@@ -1,17 +1,13 @@
 package capstone.library.services;
 
 import capstone.library.dtos.request.ProfileUpdateReqDto;
-import capstone.library.dtos.response.BookBorrowingResDto;
-import capstone.library.dtos.response.ExtendHistoryResDto;
-import capstone.library.dtos.response.PatronCheckoutInfoResponseDto;
-import capstone.library.dtos.response.ProfileAccountResDto;
+import capstone.library.dtos.response.*;
+import capstone.library.enums.BorrowingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 
 public interface PatronService {
-
-    boolean addWishlist(Integer bookId, Integer patronId);
 
     ProfileAccountResDto getProfile(Integer patronId);
 
@@ -19,9 +15,9 @@ public interface PatronService {
 
     Page<ExtendHistoryResDto> getExtendHistories(Integer bookBorrowingId, Pageable pageable);
 
-    boolean addNewExtendHistory(Integer bookBorrowingId, Integer librarianId, Integer numberOfDayToPlus);
+    BookBorrowingsResDto getBorrowingHistories(Integer patronId, Pageable pageable);
 
-    Page<BookBorrowingResDto> getBorrowingHistories(Integer patronId, Pageable pageable);
+    Page<BookBorrowingResDto> getBorrowingHistoriesWithStatus(Integer patronId, Pageable pageable, BorrowingStatus status);
 
     PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid);
 }

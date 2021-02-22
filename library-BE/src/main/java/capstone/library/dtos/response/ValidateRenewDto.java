@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @NoArgsConstructor
@@ -14,5 +15,5 @@ import java.util.List;
 public class ValidateRenewDto {
     List<String> reasons;
     boolean ableToRenew;
-    String newDueDate;
+    LocalDate newDueDate;
 }
