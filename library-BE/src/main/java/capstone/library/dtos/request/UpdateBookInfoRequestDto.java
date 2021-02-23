@@ -48,4 +48,6 @@ public class UpdateBookInfoRequestDto implements Serializable
 
     private List<Integer> authorIds;
 
+    private int updateBy;
+
 }
