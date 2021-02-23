@@ -91,7 +91,7 @@ public class RenewServiceImpl implements RenewService {
 //                newDueDate = dueAt;
 //            }
             LocalDate dueAt = bookBorrowing.getDueAt();
-            dueAt = dueAt.plusDays(borrowPolicyOptional.get().getMaxExtendTime());
+            dueAt = dueAt.plusDays(borrowPolicyOptional.get().getExtendDueDuration());
             while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
                 dueAt = dueAt.plusDays(1);
             }
