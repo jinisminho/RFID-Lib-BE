@@ -74,39 +74,43 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
         for (CheckOutBookRequest book : bookCodeList){
             BookCopy copy = bookCopyRepo.findByRfid(book.getRfid())
                     .orElseThrow(() -> new ResourceNotFoundException("Book with rfid: " + book.getRfid() + " not found" ));
-            BorrowPolicy policy = borrowPolicyRepo.findByPatronTypeIdAndBookCopyTypeId(patron.getPatronType().getId(), copy.getBookCopyType().getId())
-                    .orElseThrow(() -> new InvalidPolicyException
-                            ( copy.getBookCopyType().getName() + ": not allow to borrow"));
-
+            Optional<BorrowPolicy> policyOptional = borrowPolicyRepo
+                    .findByPatronTypeIdAndBookCopyTypeId(patron.getPatronType().getId(), copy.getBookCopyType().getId());
             BookCheckOutResponse dto = mapFromCopyToCheckOutBasically(copy);
-            //if this copy able to borrow: set bookCopy status -> borrow; add bookBorrowing
-            if(copy.getStatus() == BookCopyStatus.AVAILABLE){
-                LocalDate dueDate = curDate.plusDays(policy.getDueDuration());
+
+            if(policyOptional.isPresent()){
+                //if this copy able to borrow: set bookCopy status -> borrow; add bookBorrowing
+                if(copy.getStatus() == BookCopyStatus.AVAILABLE){
+                    LocalDate dueDate = curDate.plusDays(policyOptional.get().getDueDuration());
                 /*overdue days excludes saturdays and sundays
 	                    eg: If due date is on Sunday then when return on Monday, overdue days = 0*/
-                while (dueDate.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueDate.getDayOfWeek().equals(DayOfWeek.SUNDAY))
-                {
-                    dueDate = dueDate.plusDays(1);
+                    while (dueDate.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueDate.getDayOfWeek().equals(DayOfWeek.SUNDAY))
+                    {
+                        dueDate = dueDate.plusDays(1);
+                    }
+                    copy.setStatus(BookCopyStatus.BORROWED);
+                    dto.setAbleToBorrow(true);
+                    dto.setDueDate(dueDate.toString());
+                    dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
+
+                    //get fee policy
+                    FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreatedAtDesc()
+                            .stream()
+                            .findFirst()
+                            .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
+
+                    BookBorrowing borrowingDetail = new BookBorrowing();
+                    borrowingDetail.setDueAt(dueDate);
+                    borrowingDetail.setIssued_by(patron);
+                    borrowingDetail.setBookCopy(copy);
+                    borrowingDetail.setFeePolicy(feePolicy);
+                    borrowingDetail.setNote("");
+                    borrowingDetail.setBorrowing(borrowing);
+                    bookBorrowingRepo.save(borrowingDetail);
+                }else{
+                    dto.setAbleToBorrow(false);
+                    dto.setDueDate("");
                 }
-                copy.setStatus(BookCopyStatus.BORROWED);
-                dto.setAbleToBorrow(true);
-                dto.setDueDate(dueDate.toString());
-                dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
-
-                //get fee policy
-                FeePolicy feePolicy = feePolicyRepo.findAllByOrderByCreatedAtDesc()
-                        .stream()
-                        .findFirst()
-                        .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
-
-                BookBorrowing borrowingDetail = new BookBorrowing();
-                borrowingDetail.setDueAt(dueDate);
-                borrowingDetail.setIssued_by(patron);
-                borrowingDetail.setBookCopy(copy);
-                borrowingDetail.setFeePolicy(feePolicy);
-                borrowingDetail.setNote("");
-                borrowingDetail.setBorrowing(borrowing);
-                bookBorrowingRepo.save(borrowingDetail);
             }else{
                 dto.setAbleToBorrow(false);
                 dto.setDueDate("");
@@ -282,10 +286,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                             String tmp = msg.get();
                             msg.set(tmp + " " + v.getGroup() + ": limit " + maxBorrowNumber + " book(s)\n");
                         }
-                    }else{
-                        msg.set(msg + " " + v.getGroup() + ": not allow to borrow\n");
                     }
-
                 }
         );
 
