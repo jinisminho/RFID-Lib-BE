@@ -136,7 +136,7 @@ public class PatronServiceImpl implements PatronService {
                 histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNotNull(patronId, pageable);
                 break;
             case BORROWING:
-                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtAfterCurrentDate(patronId, pageable);
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtFromCurrentDateOnward(patronId, pageable);
                 break;
             case OVERDUED:
                 histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDate(patronId, pageable);
