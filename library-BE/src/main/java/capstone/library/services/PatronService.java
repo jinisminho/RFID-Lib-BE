@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface PatronService {
 
-    ProfileAccountResDto getProfile(Integer patronId);
+    ProfileAccountResDto getProfile(Integer id);
 
     boolean updateProfile(Integer patronId, ProfileUpdateReqDto newProfile);
 
@@ -20,4 +20,6 @@ public interface PatronService {
     Page<BookBorrowingResDto> getBorrowingHistoriesWithStatus(Integer patronId, Pageable pageable, BorrowingStatus status);
 
     PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid);
+
+    ProfileAccountResDto findProfileByRfidOrEmail(String searchValue);
 }
