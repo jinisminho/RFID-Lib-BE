@@ -56,7 +56,7 @@ public class BookServiceImpl implements BookService {
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
     private static final String BOOK_NOT_FOUND = "Cannot find this book in the system";
-    private static final String ACCOUNT_NOT_FOUND = "Cannot find this updater account in the system";
+    private static final String UPDATER_NOT_FOUND = "Cannot find this updater account in the system";
 
     @Override
     public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
@@ -136,6 +136,11 @@ public class BookServiceImpl implements BookService {
 
             /*Validate and set data from requestDto to new Book*/
             setBasicBookInfo(book, request);
+
+            /*Get account to add to updateBy*/
+            Account updateBy = accountRepository.findById(request.getUpdateBy()).
+                    orElseThrow(() -> new ResourceNotFoundException("Account", UPDATER_NOT_FOUND));
+            book.setUpdater(updateBy);
 
             Set<BookAuthor> bookAuthorSet = new HashSet<>();
             Set<BookGenre> bookGenreSet = new HashSet<>();
@@ -284,7 +289,7 @@ public class BookServiceImpl implements BookService {
         book.setBookAuthors(bookAuthorSet);
         book.setBookGenres(bookGenreSet);
         book.setCreator(accountRepository.findById(request.getCreatorId()).
-                orElseThrow(() -> new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND)));
+                orElseThrow(() -> new ResourceNotFoundException("Account", UPDATER_NOT_FOUND)));
         if (request.getImg().isBlank()) {
             book.setImg("img_url");
         } else {
