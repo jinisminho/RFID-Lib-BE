@@ -378,4 +378,10 @@ public class BookCopyServiceImpl implements BookCopyService {
         book.setNumberOfCopy(bookCopyRepository.findByBookId(book.getId()).size());
         myBookRepository.save(book);
     }
+
+    @Override
+    public CopyResponseDto getCopyById(Integer id) {
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(id);
+        return getCopyResponseDto(bookCopyOptional);
+    }
 }

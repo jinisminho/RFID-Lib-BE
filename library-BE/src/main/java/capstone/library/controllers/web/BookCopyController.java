@@ -70,4 +70,9 @@ public class BookCopyController {
         return bookCopyService.findBookCopies(searchValue, status, pageable);
     }
 
+    @GetMapping("/get/id/{id}")
+    public CopyResponseDto getCopyByRfid(@PathVariable @NotEmpty Integer id) {
+        return bookCopyService.getCopyById(id);
+    }
+
 }
