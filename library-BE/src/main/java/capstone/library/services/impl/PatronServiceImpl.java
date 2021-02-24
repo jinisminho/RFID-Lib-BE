@@ -65,13 +65,13 @@ public class PatronServiceImpl implements PatronService {
     private static final String NOT_PATRON = "This is not a patron account";
 
 
-    public ProfileAccountResDto getProfile(Integer patronId) {
-        if (patronId == null) {
+    public ProfileAccountResDto getProfile(Integer id) {
+        if (id == null) {
             throw new MissingInputException("Missing input");
         }
 
-        return profileMapper.toResDto(profileRepository.findById(patronId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patron", "Patron with id: " + patronId + " not found")));
+        return profileMapper.toResDto(profileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile", "Profile with id: " + id + " not found")));
 
     }
 
@@ -136,7 +136,7 @@ public class PatronServiceImpl implements PatronService {
                 histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNotNull(patronId, pageable);
                 break;
             case BORROWING:
-                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtAfterCurrentDate(patronId, pageable);
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtFromCurrentDateOnward(patronId, pageable);
                 break;
             case OVERDUED:
                 histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDate(patronId, pageable);
@@ -156,8 +156,8 @@ public class PatronServiceImpl implements PatronService {
     private void setFineAndOverdueDays(BookBorrowingResDto dto) {
         long overdueDays = DateTimeUtils.getOverdueDaysStatic(LocalDate.now(), dto.getDueAt());
         Double fine = CommonUtil.fineCalc(dto.getFeePolicy(), dto.getBookCopy().getPrice(), ((int) (overdueDays)));
-        dto.setOverdueDays(((int) (overdueDays)));
-        dto.setFine(fine);
+        dto.setOverdueDays(overdueDays > 0 ? ((int) (overdueDays)) : 0);
+        dto.setFine(fine > 0 ? fine : 0);
     }
 
     @Override
@@ -228,6 +228,12 @@ public class PatronServiceImpl implements PatronService {
         /*================*/
         return response;
 
+    }
+
+    @Override
+    public ProfileAccountResDto findProfileByRfidOrEmail(String searchValue) {
+        return profileMapper.toResDto(profileRepository.findByAccount_EmailOrAccount_Rfid(searchValue, searchValue)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile", "Profile with RFID/EMAIL[" + searchValue + "] not found")));
     }
 
 }
