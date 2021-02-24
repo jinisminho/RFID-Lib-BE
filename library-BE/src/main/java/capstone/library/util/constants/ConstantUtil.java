@@ -25,6 +25,9 @@ public class ConstantUtil {
 
     public static final String EXCEPTION_POLICY_VIOLATION = "Violated the policy";
 
+    public static final String EXCEPTION_BAD_CREDENTIAL = "Invalid username or password";
+
+
     //Other
     public static final String PHONE_REGEXP = "^\\d{10}$";
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
