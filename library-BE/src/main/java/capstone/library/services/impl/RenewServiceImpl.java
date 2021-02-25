@@ -3,6 +3,7 @@ package capstone.library.services.impl;
 import capstone.library.dtos.response.ValidateRenewDto;
 import capstone.library.entities.*;
 import capstone.library.exceptions.CustomException;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
@@ -43,6 +44,7 @@ public class RenewServiceImpl implements RenewService {
     private static final String OVERDUE_PATRON_ERROR = "This patron is keeping overdue books";
     private static final String PATRON_TYPE_COPY_TYPE_ERROR = "This patron type can no longer borrow this book copy type";
     private static final String EXCEEDS_MAX_RENEW_TIME = "Exceeding renew limit for this copy";
+    private static final String PATRON_INACTIVE = "This patron is inactive";
 
     /*Validate if able to renew a book copy*/
     @Override
@@ -56,9 +58,15 @@ public class RenewServiceImpl implements RenewService {
         if (bookBorrowingOptional.isPresent()) {
             BookBorrowing bookBorrowing = bookBorrowingOptional.get();
 
-            //Cannot renew if patron is keeping any overdue books
             Account patron = bookBorrowing.getBorrowing().getBorrower();
             List<BookCopy> overdueBooks = overdueBooksFinder.findOverdueBookCopiesByPatronId(patron.getId());
+
+            //Cannot renew if patorn is inactive
+            if (!patron.isActive()) {
+                throw new InvalidRequestException(PATRON_INACTIVE);
+            }
+
+            // Warn if patron is keeping any overdue books
             if (!overdueBooks.isEmpty()) {
                 ableToRenew = false;
                 reasons.add(OVERDUE_PATRON_ERROR);
@@ -72,7 +80,7 @@ public class RenewServiceImpl implements RenewService {
                 reasons.add(PATRON_TYPE_COPY_TYPE_ERROR);
             } else {
 
-                //Cannot renew more than max_extend_time
+                //Warn if renewing more than max_extend_time
                 int currentExtendIndex = bookBorrowing.getExtendIndex();
                 int maxRenewTime = borrowPolicyOptional.orElse(new BorrowPolicy()).getMaxExtendTime();
                 if (currentExtendIndex >= maxRenewTime) {
@@ -117,11 +125,17 @@ public class RenewServiceImpl implements RenewService {
             throw new MissingInputException("Missing input");
         }
 
+
         //Find and check if bookBorrowing exists
         BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).orElseThrow(() -> new ResourceNotFoundException("BookBorrowing", "BookBorrowing with Id " + bookBorrowingId + " not found"));
 
         //If bookBorrowing exists
         if (bookBorrowing != null) {
+
+            //Check if borrower is inactive
+            if (!bookBorrowing.getBorrowing().getBorrower().isActive()) {
+                throw new InvalidRequestException(PATRON_INACTIVE);
+            }
 
             //Check if it is overdue
             if (bookBorrowing.getDueAt().isBefore(LocalDate.now())) {
