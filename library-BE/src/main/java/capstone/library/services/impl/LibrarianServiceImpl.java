@@ -100,6 +100,7 @@ public class LibrarianServiceImpl implements LibrarianService {
                     "Patron", "Patron with id: " + request.getPatronId() + NOT_FOUND);
         }
         Account borrowingPatron = patronOptional.get();
+        
         /*========================*/
 
         /*Get the latest Fee Policy*/

@@ -31,7 +31,7 @@ public class AddFeePolicyRequest {
 
     @NotNull(message = "{feePolicy.id.notNull}")
     @Max(MAX_DOC_PROCESSING_FEE)
-    @Max(MIN_DOC_PROCESSING_FEE)
+    @Min(MIN_DOC_PROCESSING_FEE)
     private Double documentProcessing_Fee;
 
     @NotNull(message = "{feePolicy.id.notNull}")
