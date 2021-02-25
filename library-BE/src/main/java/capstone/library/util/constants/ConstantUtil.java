@@ -27,6 +27,9 @@ public class ConstantUtil {
 
     public static final String EXCEPTION_BAD_CREDENTIAL = "Invalid username or password";
 
+    public static final String EXCEPTION_DISABLE_USER = "The user is disable";
+
+
 
     //Other
     public static final String PHONE_REGEXP = "^\\d{10}$";
