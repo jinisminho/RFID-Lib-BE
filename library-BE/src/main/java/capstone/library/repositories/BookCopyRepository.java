@@ -28,4 +28,6 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Integer> {
     Optional<BookCopy> findFirstByOrderByIdDesc();
 
     Page<BookCopy> findAllByStatusIn(List<BookCopyStatus> status, Pageable pageable);
+
+    List<BookCopy> findBookCopyByBookId(int id);
 }
