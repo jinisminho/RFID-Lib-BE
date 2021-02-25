@@ -5,6 +5,7 @@ import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
 import capstone.library.enums.BorrowingStatus;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookBorrowingMapper;
@@ -63,6 +64,7 @@ public class PatronServiceImpl implements PatronService {
     private static final String EMAIL_DEFAULT = "test@test.com";
     private static final String PATRON_NOT_FOUND = "Cannot find patron";
     private static final String NOT_PATRON = "This is not a patron account";
+    private static final String PATRON_INACTIVE = "This patron is deactivated";
 
 
     public ProfileAccountResDto getProfile(Integer id) {
@@ -174,6 +176,12 @@ public class PatronServiceImpl implements PatronService {
             throw new ResourceNotFoundException("Patron", NOT_PATRON);
         }
         /*=========*/
+
+        /*Hoang: Check if patron is active*/
+        if (!patron.isActive()) {
+            throw new InvalidRequestException(PATRON_INACTIVE);
+        }
+        /*=======================*/
 
         /*Get overdue books*/
         LocalDate now = LocalDate.now();
