@@ -6,6 +6,8 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.entities.BookCopy;
+import capstone.library.enums.BookStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -29,4 +31,7 @@ public interface BookCopyService {
     Page<BookCopyResDto> findBookCopies(String searchValue, List<String> status, Pageable pageable);
 
     CopyResponseDto getCopyById(Integer id);
+
+    String updateCopyStatusBasedOnBookStatus(BookCopy copy, BookStatus bookStatus);
+
 }

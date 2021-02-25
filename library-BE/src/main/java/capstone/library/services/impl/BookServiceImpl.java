@@ -12,6 +12,7 @@ import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
+import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,8 @@ public class BookServiceImpl implements BookService {
     private BookJpaRepository bookJpaRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private BookCopyService bookCopyService;
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
@@ -267,7 +270,7 @@ public class BookServiceImpl implements BookService {
             book.setImg(request.getImg());
         }
         if (request.getStatus() != null) {
-            book.setStatus(request.getStatus());
+            updateBookStatus(request.getId(), request.getStatus());
         }
 
     }
@@ -327,6 +330,14 @@ public class BookServiceImpl implements BookService {
                 throw new CustomException(
                         HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
             }
+
+            /*Update book's copies status to match new status
+             * Only update status of copies inside library, borrowed copies will be updated at return*/
+            List<BookCopy> copies = bookCopyRepository.findBookCopyByBookId(book.getId());
+            for (BookCopy copy : copies) {
+                bookCopyService.updateCopyStatusBasedOnBookStatus(copy, status);
+            }
+
             return SUCCESS_MESSAGE;
         } else {
             throw new ResourceNotFoundException("Book", "Book [" + id + "] is not found");
