@@ -8,6 +8,7 @@ import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
 import capstone.library.exceptions.CustomException;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.mappers.BookMapper;
@@ -15,6 +16,7 @@ import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -62,7 +64,7 @@ public class BookServiceImpl implements BookService {
     private static final String UPDATER_NOT_FOUND = "Cannot find this updater account in the system";
 
     @Override
-    public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
+    public Page<BookResDto> findBooks(String searchValue, List<String> status, Pageable pageable) {
 //        if (searchValue == null) {
 //            throw new MissingInputException("Missing search value for search book");
 //        }
@@ -71,7 +73,19 @@ public class BookServiceImpl implements BookService {
         long totalSize = 0;
         searchValue = searchValue == null ? "" : searchValue;
         searchValue = searchValue.trim();
-        Page<Book> books = searchValue.isEmpty() ? bookJpaRepository.findAll(pageable) : bookRepository.findBooks(searchValue, pageable);
+
+        List<BookStatus> statusEnums = new ArrayList<>();
+        if (status != null)
+            status.forEach(s -> {
+                if (s != null ? EnumUtils.isValidEnumIgnoreCase(BookStatus.class, s.trim()) : false)
+                    statusEnums.add(BookStatus.valueOf(s.trim()));
+                else
+                    throw new InvalidRequestException(" Param [status:" + s + "] is not a valid book copy status enum.");
+            });
+
+
+        Page<Book> books = doFindBook(searchValue, statusEnums, pageable);
+
         totalSize = books.getTotalElements();
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
@@ -90,6 +104,16 @@ public class BookServiceImpl implements BookService {
         }
 
         return new PageImpl<BookResDto>(res, pageable, totalSize);
+    }
+
+    private Page<Book> doFindBook(String searchValue, List<BookStatus> statusEnums, Pageable pageable) {
+        Page<Book> books;
+        if (searchValue.isEmpty()) {
+            books = statusEnums == null || statusEnums.isEmpty() ? bookJpaRepository.findAll(pageable) : bookJpaRepository.findAllByStatusIn(statusEnums, pageable);
+        } else {
+            books = statusEnums == null || statusEnums.isEmpty() ? bookRepository.findBooks(searchValue, pageable) : bookRepository.findBooksWithStatus(searchValue, statusEnums, pageable);
+        }
+        return books;
     }
 
     @Override

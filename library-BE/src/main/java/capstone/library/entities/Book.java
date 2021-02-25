@@ -71,6 +71,7 @@ public class Book extends Audit {
 
     @Column(name = "status", length = 30, nullable = false)
     @Enumerated(EnumType.STRING)
+    @KeywordField
     private BookStatus status;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
