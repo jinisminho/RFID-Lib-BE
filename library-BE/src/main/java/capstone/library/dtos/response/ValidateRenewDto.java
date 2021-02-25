@@ -14,6 +14,7 @@ import java.util.List;
 @Setter
 public class ValidateRenewDto {
     List<String> reasons;
+    boolean violatePolicy;
     boolean ableToRenew;
     LocalDate newDueDate;
 }

@@ -51,6 +51,7 @@ public class RenewServiceImpl implements RenewService {
     public ValidateRenewDto validateRenew(int bookBorrowingId) {
         ValidateRenewDto response = new ValidateRenewDto();
         List<String> reasons = new ArrayList<>();
+        boolean violatePolicy = false;
         boolean ableToRenew = true;
         LocalDate newDueDate = LocalDate.now();
 
@@ -63,12 +64,13 @@ public class RenewServiceImpl implements RenewService {
 
             //Cannot renew if patorn is inactive
             if (!patron.isActive()) {
-                throw new InvalidRequestException(PATRON_INACTIVE);
+                ableToRenew = false;
+                reasons.add(PATRON_INACTIVE);
             }
 
             // Warn if patron is keeping any overdue books
             if (!overdueBooks.isEmpty()) {
-                ableToRenew = false;
+                violatePolicy = true;
                 reasons.add(OVERDUE_PATRON_ERROR);
             }
 
@@ -76,6 +78,7 @@ public class RenewServiceImpl implements RenewService {
             Optional<BorrowPolicy> borrowPolicyOptional = borrowPolicyRepository.findByPatronTypeIdAndBookCopyTypeId(
                     patron.getPatronType().getId(), bookBorrowing.getBookCopy().getBookCopyType().getId());
             if (borrowPolicyOptional.isEmpty()) {
+                violatePolicy = true;
                 ableToRenew = false;
                 reasons.add(PATRON_TYPE_COPY_TYPE_ERROR);
             } else {
@@ -84,33 +87,26 @@ public class RenewServiceImpl implements RenewService {
                 int currentExtendIndex = bookBorrowing.getExtendIndex();
                 int maxRenewTime = borrowPolicyOptional.orElse(new BorrowPolicy()).getMaxExtendTime();
                 if (currentExtendIndex >= maxRenewTime) {
-                    ableToRenew = false;
+                    violatePolicy = true;
                     reasons.add(EXCEEDS_MAX_RENEW_TIME + " (" + currentExtendIndex + "/" + maxRenewTime + ")");
                 }
             }
 
-            //New due date = today + extend_due_durations (excluding saturdays and sundays)
-//            if (ableToRenew) {
-//                LocalDate dueAt = bookBorrowing.getDueAt();
-//                dueAt = dueAt.plusDays(borrowPolicyOptional.get().getMaxExtendTime());
-//                while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-//                    dueAt = dueAt.plusDays(1);
-//                }
-//                newDueDate = dueAt;
-//            }
-            LocalDate dueAt = bookBorrowing.getDueAt();
-            dueAt = dueAt.plusDays(borrowPolicyOptional.get().getExtendDueDuration());
-            while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-                dueAt = dueAt.plusDays(1);
+            if (ableToRenew) {
+                LocalDate dueAt = bookBorrowing.getDueAt();
+                dueAt = dueAt.plusDays(borrowPolicyOptional.get().getExtendDueDuration());
+                while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+                    dueAt = dueAt.plusDays(1);
+                }
+                newDueDate = dueAt;
             }
-            newDueDate = dueAt;
-
         } else {
             throw new ResourceNotFoundException("Book Borrowing", BOOK_BORROWING_NOT_FOUND_ERROR);
         }
 
         //prepare response
         response.setReasons(reasons);
+        response.setViolatePolicy(violatePolicy);
         response.setAbleToRenew(ableToRenew);
         response.setNewDueDate(newDueDate);
 
@@ -147,7 +143,13 @@ public class RenewServiceImpl implements RenewService {
             ValidateRenewDto validateRenewDto = this.validateRenew(bookBorrowingId);
             policiViolations.addAll(validateRenewDto.getReasons());
 
-            if (validateRenewDto.isAbleToRenew() || librarianId != null) {
+            //Check if this patron type can still borrow this book copy type
+            if (!validateRenewDto.isAbleToRenew() &&
+                    validateRenewDto.getReasons().contains(PATRON_TYPE_COPY_TYPE_ERROR)) {
+                throw new InvalidRequestException(PATRON_TYPE_COPY_TYPE_ERROR);
+            }
+
+            if (validateRenewDto.isViolatePolicy() || librarianId != null) {
                 //if issued by Librarian get the librarian account, if not get the patron one
                 /*Hoang*/
                 Account isssuedBy =
