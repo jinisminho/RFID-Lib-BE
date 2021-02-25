@@ -27,4 +27,6 @@ public interface BookCopyService {
     String updateCopy(UpdateCopyRequest request);
 
     Page<BookCopyResDto> findBookCopies(String searchValue, List<String> status, Pageable pageable);
+
+    CopyResponseDto getCopyById(Integer id);
 }
