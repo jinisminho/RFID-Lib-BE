@@ -73,6 +73,8 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String POLICY_BOOK_STATUS = "This book is not in circulation";
     private static final String POLICY_COPY_STATUS = "This copy is not available";
     private static final String BOOK_DISCARD = "The book of this copy is already discarded";
+    private static final String UPDATE_COPY_LOST_ERROR = "Cannot update Lost copies";
+    private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     @Override
@@ -258,6 +260,15 @@ public class BookCopyServiceImpl implements BookCopyService {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(request.getId());
         if (bookCopyOptional.isPresent()) {
             BookCopy bookCopy = bookCopyOptional.get();
+
+            /*Cannot update DISCARD or LOSt copy*/
+            if (bookCopy.getStatus().equals(BookCopyStatus.DISCARD)) {
+                throw new InvalidRequestException(UPDATE_COPY_DISCARD_ERROR);
+            }
+            if (bookCopy.getStatus().equals(BookCopyStatus.LOST)) {
+                throw new InvalidRequestException(UPDATE_COPY_LOST_ERROR);
+            }
+
             bookCopy.setPrice(request.getPrice());
 
             /*If book copy is updated while in process then tag RFID instead of update RFID
