@@ -1,5 +1,6 @@
 package capstone.library.services;
 
+import capstone.library.dtos.request.AddLostBookRequest;
 import capstone.library.dtos.response.LostBookFineResponseDto;
 import capstone.library.dtos.response.BookLostResponse;
 import org.springframework.data.domain.Page;
@@ -10,4 +11,6 @@ import java.time.LocalDateTime;
 public interface BookLostReportService {
     Page<BookLostResponse> findBookLostInPeriod (LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
     LostBookFineResponseDto getLostBookFine(int bookBorrowingId);
+
+    String addLostBook (AddLostBookRequest lostBook);
 }
