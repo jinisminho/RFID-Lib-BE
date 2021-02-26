@@ -31,6 +31,9 @@ public class BookLostReport
     @Column(name = "reason", length = 100, nullable = false)
     private String reason;
 
+    @Column(name = "fine")
+    private Double fine;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrow_id")
     private BookBorrowing bookBorrowing;
