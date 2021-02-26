@@ -178,6 +178,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         CheckCopyPolicyResponseDto response = new CheckCopyPolicyResponseDto();
         Account patron;
         BookCopy bookCopy;
+        int borrowDuration = 0;
 
         /*Get Patron and Copy*/
         Optional<Account> patronOptional = accountRepository.findById(patronId);
@@ -207,6 +208,8 @@ public class BookCopyServiceImpl implements BookCopyService {
         if (borrowPolicyOptional.isEmpty()) {
             violatePolicy = true;
             reasons.add(POLICY_PATRON_TYPE_COPY_TYPE);
+        } else {
+            borrowDuration = borrowPolicyOptional.get().getDueDuration();
         }
         // 2
         if (!bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION)) {
@@ -231,7 +234,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         response.getCopy().setBarcode(bookCopy.getBarcode());
         response.setViolatePolicy(violatePolicy);
         response.setReasons(reasons);
-        int borrowDuration = borrowPolicyOptional.get().getDueDuration();
         LocalDate dueAt = LocalDate.now().plusDays(borrowDuration);
         while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             dueAt = dueAt.plusDays(1);
