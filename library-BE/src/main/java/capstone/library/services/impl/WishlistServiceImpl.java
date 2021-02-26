@@ -4,12 +4,16 @@ import capstone.library.dtos.response.WishlistResDto;
 import capstone.library.entities.Account;
 import capstone.library.entities.Book;
 import capstone.library.entities.WishlistBook;
+import capstone.library.enums.BookCopyStatus;
+import capstone.library.enums.BookStatus;
 import capstone.library.enums.WishListStatus;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.mappers.BookCopyMapper;
 import capstone.library.mappers.WishlistMapper;
 import capstone.library.repositories.AccountRepository;
+import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.BookJpaRepository;
 import capstone.library.repositories.WishlistRepository;
 import capstone.library.services.WishlistService;
@@ -34,6 +38,10 @@ public class WishlistServiceImpl implements WishlistService {
     private AccountRepository accountRepository;
     @Autowired
     private WishlistMapper wishlistMapper;
+    @Autowired
+    private BookCopyRepository bookCopyRepository;
+    @Autowired
+    private BookCopyMapper bookCopyMapper;
 
     @Override
     public boolean addWishlist(Integer bookId, Integer patronId) {
@@ -66,6 +74,21 @@ public class WishlistServiceImpl implements WishlistService {
     public Page<WishlistResDto> getWishlist(Integer patronId, Pageable pageable) {
         Page<WishlistBook> page = wishlistRepository.findAllByBorrower_IdAndStatus(patronId, WishListStatus.NOT_EMAIL_YET, pageable);
         List<WishlistResDto> list = page.stream().map(wishlist -> wishlistMapper.toResDto(wishlist)).collect(Collectors.toList());
+
+        for (WishlistResDto wishList : list) {
+            int stockSize = bookCopyRepository.findByBookIdAndStatus(wishList.getBook().getId(), BookCopyStatus.AVAILABLE).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
+            stockSize += bookCopyRepository.findByBookIdAndStatus(wishList.getBook().getId(), BookCopyStatus.LIB_USE_ONLY).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
+            if (stockSize > 0) {
+                wishList.getBook().setStock(stockSize);
+                wishList.getBook().setAvailable(true);
+            } else {
+                wishList.getBook().setAvailable(false);
+                wishList.getBook().setStock(0);
+            }
+            if (wishList.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY.toString()))
+                wishList.getBook().setOnlyInLibrary(true);
+        }
+
         Page<WishlistResDto> res = new PageImpl<WishlistResDto>(list, pageable, page.getTotalElements());
         return res;
     }
