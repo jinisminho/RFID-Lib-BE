@@ -18,6 +18,11 @@ public class DateTimeUtil {
         return date.format(formatter);
     }
 
+    public static String convertDateToString (LocalDate date){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(ConstantUtil.DATE_PATTERN);
+        return date.format(formatter);
+    }
+
     public static long getOverdueDays(LocalDate today, LocalDate dueDate)
     {
         /*Get overdue days disregard of holidays.

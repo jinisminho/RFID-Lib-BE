@@ -90,7 +90,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                     }
                     copy.setStatus(BookCopyStatus.BORROWED);
                     dto.setAbleToBorrow(true);
-                    dto.setDueDate(dueDate.toString());
+                    dto.setDueDate(DateTimeUtil.convertDateToString(dueDate));
                     dto.setBorrowedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
 
                     //get fee policy
