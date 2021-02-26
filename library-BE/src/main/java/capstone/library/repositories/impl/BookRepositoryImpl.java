@@ -1,7 +1,9 @@
 package capstone.library.repositories.impl;
 
 import capstone.library.entities.Book;
+import capstone.library.enums.BookStatus;
 import capstone.library.repositories.BookRepository;
+import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
@@ -75,6 +77,70 @@ public class BookRepositoryImpl implements BookRepository {
         List<Book> resWithoutDuplicates = new ArrayList<>(
                 new LinkedHashSet<>(res));
         return new PageImpl<Book>(resWithoutDuplicates, pageable, totalSize);
+    }
+
+    @Override
+    public Page<Book> findBooksWithStatus(String searchValue, List<BookStatus> status, Pageable pageable) {
+        SearchSession searchSession = Search.session(entityManager);
+
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int offset = page * size;
+        int limit = size;
+
+        int totalSize;
+        List<Book> res = new ArrayList<>();
+
+        List<SearchQuery> queries = new ArrayList<>();
+
+        status.forEach(s -> {
+                    SearchQuery<Book> query = searchSession.search(Book.class)
+                            .where(f -> f.bool()
+                                    .must(f.match()
+                                            .fields("isbn")
+                                            .matching(searchValue)
+                                            .analyzer("keyword"))
+                                    .must(f.match()
+                                            .fields("status")
+                                            .matching(s)
+                                            .analyzer("keyword"))
+                            )
+                            .toQuery();
+                    queries.add(query);
+                }
+        );
+        totalSize = queries.stream().mapToInt(searchQuery -> (int) searchQuery.fetchTotalHitCount()).sum();
+        queries.forEach(searchQuery -> {
+            res.addAll(searchQuery.fetch(offset, limit).hits());
+        });
+        if (totalSize > 0) return new PageImpl<Book>(new ArrayList<>(
+                new LinkedHashSet<>(res)), pageable, totalSize);
+
+        queries.clear();
+        res.clear();
+        status.forEach(s -> {
+                    SearchQuery<Book> query = searchSession.search(Book.class)
+                            .where(f -> f.bool()
+                                    .must(f.match()
+                                            .fields("title", "title_2", "sub", "sub_2")
+                                            .matching(searchValue)
+                                            .analyzer("default"))
+                                    .must(f.match()
+                                            .fields("status")
+                                            .matching(s)
+                                            .analyzer("keyword"))
+                            )
+                            .toQuery();
+                    queries.add(query);
+                }
+        );
+        totalSize = queries.stream().mapToInt(searchQuery -> (int) searchQuery.fetchTotalHitCount()).sum();
+        queries.forEach(searchQuery -> {
+            res.addAll(searchQuery.fetch(offset, limit).hits());
+        });
+
+        return new PageImpl<Book>(new ArrayList<>(
+                new LinkedHashSet<>(res)), pageable, totalSize);
     }
 
     @Override

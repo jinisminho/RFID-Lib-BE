@@ -460,7 +460,7 @@ insert into profile (fullname, phone, gender, account_id) values
 /*patron*/
 insert into account (id, email, password, rfid, avatar, isActive, created_at, updated_at, created_by, updated_by, role_id, patron_type_id) values
 (6, 'tramphse130038@fpt.edu.vn', '123', '00AD0001', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
-(7, 'hoangpmse130054@fpt.edu.vn', '123', '00AD0002 ', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
+(7, 'hoangpmse130054@fpt.edu.vn', '123', '00AD0002', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
 (8, 'kienntse130154@fpt.edu.vn', '123', '00AD0003', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),3, 3, 3, 2),
 (9, 'khangndnse130148@fpt.edu.vn', '123', '01020304', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', false, now(), now(),4, 4, 3, 2);
 
@@ -487,12 +487,12 @@ insert into author(id, name) values
 
 
 insert into book (id, ISBN, title, subtitle, publisher, publish_year, edition, language, page_number, call_number, number_of_copy, status, created_at, updated_at, created_by, updated_by, img) values
-(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '000.123', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '124.564', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '299.895', 1, 'LIB_USE_ONLY', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '200.986', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '300.999', 3, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '301.574', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg");
+(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '000.123', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1346542574l/15804984.jpg"),
+(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '124.564', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://images-na.ssl-images-amazon.com/images/I/51UrTnJIgcL._SX322_BO1,204,203,200_.jpg"),
+(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '299.895', 1, 'LIB_USE_ONLY', now(), now(), 2,2, "https://cdn.acadian.org/wp-content/uploads/TrueStoryofAcadians-501x800.jpg"),
+(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '200.986', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://images-na.ssl-images-amazon.com/images/I/41IZzdVmM+L._SX331_BO1,204,203,200_.jpg"),
+(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '300.999', 3, 'IN_CIRCULATION', now(), now(), 2,2, "https://images-na.ssl-images-amazon.com/images/I/91Zavj6YonL.jpg"),
+(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '301.574', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://images-na.ssl-images-amazon.com/images/I/81wqGUXRJKL.jpg");
 
 
 insert into genre (id, name) values
