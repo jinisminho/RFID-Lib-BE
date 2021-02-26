@@ -12,6 +12,7 @@ import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
+import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +53,15 @@ public class BookServiceImpl implements BookService {
     private BookJpaRepository bookJpaRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private BookCopyService bookCopyService;
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
     private static final String BOOK_NOT_FOUND = "Cannot find this book in the system";
     private static final String UPDATER_NOT_FOUND = "Cannot find this updater account in the system";
+    private static final String UPDATE_DISCARD_BOOK_ERROR = "Cannot update DISCARD book";
+    private static final String UPDATE_DUPLICATE_BOOK_STATUS_ERROR = "This book is already: ";
 
     @Override
     public Page<BookResDto> findBooks(String searchValue, Pageable pageable) {
@@ -267,7 +272,7 @@ public class BookServiceImpl implements BookService {
             book.setImg(request.getImg());
         }
         if (request.getStatus() != null) {
-            book.setStatus(request.getStatus());
+            updateBookStatus(request.getId(), request.getStatus());
         }
 
     }
@@ -313,19 +318,29 @@ public class BookServiceImpl implements BookService {
         Optional<Book> bookOptional = myBookRepository.findById(id);
         if (bookOptional.isPresent()) {
             Book book = bookOptional.get();
+
+            /*Cannot update discarded book*/
             if (book.getStatus().equals(BookStatus.DISCARD)) {
-                return "Cannot update DISCARD book";
-            } else if (status.equals(book.getStatus())) {
-                return "Book status is already " + status;
+                return UPDATE_DISCARD_BOOK_ERROR;
             }
+            /*Update book copies if book status is updated*/
+            else if (!status.equals(book.getStatus())) {
+                book.setStatus(status);
 
-            book.setStatus(status);
+                try {
+                    myBookRepository.save(book);
+                } catch (Exception e) {
+                    throw new CustomException(
+                            HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
+                }
 
-            try {
-                myBookRepository.save(book);
-            } catch (Exception e) {
-                throw new CustomException(
-                        HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
+                /*Update book's copies status to match new status
+                 * Only update status of copies inside library, borrowed copies will be updated at return.
+                 * Cannot update discarded or lost copies*/
+                List<BookCopy> copies = bookCopyRepository.findBookCopyByBookId(book.getId());
+                for (BookCopy copy : copies) {
+                    bookCopyService.updateCopyStatusBasedOnBookStatus(copy, status);
+                }
             }
             return SUCCESS_MESSAGE;
         } else {

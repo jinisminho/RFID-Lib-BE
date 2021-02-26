@@ -11,6 +11,7 @@ import capstone.library.enums.BookStatus;
 import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.CustomException;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.BorrowingService;
@@ -69,6 +70,7 @@ public class LibrarianServiceImpl implements LibrarianService {
     private static final String POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE = "Exceeding borrowing allowance for copy type: ";
     private static final String POLICY_DUPLICATE_BOOK = "Borrowing or keeping more than 1 copy of same book ISBN: ";
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy type: ";
+    private static final String PATRON_INACTIVE = "This patron is inactive";
 
     /*Renew Index is used to determine if this book has been renew this time.
      * If the book has not been renewed, then Renew index is 0*/
@@ -100,6 +102,10 @@ public class LibrarianServiceImpl implements LibrarianService {
                     "Patron", "Patron with id: " + request.getPatronId() + NOT_FOUND);
         }
         Account borrowingPatron = patronOptional.get();
+        //Return bad request if patron is inactive
+        if (!borrowingPatron.isActive()) {
+            throw new InvalidRequestException(PATRON_INACTIVE);
+        }
         /*========================*/
 
         /*Get the latest Fee Policy*/

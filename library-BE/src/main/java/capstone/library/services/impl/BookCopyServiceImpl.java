@@ -36,6 +36,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
+
 @Service
 public class BookCopyServiceImpl implements BookCopyService {
     @Autowired
@@ -70,6 +72,9 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy";
     private static final String POLICY_BOOK_STATUS = "This book is not in circulation";
     private static final String POLICY_COPY_STATUS = "This copy is not available";
+    private static final String BOOK_DISCARD = "The book of this copy is already discarded";
+    private static final String UPDATE_COPY_LOST_ERROR = "Cannot update Lost copies";
+    private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     @Override
@@ -147,7 +152,10 @@ public class BookCopyServiceImpl implements BookCopyService {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
                 } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY)) {
                     bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
+                } else {
+                    throw new InvalidRequestException(BOOK_DISCARD);
                 }
+
                 try {
                     bookCopyRepository.save(bookCopy);
                 } catch (Exception e) {
@@ -170,6 +178,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         CheckCopyPolicyResponseDto response = new CheckCopyPolicyResponseDto();
         Account patron;
         BookCopy bookCopy;
+        int borrowDuration = 0;
 
         /*Get Patron and Copy*/
         Optional<Account> patronOptional = accountRepository.findById(patronId);
@@ -199,6 +208,8 @@ public class BookCopyServiceImpl implements BookCopyService {
         if (borrowPolicyOptional.isEmpty()) {
             violatePolicy = true;
             reasons.add(POLICY_PATRON_TYPE_COPY_TYPE);
+        } else {
+            borrowDuration = borrowPolicyOptional.get().getDueDuration();
         }
         // 2
         if (!bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION)) {
@@ -223,7 +234,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         response.getCopy().setBarcode(bookCopy.getBarcode());
         response.setViolatePolicy(violatePolicy);
         response.setReasons(reasons);
-        int borrowDuration = borrowPolicyOptional.get().getDueDuration();
         LocalDate dueAt = LocalDate.now().plusDays(borrowDuration);
         while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             dueAt = dueAt.plusDays(1);
@@ -252,8 +262,29 @@ public class BookCopyServiceImpl implements BookCopyService {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(request.getId());
         if (bookCopyOptional.isPresent()) {
             BookCopy bookCopy = bookCopyOptional.get();
+
+            /*Cannot update DISCARD or LOSt copy*/
+            if (bookCopy.getStatus().equals(BookCopyStatus.DISCARD)) {
+                throw new InvalidRequestException(UPDATE_COPY_DISCARD_ERROR);
+            }
+            if (bookCopy.getStatus().equals(BookCopyStatus.LOST)) {
+                throw new InvalidRequestException(UPDATE_COPY_LOST_ERROR);
+            }
+
             bookCopy.setPrice(request.getPrice());
-            bookCopy.setRfid(request.getRfid());
+
+            /*If book copy is updated while in process then tag RFID instead of update RFID
+             * If book is tagged in the past then proceed to update normally*/
+            if (bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS)) {
+                TagCopyRequestDto dto = new TagCopyRequestDto();
+                dto.setRfid(request.getRfid());
+                dto.setUpdater(request.getUpdater());
+                dto.setBarcode(bookCopy.getBarcode());
+                tagCopy(dto);
+            } else {
+                bookCopy.setRfid(request.getRfid());
+            }
+
             Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
             if (bookCopyTypeOptional.isPresent()) {
                 bookCopy.setBookCopyType(bookCopyTypeOptional.get());
@@ -383,5 +414,28 @@ public class BookCopyServiceImpl implements BookCopyService {
     public CopyResponseDto getCopyById(Integer id) {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(id);
         return getCopyResponseDto(bookCopyOptional);
+    }
+
+    @Override
+    public String updateCopyStatusBasedOnBookStatus(BookCopy bookCopy, BookStatus bookStatus) {
+        /*Update book's copies status to match new status
+         * Only update status of copies inside library, borrowed copies will be updated at return.
+         * Cannot update discarded or lost copies*/
+        if (!bookCopy.getStatus().equals(BookCopyStatus.BORROWED) &&
+                !bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) &&
+                !bookCopy.getStatus().equals(BookCopyStatus.DISCARD) &&
+                !bookCopy.getStatus().equals(BookCopyStatus.LOST)) {
+            if (bookStatus.equals(BookStatus.IN_CIRCULATION)) {
+                bookCopy.setStatus(BookCopyStatus.AVAILABLE);
+            } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION)) {
+                bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
+            } else if (bookCopy.getBook().getStatus().equals(BookStatus.DISCARD)) {
+                bookCopy.setStatus(BookCopyStatus.DISCARD);
+            } else if (bookCopy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY)) {
+                bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
+            }
+        }
+        bookCopyRepository.save(bookCopy);
+        return UPDATE_SUCCESS;
     }
 }
