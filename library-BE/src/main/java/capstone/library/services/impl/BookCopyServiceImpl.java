@@ -416,6 +416,9 @@ public class BookCopyServiceImpl implements BookCopyService {
 
     @Override
     public String updateCopyStatusBasedOnBookStatus(BookCopy bookCopy, BookStatus bookStatus) {
+        /*Update book's copies status to match new status
+         * Only update status of copies inside library, borrowed copies will be updated at return.
+         * Cannot update discarded or lost copies*/
         if (!bookCopy.getStatus().equals(BookCopyStatus.BORROWED) &&
                 !bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) &&
                 !bookCopy.getStatus().equals(BookCopyStatus.DISCARD) &&
