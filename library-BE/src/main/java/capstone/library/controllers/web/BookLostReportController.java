@@ -1,5 +1,6 @@
 package capstone.library.controllers.web;
 
+import capstone.library.dtos.request.AddLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
 import capstone.library.services.BookLostReportService;
@@ -33,5 +34,10 @@ public class BookLostReportController {
                                                         @DateTimeFormat(pattern = DATE_TIME_PATTERN)
                                                                 LocalDateTime endDate) {
         return bookLostReportService.findBookLostInPeriod(startDate, endDate, pageable);
+    }
+
+    @PostMapping("/add")
+    public String addLostBook(@RequestBody @NotNull AddLostBookRequest request){
+        return bookLostReportService.addLostBook(request);
     }
 }
