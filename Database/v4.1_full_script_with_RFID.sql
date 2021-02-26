@@ -460,7 +460,7 @@ insert into profile (fullname, phone, gender, account_id) values
 /*patron*/
 insert into account (id, email, password, rfid, avatar, isActive, created_at, updated_at, created_by, updated_by, role_id, patron_type_id) values
 (6, 'tramphse130038@fpt.edu.vn', '123', '00AD0001', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
-(7, 'hoangpmse130054@fpt.edu.vn', '123', '00AD0002 ', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
+(7, 'hoangpmse130054@fpt.edu.vn', '123', '00AD0002', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
 (8, 'kienntse130154@fpt.edu.vn', '123', '00AD0003', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),3, 3, 3, 2),
 (9, 'khangndnse130148@fpt.edu.vn', '123', '01020304', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', false, now(), now(),4, 4, 3, 2);
 
