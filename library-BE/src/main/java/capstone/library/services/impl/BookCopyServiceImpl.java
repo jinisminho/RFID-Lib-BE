@@ -74,6 +74,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String POLICY_COPY_STATUS = "This copy is not available";
     private static final String BOOK_DISCARD = "The book of this copy is already discarded";
     private static final String UPDATE_COPY_LOST_ERROR = "Cannot update Lost copies";
+    private static final String UPDATE_COPY_BORROWED_ERROR = "Cannot update borrowed copies";
     private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
@@ -263,12 +264,15 @@ public class BookCopyServiceImpl implements BookCopyService {
         if (bookCopyOptional.isPresent()) {
             BookCopy bookCopy = bookCopyOptional.get();
 
-            /*Cannot update DISCARD or LOSt copy*/
+            /*Cannot update DISCARD or LOST or BORROWED copy*/
             if (bookCopy.getStatus().equals(BookCopyStatus.DISCARD)) {
                 throw new InvalidRequestException(UPDATE_COPY_DISCARD_ERROR);
             }
             if (bookCopy.getStatus().equals(BookCopyStatus.LOST)) {
                 throw new InvalidRequestException(UPDATE_COPY_LOST_ERROR);
+            }
+            if (bookCopy.getStatus().equals(BookCopyStatus.BORROWED)) {
+                throw new InvalidRequestException(UPDATE_COPY_BORROWED_ERROR);
             }
 
             bookCopy.setPrice(request.getPrice());
@@ -302,7 +306,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 return "Success";
             } catch (Exception e) {
                 throw new CustomException(
-                        HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
+                        HttpStatus.BAD_REQUEST, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
             }
         } else {
             throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
