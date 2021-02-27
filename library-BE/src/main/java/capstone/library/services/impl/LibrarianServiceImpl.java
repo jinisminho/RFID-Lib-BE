@@ -84,7 +84,7 @@ public class LibrarianServiceImpl implements LibrarianService {
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
-        Optional<Account> librarianOptional = accountRepository.findByIdAndRoleId(request.getLibrarianId(), RoleIdEnum.ROLE_LIBRARIAN.getRoleId());
+        Optional<Account> librarianOptional = accountRepository.findById(request.getLibrarianId());
         //Return 404 if no patron with 'getLibrarianId' is found
         if (librarianOptional.isEmpty()) {
             throw new ResourceNotFoundException(
@@ -549,8 +549,16 @@ public class LibrarianServiceImpl implements LibrarianService {
 
         //Generate barcodes
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findFirstByOrderByIdDesc();
-        bookCopyOptional.ifPresent(bookCopy -> response.setGeneratedBarcodes(bookCopyBarcodeUtils.
-                generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies)));
+        if (bookCopyOptional.isPresent()) {
+            BookCopy bookCopy = bookCopyOptional.get();
+            response.setGeneratedBarcodes(bookCopyBarcodeUtils.
+                    generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies));
+        }else{
+            response.setGeneratedBarcodes(bookCopyBarcodeUtils.
+                    generateBookCopyBarcode(copyTypeId, 0, numberOfCopies));
+        }
+//        bookCopyOptional.ifPresent(bookCopy -> response.setGeneratedBarcodes(bookCopyBarcodeUtils.
+//                generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies)));
 
         return response;
     }
