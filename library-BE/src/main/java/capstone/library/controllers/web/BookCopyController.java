@@ -71,7 +71,7 @@ public class BookCopyController {
     }
 
     @GetMapping("/get/id/{id}")
-    public CopyResponseDto getCopyByRfid(@PathVariable @NotEmpty Integer id) {
+    public CopyResponseDto getCopyById(@PathVariable @NotEmpty Integer id) {
         return bookCopyService.getCopyById(id);
     }
 

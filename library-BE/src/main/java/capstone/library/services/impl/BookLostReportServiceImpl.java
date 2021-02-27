@@ -1,13 +1,16 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.BookBorrowingDto;
+import capstone.library.dtos.request.AddLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
+import capstone.library.entities.Account;
 import capstone.library.entities.BookBorrowing;
 import capstone.library.entities.BookLostReport;
 import capstone.library.entities.FeePolicy;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookBorrowingRepository;
 import capstone.library.repositories.BookLostReportRepository;
 import capstone.library.repositories.FeePolicyRepository;
@@ -18,20 +21,27 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 
 
 @Service
 public class BookLostReportServiceImpl implements BookLostReportService {
     @Autowired
-    BookBorrowingRepository bookBorrowingRepository;
+    private BookBorrowingRepository bookBorrowingRepository;
     @Autowired
-    FeePolicyRepository feePolicyRepository;
+    private FeePolicyRepository feePolicyRepository;
     @Autowired
-    BookLostReportRepository bookLostReportRepository;
+    private BookLostReportRepository bookLostReportRepository;
+
     @Autowired
-    ObjectMapper objectMapper;
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private static final String BOOK_BORROWING_NOT_FOUND_ERROR = "Cannot find this borrowing section";
 
@@ -45,6 +55,36 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         response.setLostBookFineInMarket(calculateLostFineInMarket(bookBorrowing));
         response.setLostBookFineNotInMarket(calculateLostFineNotInMarket(bookBorrowing));
         return response;
+    }
+
+    @Override
+    @Transactional
+    public String addLostBook(AddLostBookRequest lostBook) {
+        if(lostBook == null){
+            throw new MissingInputException("missing lost book");
+        }
+        Account auditor = accountRepository
+                .findById(lostBook.getAuditorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Account",
+                        "Cannot found account with id: " + lostBook.getAuditorId()));
+        BookBorrowing borrowing = bookBorrowingRepository
+                .findById(lostBook.getBookBorrowingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Book Borrowing",
+                        "Cannot find book borrowing with id: "+ lostBook.getBookBorrowingId()));
+
+        LocalDateTime lostAt = LocalDateTime.now();
+        BookLostReport bookLostReport = new BookLostReport();
+        bookLostReport.setLostAt(lostAt);
+        bookLostReport.setReason(lostBook.getReason());
+        bookLostReport.setFine(lostBook.getFine());
+        bookLostReport.setBookBorrowing(borrowing);
+        bookLostReport.setBorrower(borrowing.getBorrowing().getBorrower());
+        bookLostReport.setLibrarian(auditor);
+        bookLostReport.setBookCopy(borrowing.getBookCopy());
+        bookLostReportRepository.save(bookLostReport);
+        borrowing.setLostAt(lostAt);
+        bookBorrowingRepository.save(borrowing);
+        return CREATE_SUCCESS;
     }
 
     @Override
