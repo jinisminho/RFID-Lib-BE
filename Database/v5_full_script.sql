@@ -383,9 +383,6 @@ alter table book_copy_position
 ALTER TABLE role
 ADD CONSTRAINT UK_role_name UNIQUE (name);
 
-ALTER TABLE author
-ADD CONSTRAINT UK_author_name UNIQUE (name);
-
 ALTER TABLE account
 ADD CONSTRAINT UK_account_email UNIQUE (email);
 
