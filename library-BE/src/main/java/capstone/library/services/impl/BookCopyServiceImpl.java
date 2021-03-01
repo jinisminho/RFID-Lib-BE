@@ -99,15 +99,8 @@ public class BookCopyServiceImpl implements BookCopyService {
             throw new ResourceNotFoundException("Book", ErrorStatus.RESOURCE_NOT_FOUND.getReason());
         }
 
-        try {
-            insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
-            updateBookNumberOfCopy(book);
-        } catch (Exception e) {
-            throw new CustomException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
-        }
-
+        insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
+        updateBookNumberOfCopy(book);
         return "Success";
     }
 
@@ -253,6 +246,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     @Override
+    @Transactional
     public String updateCopy(UpdateCopyRequest request) {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findById(request.getId());
         if (bookCopyOptional.isPresent()) {
@@ -388,9 +382,11 @@ public class BookCopyServiceImpl implements BookCopyService {
         return books;
     }
 
-    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) throws Exception {
-        Set<BookCopy> bookCopies = new HashSet<>();
-        for (String barcode : barcodes) {
+    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) {
+        List<BookCopy> bookCopies = new ArrayList<>();
+        List<String> sortedBarcodes = new ArrayList<>(barcodes);
+        Collections.sort(sortedBarcodes);
+        for (String barcode : sortedBarcodes) {
             BookCopy bookCopy = new BookCopy();
             bookCopy.setBook(book);
             bookCopy.setBookCopyType(bookCopyType);
@@ -403,7 +399,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         bookCopyRepository.saveAll(bookCopies);
     }
 
-    private void updateBookNumberOfCopy(Book book) throws Exception {
+    private void updateBookNumberOfCopy(Book book) {
         book.setNumberOfCopy(bookCopyRepository.findByBookId(book.getId()).size());
         myBookRepository.save(book);
     }

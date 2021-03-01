@@ -28,6 +28,8 @@ import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static capstone.library.util.constants.ConstantUtil.CALL_NUMBER_FORMAT_REGEX;
+
 @Service
 public class BookServiceImpl implements BookService {
 
@@ -63,6 +65,7 @@ public class BookServiceImpl implements BookService {
     private static final String BOOK_NOT_FOUND = "Cannot find this book in the system";
     private static final String UPDATER_NOT_FOUND = "Cannot find this updater account in the system";
     private static final String CREATOR_NOT_FOUND = "Cannot find this creator account in the system";
+    private static final String CALL_NUMBER_INVALID_ERROR = "This call number is invalid (eg: ###.ABC)";
     private static final String UPDATE_DISCARD_BOOK_ERROR = "Cannot update DISCARD book";
     private static final String UPDATE_DUPLICATE_BOOK_STATUS_ERROR = "This book is already: ";
 
@@ -294,7 +297,10 @@ public class BookServiceImpl implements BookService {
             book.setPageNumber(request.getPageNumber());
         }
         if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " "));
+            if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
+                throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
+            }
+            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
         }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
@@ -323,7 +329,7 @@ public class BookServiceImpl implements BookService {
             book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
         }
         if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " "));
+            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
         }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
@@ -333,6 +339,10 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public String addBook(CreateBookRequestDto request) {
+        //Call number must matches ###.ABCDXYZ
+        if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
+            throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
+        }
         if (request.getPageNumber() == 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Page number is 0", "Page number must be more than 0");
         }
@@ -372,16 +382,11 @@ public class BookServiceImpl implements BookService {
             if (book.getStatus().equals(BookStatus.DISCARD)) {
                 return UPDATE_DISCARD_BOOK_ERROR;
             }
-            /*Update book copies if book status is updated*/
+            /*Update book status if book status is changed*/
             else if (!status.equals(book.getStatus())) {
                 book.setStatus(status);
 
-                try {
-                    myBookRepository.save(book);
-                } catch (Exception e) {
-                    throw new CustomException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
-                }
+                myBookRepository.save(book);
 
                 /*Update book's copies status to match new status
                  * Only update status of copies inside library, borrowed copies will be updated at return.
