@@ -88,7 +88,7 @@ public class ApplicationExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<ErrorDto> handleException(RuntimeException exception) {
-        logger.error(exception.getMessage());
+        logger.error(exception);
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ConstantUtil.EXCEPTION_UNEXPECTED_ERROR,

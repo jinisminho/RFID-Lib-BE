@@ -1,4 +1,3 @@
-
 use library_rfid;
 
 create table role(
@@ -140,6 +139,8 @@ create table book(
 create table author(
 	id int not null auto_increment,
 	name varchar(50) not null,
+	country varchar(50) not null,
+	birth_year int,
 	primary key (id)
 );
 
@@ -415,9 +416,8 @@ ADD CONSTRAINT UK_copyType_name UNIQUE (name);
 ALTER TABLE book
 ADD CONSTRAINT UK_book_isbn UNIQUE (ISBN);
 
-/*insert import */
 
-use library_rfid;
+/*insert import */
 
 
 insert into role (id, name) values
@@ -430,9 +430,9 @@ insert into patron_type (id, name, max_borrow_number) values
 (2, 'LECTURER', 10);
 
 insert into book_copy_type (id, name) values
-(1, 'TEXTBOOK'),
+(1, 'REGULAR'),
 (2, 'REFERENCE'),
-(3, 'THESIS');
+(3, 'RARE');
 
 /*******/
 
@@ -459,10 +459,10 @@ insert into profile (fullname, phone, gender, account_id) values
 
 /*patron*/
 insert into account (id, email, password, rfid, avatar, isActive, created_at, updated_at, created_by, updated_by, role_id, patron_type_id) values
-(6, 'tramphse130038@fpt.edu.vn', '123', '00AD0001', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
-(7, 'hoangpmse130054@fpt.edu.vn', '123', '00AD0002', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
-(8, 'kienntse130154@fpt.edu.vn', '123', '00AD0003', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),3, 3, 3, 2),
-(9, 'khangndnse130148@fpt.edu.vn', '123', '01020304', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', false, now(), now(),4, 4, 3, 2);
+(6, 'tramphse130038@fpt.edu.vn', '123', '1234', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
+(7, 'hoangpmse130054@fpt.edu.vn', '123', '5678', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),2, 2, 3, 1),
+(8, 'kienntse130154@fpt.edu.vn', '123', '9635', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', true, now(), now(),3, 3, 3, 2),
+(9, 'khangndnse130148@fpt.edu.vn', '123', '7854', 'https://st2.depositphotos.com/1009634/7235/v/600/depositphotos_72350117-stock-illustration-no-user-profile-picture-hand.jpg', false, now(), now(),4, 4, 3, 2);
 
 insert into profile (fullname, phone, gender, account_id) values
 ('Phan Hoang Tram', '0965457000', 'F', 6),
@@ -473,26 +473,17 @@ insert into profile (fullname, phone, gender, account_id) values
 
 /********/
 
-insert into author(id, name) values
-(1, 'J.R.R Tolkien'),
-(2, 'Cline'),
-(3, 'Ernest'),
-(4, 'Boudreau'),
-(5, 'Amy'),
-(6, 'Wilson'),
-(7, 'G. Willow'),
-(8, 'Thomas Piketty'),
-(9, 'Hansen');
+insert into author(id, name, country, birth_year) values
+(1, 'J.R.R Tolkien', 'US', 1980),
+(2, 'Cline', 'US', 1970),
+(3, 'Ernest', 'US', 1970),
+(4, 'Boudreau', 'US', 1970),
+(5, 'Amy', 'US', 1970),
+(6, 'Wilson', 'US', 1970),
+(7, 'G. Willow', 'US', 1970),
+(8, 'Thomas Piketty', 'US', 1970),
+(9, 'Hansen', 'US', 1970);
 
-
-
-insert into book (id, ISBN, title, subtitle, publisher, publish_year, edition, language, page_number, call_number, number_of_copy, status, created_at, updated_at, created_by, updated_by, img) values
-(1, '0345339681', 'The hobit', 'an expected journey', 'Recorded Books', 1966, 1, 'English', 306, '000.123', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(2, '9780307887436', 'Ready player one', 'a novel', 'Crown Publishers', 2011, 1, 'English', 306, '124.564', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(3, '9780911116304', 'The story of the Acadians', '', 'Gretna [La.] Pelican Pub', 1971, 1, 'English', 32, '299.895', 1, 'LIB_USE_ONLY', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(4, '9780785190219', 'Ms. Marvel', 'no normal', 'Marvel Worldwide', 2014, 1, 'English', 102, '200.986', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(5, '9781491534663', 'Capital', 'in the Twenty-First Century', 'Brilliance Audio', 2014, 1, 'English', 102, '300.999', 3, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg"),
-(6, '9780743256315', 'First Man', 'The Life of Neil A. Armstrong', 'Simon & Schuster', 2005, 1, 'English', 200, '301.574', 2, 'IN_CIRCULATION', now(), now(), 2,2, "https://i.pinimg.com/originals/a4/aa/c1/a4aac1f3d86869bcfd2833e8be768014.jpg");
 
 
 insert into genre (id, name) values
@@ -500,43 +491,6 @@ insert into genre (id, name) values
 (2,'Engineering'),
 (3, 'Economics'),
 (4, 'Science');
-
-insert into book_author (id, book_id, author_id) values
-(1, 1, 1),
-(2, 2, 2),
-(3, 2, 3),
-(4, 3, 4),
-(5, 3, 5),
-(6, 4, 6),
-(7, 4, 7),
-(8, 5, 8),
-(9, 6, 9);
-
-insert into book_genre (id, book_id, genre_id) values 
-(1, 1, 1),
-(2, 2, 1),
-(3, 3, 1),
-(4, 4, 1),
-(5, 5, 3),
-(6, 6, 2),
-(7, 6, 4);
-
-/********/
-
-insert into book_copy (id, barcode, rfid, price, status, created_at, updated_at, created_by, updated_by, book_id, book_copy_type_id) values
-(1, 'I0000001', 'E28068940000400BB95754AE', 23000, 'AVAILABLE', now(), now(), 2,2,1, 1 ),
-(2, 'I0000002', 'E28068940000500BB95748AE', 23000, 'AVAILABLE', now(), now(), 2,2,1, 1 ),
-(3, 'I0000003', 'E28068940000500BB95774AE', 23000, 'AVAILABLE', now(), now(), 2,2,2, 1 ),
-(4, 'I0000004', 'E28068940000400BB95770AE', 23000, 'AVAILABLE', now(), now(), 2,2,2 , 1),
-(5, 'I0000005', 'E28068940000500BB95750AE', 23000, 'LIB_USE_ONLY', now(), now(), 2,2,3, 2 ),
-(6, 'I0000006', 'E28068940000400BB95758AE', 23000, 'AVAILABLE', now(), now(), 2,2,4, 2 ),
-(7, 'I0000007', 'E28068940000500BB9576CAE', 23000, 'AVAILABLE', now(), now(), 2,2,4, 2 ),
-(8, 'I0000008', 'E28068940000400BB9574CAE', 23000, 'AVAILABLE', now(), now(), 2,2,5, 3),
-(9, 'I0000009', 'E28068940000400BB95768AE', 23000, 'AVAILABLE', now(), now(), 2,2,5, 3 ),
-(10, 'I0000010', 'E28068940000400BB95764AE', 23000, 'AVAILABLE', now(), now(), 2,2,5, 3 ),
-(11, 'I0000011', '11', 23000, 'AVAILABLE', now(), now(), 2,2,6, 1 ),
-(12, 'I0000012', '12', 23000, 'AVAILABLE', now(), now(), 2,2,6, 1 );
-
 
 
 /********/
@@ -552,10 +506,9 @@ insert into borrow_policy (	id,
     ) values
 (1, 7, 4, 2, 7,  now(), now(), 1, 1 ),
 (2, 7, 4, 2, 7,  now(), now(), 1, 2 ),
-(3, 7, 4, 2, 7,  now(), now(), 1, 3 ),
-(4, 7, 4, 2, 7,  now(), now(), 2, 1 ),
-(5, 7, 4, 2, 7,  now(), now(), 2, 2 ),
-(6, 7, 4, 2, 7, now(), now(), 2, 3 );
+(3, 7, 4, 2, 7,  now(), now(), 2, 1 ),
+(4, 7, 4, 2, 7,  now(), now(), 2, 2 ),
+(5, 7, 4, 2, 7, now(), now(), 2, 3 );
 
 insert into book_copy_position (id, floor, shelf, from_call_number, book_copy_type_id) values
 (1, 1, 'A1', '000', 1),
@@ -581,14 +534,31 @@ insert into fee_policy (id,
 ) values
 (1, 2000, 100, 30000, 5, now());
 
-/* add trigger*/
-
-use library_rfid;
+/* security*/
 
 create table security_deactivated_copy (
 	rfid varchar(80) not null,
     primary key (rfid)
 );
+
+create table security_gate_log (
+	id int not null auto_increment,
+	logged_at datetime not null default now(),
+	book_copy_id int,
+	primary key (id)
+);
+
+alter table security_gate_log
+	add constraint FK_SCL_bookCopy
+    foreign key (book_copy_id) references book_copy (id)
+	ON DELETE CASCADE ON UPDATE CASCADE; 
+
+
+
+
+
+
+
 
 
 

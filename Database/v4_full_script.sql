@@ -415,6 +415,7 @@ ADD CONSTRAINT UK_copyType_name UNIQUE (name);
 ALTER TABLE book
 ADD CONSTRAINT UK_book_isbn UNIQUE (ISBN);
 
+
 /*insert import */
 
 use library_rfid;
@@ -614,6 +615,10 @@ begin
 	end if;
     
 end $$
+
+use library_rfid;
+
+drop trigger TR_INSERT_BORROWING_BOOK;
 
 
 
