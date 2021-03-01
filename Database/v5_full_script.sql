@@ -1,4 +1,4 @@
-use test;
+use library_rfid;
 
 create table role(
 	id int not null auto_increment,
@@ -50,9 +50,7 @@ create table book_lost_report(
     fine double precision not null,
     
     borrow_id int,
-    lost_by int,
     reported_by int,
-    book_copy_id int,
 	primary key (id)
 );
 
@@ -265,22 +263,12 @@ alter table book_lost_report
 	foreign key (borrow_id) references book_borrowing (id)
     ON DELETE SET NULL ON UPDATE CASCADE; 
     
-
-alter table book_lost_report
-	add constraint FK_lost_account_st
-	foreign key (lost_by) references account (id)
-    ON DELETE SET NULL ON UPDATE CASCADE; 
     
 alter table book_lost_report
 	add constraint FK_lost_account_lib
 	foreign key (reported_by) references account (id)
 	ON DELETE SET NULL ON UPDATE CASCADE; 
 
-
-alter table book_lost_report
-	add constraint FK_lost_copy
-	foreign key (book_copy_id) references book_copy (id)
-	ON DELETE SET NULL ON UPDATE CASCADE; 
     
 alter table book_copy
 	add constraint FK_copy_book
