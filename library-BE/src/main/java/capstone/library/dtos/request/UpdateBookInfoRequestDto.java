@@ -15,15 +15,16 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateBookInfoRequestDto implements Serializable
-{
+public class UpdateBookInfoRequestDto implements Serializable {
     @NotNull(message = "{id.notNull}")
     private int id;
+
+    @NotNull(message = "{isbn.notNull}")
+    private String iSBN;
 
     @Length(min = 1, max = 255, message = "{UpdateBookInfoRequestDto.tile.length}")
     private String title;
 
-    @Length(min = 1, max = 255, message = "{UpdateBookInfoRequestDto.subtitle.length}")
     private String subtitle;
 
     private String callNumber;
