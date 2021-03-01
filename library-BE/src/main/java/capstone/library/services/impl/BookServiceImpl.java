@@ -62,6 +62,7 @@ public class BookServiceImpl implements BookService {
     private static final String DATABASE_ERROR = "Database error";
     private static final String BOOK_NOT_FOUND = "Cannot find this book in the system";
     private static final String UPDATER_NOT_FOUND = "Cannot find this updater account in the system";
+    private static final String CREATOR_NOT_FOUND = "Cannot find this creator account in the system";
     private static final String UPDATE_DISCARD_BOOK_ERROR = "Cannot update DISCARD book";
     private static final String UPDATE_DUPLICATE_BOOK_STATUS_ERROR = "This book is already: ";
 
@@ -304,6 +305,31 @@ public class BookServiceImpl implements BookService {
 
     }
 
+    //Title, subtitle, publisher, language, call number is trimmed and removed of duplicate spaces
+    private void transformCreateBookStringInput(Book book, CreateBookRequestDto request) {
+        if (request.getIsbn() != null && !request.getIsbn().isBlank()) {
+            book.setIsbn(request.getIsbn().trim().replaceAll(" +", " "));
+        }
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            book.setTitle(request.getTitle().trim().replaceAll(" +", " "));
+        }
+        if (request.getSubtitle() != null && !request.getSubtitle().trim().isBlank()) {
+            book.setSubtitle(request.getSubtitle().trim().replaceAll(" +", " "));
+        }
+        if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
+            book.setPublisher(request.getPublisher().trim().replaceAll(" +", " "));
+        }
+        if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
+            book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
+        }
+        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
+            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " "));
+        }
+        if (request.getImg() != null && !request.getImg().isBlank()) {
+            book.setImg(request.getImg().trim().replaceAll(" +", " "));
+        }
+    }
+
     @Override
     @Transactional
     public String addBook(CreateBookRequestDto request) {
@@ -311,6 +337,7 @@ public class BookServiceImpl implements BookService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Page number is 0", "Page number must be more than 0");
         }
         Book book = objectMapper.convertValue(request, Book.class);
+        transformCreateBookStringInput(book, request);
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
@@ -321,7 +348,7 @@ public class BookServiceImpl implements BookService {
         book.setBookAuthors(bookAuthorSet);
         book.setBookGenres(bookGenreSet);
         book.setCreator(accountRepository.findById(request.getCreatorId()).
-                orElseThrow(() -> new ResourceNotFoundException("Account", UPDATER_NOT_FOUND)));
+                orElseThrow(() -> new ResourceNotFoundException("Account", CREATOR_NOT_FOUND)));
         if (request.getImg().isBlank()) {
             book.setImg("img_url");
         } else {
@@ -329,12 +356,7 @@ public class BookServiceImpl implements BookService {
         }
         book.setNumberOfCopy(0);
 
-        try {
-            myBookRepository.save(book);
-        } catch (Exception e) {
-            throw new CustomException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
-        }
+        myBookRepository.save(book);
 
         return SUCCESS_MESSAGE;
     }
