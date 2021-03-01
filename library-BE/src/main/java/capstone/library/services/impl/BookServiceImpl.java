@@ -268,14 +268,17 @@ public class BookServiceImpl implements BookService {
      * I didn't validate on DTO because this request dto can be modified for other use cases,
      * making this API reusable*/
     private void setBasicBookInfo(Book book, UpdateBookInfoRequestDto request) {
-        if (request.getTitle() != null && !request.getTitle().isBlank()) {
-            book.setTitle(request.getTitle());
+        if (request.getISBN() != null && !request.getISBN().isBlank()) {
+            book.setIsbn(request.getISBN().trim().replaceAll(" +", " "));
         }
-        if (request.getSubtitle() != null && !request.getSubtitle().isBlank()) {
-            book.setSubtitle(request.getSubtitle());
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            book.setTitle(request.getTitle().trim().replaceAll(" +", " "));
+        }
+        if (request.getSubtitle() != null && !request.getSubtitle().trim().isBlank()) {
+            book.setSubtitle(request.getSubtitle().trim().replaceAll(" +", " "));
         }
         if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
-            book.setPublisher(request.getPublisher());
+            book.setPublisher(request.getPublisher().trim().replaceAll(" +", " "));
         }
         if (request.getPublishYear() != null && !book.getPublishYear().equals(request.getPublishYear())) {
             book.setPublishYear(request.getPublishYear());
@@ -284,16 +287,16 @@ public class BookServiceImpl implements BookService {
             book.setEdition(request.getEdition());
         }
         if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
-            book.setLanguage(request.getLanguage());
+            book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
         }
         if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0) {
             book.setPageNumber(request.getPageNumber());
         }
         if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            book.setCallNumber(request.getCallNumber());
+            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " "));
         }
         if (request.getImg() != null && !request.getImg().isBlank()) {
-            book.setImg(request.getImg());
+            book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
         if (request.getStatus() != null) {
             updateBookStatus(request.getId(), request.getStatus());

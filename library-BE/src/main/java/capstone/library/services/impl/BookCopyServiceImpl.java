@@ -157,13 +157,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                     throw new InvalidRequestException(BOOK_DISCARD);
                 }
 
-                try {
-                    bookCopyRepository.save(bookCopy);
-                } catch (Exception e) {
-                    throw new CustomException(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
-                }
+                bookCopyRepository.save(bookCopy);
             }
 
         } else {
