@@ -16,6 +16,7 @@ import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.BorrowingService;
 import capstone.library.services.LibrarianService;
+import capstone.library.services.SecurityGateService;
 import capstone.library.util.tools.BookCopyBarcodeUtils;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
@@ -54,6 +55,8 @@ public class LibrarianServiceImpl implements LibrarianService {
     BookCopyBarcodeUtils bookCopyBarcodeUtils;
     @Autowired
     BorrowingService borrowingService;
+    @Autowired
+    SecurityGateService securityGateService;
 
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
@@ -170,6 +173,9 @@ public class LibrarianServiceImpl implements LibrarianService {
                         //Save bookBorrowing to db
                         bookBorrowingRepository.save(bookBorrowing);
 
+                        //Deactivate security alarm for checked out copy
+                        securityGateService.add(new SecurityDeactivatedCopy(bookBorrowing.getBookCopy().getRfid()));
+
                         //Add this book copy as is AbleToBorrow to response List
                         dto.setAbleToBorrow(true);
                         dto.setReason("");
@@ -281,7 +287,7 @@ public class LibrarianServiceImpl implements LibrarianService {
         }
     }
 
-    /*Is for librarians use
+    /*Is for librarians and Admin
      * For returning multiple of book copies borrowed by patrons */
     @Override
     @Transactional
@@ -347,17 +353,15 @@ public class LibrarianServiceImpl implements LibrarianService {
                     }
                 }
                 /*Update borrowing_book table
-                 * Add return date and fine*/
+                 * Add return date and fine
+                 * Reactivate alarm for returned book */
                 if (request.isCheckin()) {
                     bookBorrowing.setReturn_by(librarian);
                     bookBorrowing.setReturnedAt(now);
                     bookBorrowing.setFine(fine);
-                    try {
-                        bookBorrowingRepository.save(bookBorrowing);
-                    } catch (Exception e) {
-                        throw new CustomException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
-                    }
+                    bookBorrowingRepository.save(bookBorrowing);
+                    //reactivate alarm
+                    securityGateService.deleteByRfid(bookBorrowing.getBookCopy().getRfid());
                 }
 
                 /*update copy status based on book status:
@@ -443,9 +447,12 @@ public class LibrarianServiceImpl implements LibrarianService {
         /*Check if patron is borrowing exceeding total allowance*/
         PatronType patronType = getPatronTypeInfo(patron.getPatronType().getId());
         int totalMaxAllowance = patronType.getMaxBorrowNumber();
-        if (request.getBookRfidTags().size() > totalMaxAllowance) {
+        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
+                findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
+        if ((request.getBookRfidTags().size() + borrowingCopies.size()) > totalMaxAllowance) {
             violatePolicy = true;
-            reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance);
+            reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance + ". (This patron is keeping " +
+                    borrowingCopies.size() + " books)");
         }
         /*===============*/
 
@@ -455,9 +462,11 @@ public class LibrarianServiceImpl implements LibrarianService {
         // key = copy type id; value = number of copies
         HashSet<BookCopyType> copyTypeIdHashSet = new HashSet<>();
         List<Integer> copyTypeIdList = new ArrayList<>();
+        List<BookCopy> checkoutCopies = new ArrayList<>();
         for (String rfid : request.getBookRfidTags()) {
             BookCopy bookCopy = getBookCopyInfoByRFID(rfid);
             if (bookCopy.getId() != null) {
+                checkoutCopies.add(bookCopy);
                 copyTypeIdList.add(bookCopy.getBookCopyType().getId());
                 copyTypeIdHashSet.add(bookCopy.getBookCopyType());
             } else {
@@ -479,7 +488,16 @@ public class LibrarianServiceImpl implements LibrarianService {
             } else {
                 if (Collections.frequency(copyTypeIdList, type.getId()) > max) {
                     violatePolicy = true;
-                    reasons.add(POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE + type.getName());
+                    StringBuilder violatingCopies = new StringBuilder();
+                    for (BookCopy bookCopy : checkoutCopies) {
+                        if (bookCopy.getBookCopyType().equals(type)) {
+                            violatingCopies.append("'").append(bookCopy.getBook().getTitle()).append("' ");
+                        }
+                    }
+
+                    reasons.add(POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE + type.getName() +
+                            " (" + Collections.frequency(copyTypeIdList, type.getId()) + "/" + max + "). "
+                            + violatingCopies.toString().trim());
                 }
             }
         }
@@ -500,8 +518,6 @@ public class LibrarianServiceImpl implements LibrarianService {
 
         //Add all BORROWED copy's book's ID to bookIdList (including all duplicates if present)
         //Add the BORROWED copy's book to a HashSet (excluding duplicating books)
-        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
-                findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
         for (BookBorrowing bookBorrowing : borrowingCopies) {
             bookIdList.add(bookBorrowing.getBookCopy().getBook().getId());
             bookHashSet.add(bookBorrowing.getBookCopy().getBook());
@@ -553,7 +569,7 @@ public class LibrarianServiceImpl implements LibrarianService {
             BookCopy bookCopy = bookCopyOptional.get();
             response.setGeneratedBarcodes(bookCopyBarcodeUtils.
                     generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies));
-        }else{
+        } else {
             response.setGeneratedBarcodes(bookCopyBarcodeUtils.
                     generateBookCopyBarcode(copyTypeId, 0, numberOfCopies));
         }
