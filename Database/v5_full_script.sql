@@ -383,6 +383,9 @@ alter table book_copy_position
 ALTER TABLE role
 ADD CONSTRAINT UK_role_name UNIQUE (name);
 
+ALTER TABLE genre
+ADD CONSTRAINT UK_genre_name UNIQUE (name);
+
 ALTER TABLE account
 ADD CONSTRAINT UK_account_email UNIQUE (email);
 
@@ -403,6 +406,7 @@ ADD CONSTRAINT UK_copyType_name UNIQUE (name);
 
 ALTER TABLE book
 ADD CONSTRAINT UK_book_isbn UNIQUE (ISBN);
+
 
 
 /*insert import */

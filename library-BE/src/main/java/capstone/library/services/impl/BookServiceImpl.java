@@ -28,6 +28,8 @@ import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static capstone.library.util.constants.ConstantUtil.CALL_NUMBER_FORMAT_REGEX;
+
 @Service
 public class BookServiceImpl implements BookService {
 
@@ -62,6 +64,8 @@ public class BookServiceImpl implements BookService {
     private static final String DATABASE_ERROR = "Database error";
     private static final String BOOK_NOT_FOUND = "Cannot find this book in the system";
     private static final String UPDATER_NOT_FOUND = "Cannot find this updater account in the system";
+    private static final String CREATOR_NOT_FOUND = "Cannot find this creator account in the system";
+    private static final String CALL_NUMBER_INVALID_ERROR = "This call number is invalid (eg: ###.ABC)";
     private static final String UPDATE_DISCARD_BOOK_ERROR = "Cannot update DISCARD book";
     private static final String UPDATE_DUPLICATE_BOOK_STATUS_ERROR = "This book is already: ";
 
@@ -268,14 +272,17 @@ public class BookServiceImpl implements BookService {
      * I didn't validate on DTO because this request dto can be modified for other use cases,
      * making this API reusable*/
     private void setBasicBookInfo(Book book, UpdateBookInfoRequestDto request) {
-        if (request.getTitle() != null && !request.getTitle().isBlank()) {
-            book.setTitle(request.getTitle());
+        if (request.getISBN() != null && !request.getISBN().isBlank()) {
+            book.setIsbn(request.getISBN().trim().replaceAll(" +", " "));
         }
-        if (request.getSubtitle() != null && !request.getSubtitle().isBlank()) {
-            book.setSubtitle(request.getSubtitle());
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            book.setTitle(request.getTitle().trim().replaceAll(" +", " "));
+        }
+        if (request.getSubtitle() != null && !request.getSubtitle().trim().isBlank()) {
+            book.setSubtitle(request.getSubtitle().trim().replaceAll(" +", " "));
         }
         if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
-            book.setPublisher(request.getPublisher());
+            book.setPublisher(request.getPublisher().trim().replaceAll(" +", " "));
         }
         if (request.getPublishYear() != null && !book.getPublishYear().equals(request.getPublishYear())) {
             book.setPublishYear(request.getPublishYear());
@@ -284,16 +291,19 @@ public class BookServiceImpl implements BookService {
             book.setEdition(request.getEdition());
         }
         if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
-            book.setLanguage(request.getLanguage());
+            book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
         }
         if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0) {
             book.setPageNumber(request.getPageNumber());
         }
         if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            book.setCallNumber(request.getCallNumber());
+            if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
+                throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
+            }
+            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
         }
         if (request.getImg() != null && !request.getImg().isBlank()) {
-            book.setImg(request.getImg());
+            book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
         if (request.getStatus() != null) {
             updateBookStatus(request.getId(), request.getStatus());
@@ -301,13 +311,43 @@ public class BookServiceImpl implements BookService {
 
     }
 
+    //Title, subtitle, publisher, language, call number is trimmed and removed of duplicate spaces
+    private void transformCreateBookStringInput(Book book, CreateBookRequestDto request) {
+        if (request.getIsbn() != null && !request.getIsbn().isBlank()) {
+            book.setIsbn(request.getIsbn().trim().replaceAll(" +", " "));
+        }
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            book.setTitle(request.getTitle().trim().replaceAll(" +", " "));
+        }
+        if (request.getSubtitle() != null && !request.getSubtitle().trim().isBlank()) {
+            book.setSubtitle(request.getSubtitle().trim().replaceAll(" +", " "));
+        }
+        if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
+            book.setPublisher(request.getPublisher().trim().replaceAll(" +", " "));
+        }
+        if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
+            book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
+        }
+        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
+            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
+        }
+        if (request.getImg() != null && !request.getImg().isBlank()) {
+            book.setImg(request.getImg().trim().replaceAll(" +", " "));
+        }
+    }
+
     @Override
     @Transactional
     public String addBook(CreateBookRequestDto request) {
+        //Call number must matches ###.ABCDXYZ
+        if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
+            throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
+        }
         if (request.getPageNumber() == 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Page number is 0", "Page number must be more than 0");
         }
         Book book = objectMapper.convertValue(request, Book.class);
+        transformCreateBookStringInput(book, request);
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
@@ -318,7 +358,7 @@ public class BookServiceImpl implements BookService {
         book.setBookAuthors(bookAuthorSet);
         book.setBookGenres(bookGenreSet);
         book.setCreator(accountRepository.findById(request.getCreatorId()).
-                orElseThrow(() -> new ResourceNotFoundException("Account", UPDATER_NOT_FOUND)));
+                orElseThrow(() -> new ResourceNotFoundException("Account", CREATOR_NOT_FOUND)));
         if (request.getImg().isBlank()) {
             book.setImg("img_url");
         } else {
@@ -326,12 +366,7 @@ public class BookServiceImpl implements BookService {
         }
         book.setNumberOfCopy(0);
 
-        try {
-            myBookRepository.save(book);
-        } catch (Exception e) {
-            throw new CustomException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
-        }
+        myBookRepository.save(book);
 
         return SUCCESS_MESSAGE;
     }
@@ -347,16 +382,11 @@ public class BookServiceImpl implements BookService {
             if (book.getStatus().equals(BookStatus.DISCARD)) {
                 return UPDATE_DISCARD_BOOK_ERROR;
             }
-            /*Update book copies if book status is updated*/
+            /*Update book status if book status is changed*/
             else if (!status.equals(book.getStatus())) {
                 book.setStatus(status);
 
-                try {
-                    myBookRepository.save(book);
-                } catch (Exception e) {
-                    throw new CustomException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, DATABASE_ERROR, e.getLocalizedMessage());
-                }
+                myBookRepository.save(book);
 
                 /*Update book's copies status to match new status
                  * Only update status of copies inside library, borrowed copies will be updated at return.
