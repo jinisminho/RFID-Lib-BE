@@ -16,6 +16,7 @@ import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.BorrowingService;
 import capstone.library.services.LibrarianService;
+import capstone.library.services.SecurityGateService;
 import capstone.library.util.tools.BookCopyBarcodeUtils;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
@@ -54,6 +55,8 @@ public class LibrarianServiceImpl implements LibrarianService {
     BookCopyBarcodeUtils bookCopyBarcodeUtils;
     @Autowired
     BorrowingService borrowingService;
+    @Autowired
+    SecurityGateService securityGateService;
 
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
@@ -170,6 +173,9 @@ public class LibrarianServiceImpl implements LibrarianService {
                         //Save bookBorrowing to db
                         bookBorrowingRepository.save(bookBorrowing);
 
+                        //Deactivate security alarm for checked out copy
+                        securityGateService.add(new SecurityDeactivatedCopy(bookBorrowing.getBookCopy().getRfid()));
+
                         //Add this book copy as is AbleToBorrow to response List
                         dto.setAbleToBorrow(true);
                         dto.setReason("");
@@ -281,7 +287,7 @@ public class LibrarianServiceImpl implements LibrarianService {
         }
     }
 
-    /*Is for librarians use
+    /*Is for librarians and Admin
      * For returning multiple of book copies borrowed by patrons */
     @Override
     @Transactional
@@ -347,17 +353,15 @@ public class LibrarianServiceImpl implements LibrarianService {
                     }
                 }
                 /*Update borrowing_book table
-                 * Add return date and fine*/
+                 * Add return date and fine
+                 * Reactivate alarm for returned book */
                 if (request.isCheckin()) {
                     bookBorrowing.setReturn_by(librarian);
                     bookBorrowing.setReturnedAt(now);
                     bookBorrowing.setFine(fine);
-                    try {
-                        bookBorrowingRepository.save(bookBorrowing);
-                    } catch (Exception e) {
-                        throw new CustomException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
-                    }
+                    bookBorrowingRepository.save(bookBorrowing);
+                    //reactivate alarm
+                    securityGateService.deleteByRfid(bookBorrowing.getBookCopy().getRfid());
                 }
 
                 /*update copy status based on book status:

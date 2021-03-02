@@ -1,7 +1,5 @@
 package capstone.library;
 
-import capstone.library.services.BookCopyPositionService;
-import capstone.library.services.impl.BookCopyPositionServiceImpl;
 import capstone.library.util.tools.PasswordUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +17,7 @@ class LibraryApplicationTests
     void contextLoads()
     {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        System.out.println(encoder.encode("123456"));
+        System.out.println(encoder.encode("4123"));
     }
 
 

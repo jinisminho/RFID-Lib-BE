@@ -72,7 +72,10 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String POLICY_PATRON_TYPE_COPY_TYPE = "This patron cannot borrow this copy";
     private static final String POLICY_BOOK_STATUS = "This book is not in circulation";
     private static final String POLICY_COPY_STATUS = "This copy is not available";
-    private static final String BOOK_DISCARD = "The book of this copy is already discarded";
+    private static final String BOOK_DISCARD_ERROR = "The book of this copy is already discarded";
+    private static final String COPY_DISCARD_ERROR = "This copy is already discarded";
+    private static final String COPY_LOST_ERROR = "This copy is already lost";
+    private static final String COPY_BORROWED_ERROR = "This copy is already borrowed";
     private static final String UPDATE_COPY_LOST_ERROR = "Cannot update Lost copies";
     private static final String UPDATE_COPY_BORROWED_ERROR = "Cannot update borrowed copies";
     private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
@@ -127,6 +130,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         String barcode = request.getBarcode();
         String rfid = request.getRfid();
 
+        /*Get the updater information*/
         Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
         if (updaterOptional.isEmpty()) {
             throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
@@ -134,7 +138,17 @@ public class BookCopyServiceImpl implements BookCopyService {
 
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
         if (bookCopyOptional.isPresent()) {
+            /*Check for book copy status.
+             * Cannot tag or update copy if it is LOST or DISCARD or BORROWED*/
             BookCopy bookCopy = bookCopyOptional.get();
+            if (bookCopy.getStatus().equals(BookCopyStatus.BORROWED)) {
+                throw new InvalidRequestException(COPY_BORROWED_ERROR);
+            } else if (bookCopy.getStatus().equals(BookCopyStatus.LOST)) {
+                throw new InvalidRequestException(COPY_LOST_ERROR);
+            } else if (bookCopy.getStatus().equals(BookCopyStatus.DISCARD)) {
+                throw new InvalidRequestException(COPY_DISCARD_ERROR);
+            }
+
             Optional<Book> bookOptional = myBookRepository.findById(bookCopy.getBook().getId());
             if (bookOptional.isPresent()) {
                 Book book = bookOptional.get();
@@ -146,8 +160,9 @@ public class BookCopyServiceImpl implements BookCopyService {
                     bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
                 } else if (book.getStatus().equals(BookStatus.LIB_USE_ONLY)) {
                     bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
-                } else {
-                    throw new InvalidRequestException(BOOK_DISCARD);
+                } else if (book.getStatus().equals(BookStatus.DISCARD)) {
+                    //In case book copy is "IN_PROCESS" and its book is "DISCARD"
+                    throw new InvalidRequestException(BOOK_DISCARD_ERROR);
                 }
 
                 bookCopyRepository.save(bookCopy);
@@ -415,20 +430,32 @@ public class BookCopyServiceImpl implements BookCopyService {
         /*Update book's copies status to match new status
          * Only update status of copies inside library, borrowed copies will be updated at return.
          * Cannot update discarded or lost copies*/
-        if (!bookCopy.getStatus().equals(BookCopyStatus.BORROWED) &&
-                !bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) &&
-                !bookCopy.getStatus().equals(BookCopyStatus.DISCARD) &&
-                !bookCopy.getStatus().equals(BookCopyStatus.LOST)) {
+        if (!bookStatus.equals(BookStatus.DISCARD) &&
+                bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE) &&
+                bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) &&
+                bookCopy.getStatus().equals(BookCopyStatus.OUT_OF_CIRCULATION)) {
             if (bookStatus.equals(BookStatus.IN_CIRCULATION)) {
                 bookCopy.setStatus(BookCopyStatus.AVAILABLE);
             } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION)) {
                 bookCopy.setStatus(BookCopyStatus.OUT_OF_CIRCULATION);
-            } else if (bookCopy.getBook().getStatus().equals(BookStatus.DISCARD)) {
-                bookCopy.setStatus(BookCopyStatus.DISCARD);
             } else if (bookCopy.getBook().getStatus().equals(BookStatus.LIB_USE_ONLY)) {
                 bookCopy.setStatus(BookCopyStatus.LIB_USE_ONLY);
             }
         }
+
+        /*If book status is changed to "DISCARD"
+        then change all copies whose status is
+        "AVAILABLE" or "LIB_USE_ONLY" or "IN_PROCESS" or "OUT_OF_CIRCULATION" to "DISCARD".
+        Borrowed copies will be updated at return.
+        */
+        if (bookStatus.equals(BookStatus.DISCARD) &&
+                bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) &&
+                bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE) &&
+                bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) &&
+                bookCopy.getStatus().equals(BookCopyStatus.OUT_OF_CIRCULATION)) {
+            bookCopy.setStatus(BookCopyStatus.DISCARD);
+        }
+
         bookCopyRepository.save(bookCopy);
         return UPDATE_SUCCESS;
     }

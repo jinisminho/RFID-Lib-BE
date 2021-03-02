@@ -380,7 +380,7 @@ public class BookServiceImpl implements BookService {
 
             /*Cannot update discarded book*/
             if (book.getStatus().equals(BookStatus.DISCARD)) {
-                return UPDATE_DISCARD_BOOK_ERROR;
+                throw new InvalidRequestException(UPDATE_DISCARD_BOOK_ERROR);
             }
             /*Update book status if book status is changed*/
             else if (!status.equals(book.getStatus())) {
