@@ -443,9 +443,12 @@ public class LibrarianServiceImpl implements LibrarianService {
         /*Check if patron is borrowing exceeding total allowance*/
         PatronType patronType = getPatronTypeInfo(patron.getPatronType().getId());
         int totalMaxAllowance = patronType.getMaxBorrowNumber();
-        if (request.getBookRfidTags().size() > totalMaxAllowance) {
+        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
+                findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
+        if ((request.getBookRfidTags().size() + borrowingCopies.size()) > totalMaxAllowance) {
             violatePolicy = true;
-            reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance);
+            reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance + ". (This patron is keeping " +
+                    borrowingCopies.size() + " books)");
         }
         /*===============*/
 
@@ -455,9 +458,11 @@ public class LibrarianServiceImpl implements LibrarianService {
         // key = copy type id; value = number of copies
         HashSet<BookCopyType> copyTypeIdHashSet = new HashSet<>();
         List<Integer> copyTypeIdList = new ArrayList<>();
+        List<BookCopy> checkoutCopies = new ArrayList<>();
         for (String rfid : request.getBookRfidTags()) {
             BookCopy bookCopy = getBookCopyInfoByRFID(rfid);
             if (bookCopy.getId() != null) {
+                checkoutCopies.add(bookCopy);
                 copyTypeIdList.add(bookCopy.getBookCopyType().getId());
                 copyTypeIdHashSet.add(bookCopy.getBookCopyType());
             } else {
@@ -479,7 +484,16 @@ public class LibrarianServiceImpl implements LibrarianService {
             } else {
                 if (Collections.frequency(copyTypeIdList, type.getId()) > max) {
                     violatePolicy = true;
-                    reasons.add(POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE + type.getName());
+                    StringBuilder violatingCopies = new StringBuilder();
+                    for (BookCopy bookCopy : checkoutCopies) {
+                        if (bookCopy.getBookCopyType().equals(type)) {
+                            violatingCopies.append("'").append(bookCopy.getBook().getTitle()).append("' ");
+                        }
+                    }
+
+                    reasons.add(POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE + type.getName() +
+                            " (" + Collections.frequency(copyTypeIdList, type.getId()) + "/" + max + "). "
+                            + violatingCopies.toString().trim());
                 }
             }
         }
@@ -500,8 +514,6 @@ public class LibrarianServiceImpl implements LibrarianService {
 
         //Add all BORROWED copy's book's ID to bookIdList (including all duplicates if present)
         //Add the BORROWED copy's book to a HashSet (excluding duplicating books)
-        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
-                findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
         for (BookBorrowing bookBorrowing : borrowingCopies) {
             bookIdList.add(bookBorrowing.getBookCopy().getBook().getId());
             bookHashSet.add(bookBorrowing.getBookCopy().getBook());
@@ -553,7 +565,7 @@ public class LibrarianServiceImpl implements LibrarianService {
             BookCopy bookCopy = bookCopyOptional.get();
             response.setGeneratedBarcodes(bookCopyBarcodeUtils.
                     generateBookCopyBarcode(copyTypeId, bookCopy.getId(), numberOfCopies));
-        }else{
+        } else {
             response.setGeneratedBarcodes(bookCopyBarcodeUtils.
                     generateBookCopyBarcode(copyTypeId, 0, numberOfCopies));
         }

@@ -278,7 +278,7 @@ public class BookServiceImpl implements BookService {
         if (request.getTitle() != null && !request.getTitle().isBlank()) {
             book.setTitle(request.getTitle().trim().replaceAll(" +", " "));
         }
-        if (request.getSubtitle() != null && !request.getSubtitle().trim().isBlank()) {
+        if (request.getSubtitle() != null) {
             book.setSubtitle(request.getSubtitle().trim().replaceAll(" +", " "));
         }
         if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
@@ -297,7 +297,7 @@ public class BookServiceImpl implements BookService {
             book.setPageNumber(request.getPageNumber());
         }
         if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
+            if (!request.getCallNumber().trim().matches(CALL_NUMBER_FORMAT_REGEX)) {
                 throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
             }
             book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());

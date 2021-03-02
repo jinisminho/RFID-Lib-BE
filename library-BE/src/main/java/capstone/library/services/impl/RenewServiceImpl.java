@@ -43,7 +43,7 @@ public class RenewServiceImpl implements RenewService {
     private static final String BOOK_BORROWING_NOT_FOUND_ERROR = "Cannot find this book in borrowing list";
     private static final String OVERDUE_PATRON_ERROR = "This patron is keeping overdue books";
     private static final String PATRON_TYPE_COPY_TYPE_ERROR = "This patron type can no longer borrow this book copy type";
-    private static final String EXCEEDS_MAX_RENEW_TIME = "Exceeding renew limit for this copy";
+    private static final String EXCEEDS_MAX_RENEW_TIME = "Exceeding renew limit for this copy type";
     private static final String PATRON_INACTIVE = "This patron is inactive";
 
     /*Validate if able to renew a book copy*/
@@ -84,6 +84,7 @@ public class RenewServiceImpl implements RenewService {
             } else {
 
                 //Warn if renewing more than max_extend_time
+                //Cannot renew if exceeding max_extend_time
                 int currentExtendIndex = bookBorrowing.getExtendIndex();
                 int maxRenewTime = borrowPolicyOptional.orElse(new BorrowPolicy()).getMaxExtendTime();
                 if (currentExtendIndex >= maxRenewTime) {
