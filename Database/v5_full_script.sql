@@ -529,9 +529,11 @@ insert into fee_policy (id,
 /* security*/
 
 create table security_deactivated_copy (
+	id int not null auto_increment,
 	rfid varchar(80) not null,
-    primary key (rfid)
+    primary key (id)
 );
+
 
 create table security_gate_log (
 	id int not null auto_increment,
@@ -545,6 +547,8 @@ alter table security_gate_log
     foreign key (book_copy_id) references book_copy (id)
 	ON DELETE CASCADE ON UPDATE CASCADE; 
 
+ALTER TABLE security_deactivated_copy
+ADD CONSTRAINT UK_SDCopy_rfid UNIQUE (rfid);
 
 
 
