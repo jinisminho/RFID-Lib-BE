@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -249,13 +248,25 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
         PatronType patronType = patronTypeRepo.findById(patron.getPatronType().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot find the policy"));
 
-        if(bookCodeList.size() > patronType.getMaxNumberCopyBorrow()){
-            throw new InvalidPolicyException
-                    ("You're not allowed to borrow more than " + patronType.getMaxNumberCopyBorrow() + " books");
-        }
-
+        //books a patron are borrowing
         List<BookBorrowing> holdingBooks = bookBorrowingRepo
                 .findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patronId);
+
+        int numberOfHoldingAndWantToBorrow = bookCodeList.size() + holdingBooks.size();
+        if(numberOfHoldingAndWantToBorrow > patronType.getMaxNumberCopyBorrow()){
+            throw new InvalidPolicyException
+                    ("[Over Total Limit] Checkout: " + bookCodeList.size()+ "; Holding: " + holdingBooks.size() + "; Total Limit: " +  patronType.getMaxNumberCopyBorrow() + "\n");
+        }
+
+        Map<Integer, Integer> holdingBookMap = new HashMap<>();
+        for(BookBorrowing book: holdingBooks){
+            int bookCopyTypeId = book.getBookCopy().getBookCopyType().getId();
+            int count =  1;
+            if(holdingBookMap.containsKey(bookCopyTypeId)){
+                count = holdingBookMap.get(bookCopyTypeId) + 1;
+            }
+            holdingBookMap.put(bookCopyTypeId, count);
+        }
 
         Map<Integer, BookGroup> bookGroupMap = new HashMap<>();
         for (CheckOutBookRequest book :  bookCodeList){
@@ -271,7 +282,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                     .findFirst()
                     .orElse(null);
             if(tmp != null){
-                msg.set(msg + "You borrowed "  + tmp.getBookCopy().getBook().getTitle() + " and haven't returned yet\n");
+                msg.set(msg + "[Duplicate] Holding: "  + tmp.getBookCopy().getBook().getTitle() + "\n");
             }
         }
 
@@ -282,9 +293,11 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                             .findByPatronTypeIdAndBookCopyTypeId( patron.getPatronType().getId(),k);
                     if(policyOpt.isPresent()){
                         int maxBorrowNumber = policyOpt.get().getMaxNumberCopyBorrow();
-                        if(v.getCount() > maxBorrowNumber){
+                        int holdingBookCount = holdingBookMap.get(k) == null ? 0 : holdingBookMap.get(k);
+                        int holdingAndWillCount = holdingBookCount + v.getCount();
+                        if(holdingAndWillCount > maxBorrowNumber){
                             String tmp = msg.get();
-                            msg.set(tmp + " " + v.getGroup() + ": limit " + maxBorrowNumber + " book(s)\n");
+                            msg.set(tmp + "[Over " + v.getGroup()+ " Limit] Checkout: " + v.getCount() + "; Holding: " + holdingBookCount+ "; Limit: " + maxBorrowNumber + "\n");
                         }
                     }
                 }

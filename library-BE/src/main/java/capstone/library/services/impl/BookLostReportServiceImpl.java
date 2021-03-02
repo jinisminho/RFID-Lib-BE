@@ -78,9 +78,7 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         bookLostReport.setReason(lostBook.getReason());
         bookLostReport.setFine(lostBook.getFine());
         bookLostReport.setBookBorrowing(borrowing);
-        bookLostReport.setBorrower(borrowing.getBorrowing().getBorrower());
         bookLostReport.setLibrarian(auditor);
-        bookLostReport.setBookCopy(borrowing.getBookCopy());
         bookLostReportRepository.save(bookLostReport);
         borrowing.setLostAt(lostAt);
         bookBorrowingRepository.save(borrowing);
@@ -111,7 +109,7 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         dto.setBorrowedAt(entity.getBookBorrowing().getBorrowing().getBorrowedAt());
         dto.setFine(entity.getFine());
         dto.setReason(entity.getReason());
-        dto.setBorrowerEmail(entity.getBorrower().getEmail());
+        dto.setBorrowerEmail(entity.getBookBorrowing().getBorrowing().getBorrower().getEmail());
         dto.setBarcode(entity.getBookBorrowing().getBookCopy().getBarcode());
         dto.setTitle(entity.getBookBorrowing().getBookCopy().getBook().getTitle());
         dto.setSubtitle(entity.getBookBorrowing().getBookCopy().getBook().getSubtitle());

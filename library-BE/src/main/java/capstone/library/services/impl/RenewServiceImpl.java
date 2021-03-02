@@ -88,6 +88,7 @@ public class RenewServiceImpl implements RenewService {
                 int maxRenewTime = borrowPolicyOptional.orElse(new BorrowPolicy()).getMaxExtendTime();
                 if (currentExtendIndex >= maxRenewTime) {
                     violatePolicy = true;
+                    ableToRenew = false;
                     reasons.add(EXCEEDS_MAX_RENEW_TIME + " (" + currentExtendIndex + "/" + maxRenewTime + ")");
                 }
             }

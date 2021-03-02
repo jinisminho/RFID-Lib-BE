@@ -25,7 +25,7 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
     @Query(
             value = "select *\n" +
                     "from  library_rfid.book_borrowing \n" +
-                    "where book_copy_id = :book_copy_id and returned_at is null",
+                    "where book_copy_id = :book_copy_id and returned_at is null and lost_at is null",
             nativeQuery = true
     )
     Optional<BookBorrowing> findBorrowedTransactionByBookCopyId(@Param("book_copy_id") int bookCopyId);
