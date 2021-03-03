@@ -113,6 +113,16 @@ public class ApplicationExceptionHandler {
             errorDto.setMessage("Book copy's rfid must be unique");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_SDCopy_rfid")) {
+            errorDto.setMessage("The rfid in security gate table is duplicated");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ErrorDto(LocalDateTime.now().toString(),
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                            exception.getMessage())
+            );
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }
 

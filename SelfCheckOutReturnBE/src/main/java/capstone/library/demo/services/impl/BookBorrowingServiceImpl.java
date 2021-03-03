@@ -13,6 +13,7 @@ import capstone.library.demo.exceptions.MissingInputException;
 import capstone.library.demo.exceptions.ResourceNotFoundException;
 import capstone.library.demo.repositories.*;
 import capstone.library.demo.services.BookBorrowingService;
+import capstone.library.demo.services.SecurityGateService;
 import capstone.library.demo.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
 
     @Autowired
     BorrowingRepository borrowingRepo;
+
+    @Autowired
+    SecurityGateService securityGateService;
 
     @Override
     @Transactional
@@ -106,6 +110,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                     borrowingDetail.setNote("");
                     borrowingDetail.setBorrowing(borrowing);
                     bookBorrowingRepo.save(borrowingDetail);
+                    //add to security tbl
+                    securityGateService.add(new SecurityDeactivatedCopy(book.getRfid()));
                 }else{
                     dto.setAbleToBorrow(false);
                     dto.setDueDate("");
@@ -180,6 +186,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 bookBorrowing.setReturnedAt(curDateTime);
                 dto.setReturnedAt(DateTimeUtil.convertDateTimeToString(curDateTime));
                 dto.setStatus(BookReturnStatus.RETURNED);
+                //delete from security gate table
+                securityGateService.deleteByRfid(rfidCode);
             }
         }
         return dto;
