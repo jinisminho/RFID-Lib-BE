@@ -221,7 +221,7 @@ public class MailServiceImpl implements MailService {
         try {
             sendHtmlMessage(patron.getEmail(), WISHLIST_EMAIL_SUBJECT, htmlBody);
             return true;
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             logger.error("Cannot send return email for patron: " + patron.getEmail());
             return false;
         }
