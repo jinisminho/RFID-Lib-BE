@@ -15,7 +15,7 @@ import javax.persistence.*;
 public class SecurityDeactivatedCopy {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    private Integer id;
 
     @Column(name = "rfid", length = 80)
     private String rfid;
