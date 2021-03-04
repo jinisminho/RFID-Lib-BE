@@ -56,6 +56,17 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ResponseBody
+    @ExceptionHandler(value = ChangePasswordException.class)
+    public ResponseEntity<ErrorDto> handleException(ChangePasswordException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.INVALID_DATA_FIELD.getCode(),
+                ErrorStatus.INVALID_DATA_FIELD.getReason(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     /*
      * Is thrown when an invalid request is received
      *   eg: request to deactivate an already inactive account
@@ -155,6 +166,16 @@ public class ApplicationExceptionHandler {
                 && exception.getRootCause().getMessage().contains("UK_bookCopy_rfid")) {
             errorDto.setMessage("Book copy's rfid must be unique");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_SDCopy_rfid")) {
+            errorDto.setMessage("The rfid in security gate table is duplicated");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ErrorDto(LocalDateTime.now().toString(),
+                            ErrorStatus.SYSTEM_ERROR.getCode(),
+                            ErrorStatus.SYSTEM_ERROR.getReason(),
+                            exception.getMessage())
+            );
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
     }

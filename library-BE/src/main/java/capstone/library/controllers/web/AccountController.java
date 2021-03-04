@@ -1,9 +1,6 @@
 package capstone.library.controllers.web;
 
-import capstone.library.dtos.request.CreateLibrarianRequest;
-import capstone.library.dtos.request.CreatePatronRequest;
-import capstone.library.dtos.request.UpdateLibrarianRequest;
-import capstone.library.dtos.request.UpdatePatronRequest;
+import capstone.library.dtos.request.*;
 import capstone.library.dtos.response.LibrarianAccountResponse;
 import capstone.library.dtos.response.PatronAccountResponse;
 import capstone.library.services.AccountService;
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.ManyToOne;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 
@@ -79,5 +77,12 @@ public class AccountController {
     @PostMapping("/librarian/update")
     public String updateLibrarianAccount(@RequestBody @Valid UpdateLibrarianRequest request){
        return accountService.updateLibrarianAccount(request);
+    }
+
+    @PostMapping("/password/change")
+    public String changePassword (@RequestBody @Valid @NotNull ChangePasswordRequest request){
+        return accountService.changePassword(request.getAccountId(),
+                request.getCurrentPassword(),
+                request.getNewPassword());
     }
 }
