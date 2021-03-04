@@ -11,6 +11,7 @@ import capstone.library.entities.PatronType;
 import capstone.library.entities.Profile;
 import capstone.library.entities.Role;
 import capstone.library.enums.RoleIdEnum;
+import capstone.library.exceptions.ChangePasswordException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
@@ -252,6 +253,23 @@ public class AccountServiceImpl  implements AccountService {
         editingPatron.getProfile().setGender(request.getGender());
         accountRepo.save(editingPatron);
 
+        return UPDATE_SUCCESS;
+    }
+
+    @Override
+    public String changePassword(int accountId, String oldPass, String newPass) {
+        if(oldPass == null || newPass == null){
+            throw new MissingInputException("missing oldPass or newPass");
+        }
+        Account account = findAccountById(accountId);
+        if(!encoder.matches(oldPass, account.getPassword())){
+            throw new ChangePasswordException("Your current password is wrong");
+        }
+        if(oldPass.equals(newPass)){
+            throw new ChangePasswordException("The new password you entered is the same as your old password");
+        }
+        account.setPassword(encoder.encode(newPass));
+        accountRepo.save(account);
         return UPDATE_SUCCESS;
     }
 
