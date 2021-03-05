@@ -1,6 +1,8 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.PatronTypeDto;
+import capstone.library.dtos.request.AddPatronTypeReqDto;
+import capstone.library.dtos.request.PatronTypeReqDto;
 import capstone.library.dtos.request.UpdatePatronTypePolicyRequest;
 import capstone.library.entities.PatronType;
 import capstone.library.exceptions.ResourceNotFoundException;
@@ -39,9 +41,9 @@ public class PatronTypeServiceImpl implements PatronTypeService {
     @Override
     public Page<PatronTypeDto> getPatronType(Pageable pageable, String name) {
         Page<PatronType> rs;
-        if(name != null){
-            rs= patronTypeRepo.findByNameContains(pageable, name);
-        }else{
+        if (name != null) {
+            rs = patronTypeRepo.findByNameContains(pageable, name);
+        } else {
             rs = patronTypeRepo.findAll(pageable);
         }
 
@@ -56,10 +58,65 @@ public class PatronTypeServiceImpl implements PatronTypeService {
         return UPDATE_SUCCESS;
     }
 
-    private PatronType findPatronTypeById(int id){
+    private PatronType findPatronTypeById(int id) {
         return patronTypeRepo
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron Type"
-                ,"Cannot find patron type with id: " + id));
+                        , "Cannot find patron type with id: " + id));
+    }
+
+    //
+    @Override
+    public boolean addPatronType(AddPatronTypeReqDto req) {
+        boolean isAdded = false;
+
+        PatronType patronType = new PatronType();
+
+        if (req.getName() != null && !req.getName().isEmpty()) {
+            patronType.setName(req.getName());
+            isAdded = true;
+        }
+        if (req.getMaxBorrowNumber() != null) {
+            patronType.setMaxBorrowNumber(req.getMaxBorrowNumber());
+            isAdded = true;
+        }
+
+        patronTypeRepo.save(patronType);
+
+        return isAdded;
+    }
+
+    //
+    @Override
+    public boolean updatePatronType(Integer id, PatronTypeReqDto req) {
+        boolean isUpdated = false;
+
+        PatronType patronType = patronTypeRepo
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patron Type"
+                        , "Cannot find patron type with id: " + id));
+
+        if (req.getName() != null && !req.getName().isEmpty()) {
+            patronType.setName(req.getName());
+            isUpdated = true;
+        }
+        if (req.getMaxBorrowNumber() != null) {
+            patronType.setMaxBorrowNumber(req.getMaxBorrowNumber());
+            isUpdated = true;
+        }
+
+        patronTypeRepo.save(patronType);
+
+        return isUpdated;
+    }
+
+    //
+    @Override
+    public boolean deletePatronType(Integer id) {
+        PatronType patronType = patronTypeRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patron Type",
+                        "Cannot find patron type with id: " + id));
+        patronTypeRepo.delete(patronType);
+        return true;
     }
 }
