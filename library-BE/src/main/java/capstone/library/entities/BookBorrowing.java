@@ -54,7 +54,7 @@ public class BookBorrowing {
     private BookCopy bookCopy;
 
     @Column(name = "fine")
-    private Double fine;
+    private Double fine = 0.0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fee_policy_id")
