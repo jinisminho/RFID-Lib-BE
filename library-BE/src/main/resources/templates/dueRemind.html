@@ -8,14 +8,14 @@
 
 <p> Please return book:
     <span th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></span>
-    on <span th:text="${dueDate}"></span>.
+    before <span th:text="${dueDate}"></span>.
 </p>
 <p>
     You can return book at: book drop station, self return kiosk, or librarian counter.
 </p>
 <p>
     If return is made after the due day, you have to pay overdue fine <span th:text="${fineRate}"></span>
-    VND/a copy/ a overdue day (Saturday and Sunday will not be count).
+    VND per day for each copies.
 </p>
 <br/>
 <p th:text="#{regards}"></p>
