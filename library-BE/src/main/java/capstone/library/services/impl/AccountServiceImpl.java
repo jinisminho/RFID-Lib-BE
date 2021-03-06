@@ -11,11 +11,13 @@ import capstone.library.entities.PatronType;
 import capstone.library.entities.Profile;
 import capstone.library.entities.Role;
 import capstone.library.enums.RoleIdEnum;
+import capstone.library.exceptions.ChangePasswordException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.PatronTypeRepository;
 import capstone.library.repositories.RoleRepository;
+import capstone.library.security.JwtTokenProvider;
 import capstone.library.services.AccountService;
 import capstone.library.services.MailService;
 import capstone.library.util.tools.PasswordUtil;
@@ -23,6 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +57,13 @@ public class AccountServiceImpl  implements AccountService {
 
     @Autowired
     MailService mailService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
 
 
     @Override
@@ -253,6 +266,33 @@ public class AccountServiceImpl  implements AccountService {
         accountRepo.save(editingPatron);
 
         return UPDATE_SUCCESS;
+    }
+
+    @Override
+    @Transactional
+    public String changePassword(int accountId, String oldPass, String newPass) {
+        if(oldPass == null || newPass == null){
+            throw new MissingInputException("missing oldPass or newPass");
+        }
+        Account account = findAccountById(accountId);
+        if(!encoder.matches(oldPass, account.getPassword())){
+            throw new ChangePasswordException("Your current password is wrong");
+        }
+        if(oldPass.equals(newPass)){
+            throw new ChangePasswordException("The new password you entered is the same as your old password");
+        }
+        account.setPassword(encoder.encode(newPass));
+        accountRepo.save(account);
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        account.getEmail(),
+                        newPass
+                )
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = tokenProvider.generateToken(authentication);
+        return jwt;
     }
 
     private Account findAccountById(int id){

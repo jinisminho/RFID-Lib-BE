@@ -34,4 +34,6 @@ public interface AccountService {
 
     String updateLibrarianAccount(UpdateLibrarianRequest request);
 
+    String changePassword(int accountId, String oldPass, String newPass);
+
 }
