@@ -59,12 +59,12 @@ public class ApplicationExceptionHandler {
 
     /* For invalid jwt */
     @ResponseBody
-    @ExceptionHandler(value = UnauthenticatedException.class)
-    public ResponseEntity<ErrorDto> handleException(UnauthenticatedException exception) {
+    @ExceptionHandler(value = InvalidTokenException.class)
+    public ResponseEntity<ErrorDto> handleException(InvalidTokenException exception) {
         logger.error(exception);
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                ErrorStatus.UNAUTHENTICATED.getCode(),
-                ErrorStatus.UNAUTHENTICATED.getReason(),
+                ErrorStatus.INVALID_TOKEN.getCode(),
+                ErrorStatus.INVALID_TOKEN.getReason(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -125,8 +125,8 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorDto> handleException(DisabledException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.UNAUTHORIZED.value(),
-                ConstantUtil.EXCEPTION_DISABLE_USER,
+                ErrorStatus.UNAUTHENTICATED.getCode(),
+                ErrorStatus.UNAUTHENTICATED.getReason(),
                 "The user is disable");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -136,8 +136,8 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorDto> handleException(BadCredentialsException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.UNAUTHORIZED.value(),
-                ConstantUtil.EXCEPTION_BAD_CREDENTIAL,
+                ErrorStatus.UNAUTHENTICATED.getCode(),
+                ErrorStatus.UNAUTHENTICATED.getReason(),
                 "Invalid username or password");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

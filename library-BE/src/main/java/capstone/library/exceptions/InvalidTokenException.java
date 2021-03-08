@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UnauthenticatedException extends RuntimeException {
+public class InvalidTokenException extends RuntimeException {
     private String message;
 }
