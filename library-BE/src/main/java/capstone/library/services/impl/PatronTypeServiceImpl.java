@@ -4,8 +4,11 @@ import capstone.library.dtos.common.PatronTypeDto;
 import capstone.library.dtos.request.AddPatronTypeReqDto;
 import capstone.library.dtos.request.PatronTypeReqDto;
 import capstone.library.dtos.request.UpdatePatronTypePolicyRequest;
+import capstone.library.entities.Account;
 import capstone.library.entities.PatronType;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.PatronTypeRepository;
 import capstone.library.services.PatronTypeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -25,6 +29,8 @@ public class PatronTypeServiceImpl implements PatronTypeService {
 
     @Autowired
     PatronTypeRepository patronTypeRepo;
+    @Autowired
+    private AccountRepository accountRepo;
 
     @Autowired
     ObjectMapper mapper;
@@ -116,6 +122,8 @@ public class PatronTypeServiceImpl implements PatronTypeService {
         PatronType patronType = patronTypeRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patron Type",
                         "Cannot find patron type with id: " + id));
+        Optional<Account> accountOpt = accountRepo.getTopByPatronType_Id(id);
+        if (accountOpt.isPresent()) throw new InvalidRequestException("There is account using this patron type");
         patronTypeRepo.delete(patronType);
         return true;
     }

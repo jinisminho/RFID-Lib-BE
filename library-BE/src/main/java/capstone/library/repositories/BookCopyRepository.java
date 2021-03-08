@@ -30,4 +30,6 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Integer> {
     Page<BookCopy> findAllByStatusIn(List<BookCopyStatus> status, Pageable pageable);
 
     List<BookCopy> findBookCopyByBookId(int id);
+
+    Optional<BookCopy> getTopByBookCopyType_Id(int id);
 }

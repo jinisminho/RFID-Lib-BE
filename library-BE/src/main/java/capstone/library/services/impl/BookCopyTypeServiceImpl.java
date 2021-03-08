@@ -4,8 +4,11 @@ import capstone.library.dtos.common.BookCopyTypeDto;
 import capstone.library.dtos.request.AddBookCopyTypeReqDto;
 import capstone.library.dtos.request.BookCopyTypeReqDto;
 import capstone.library.dtos.response.BookCopyTypeResponseDto;
+import capstone.library.entities.BookCopy;
 import capstone.library.entities.BookCopyType;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.BookCopyTypeRepository;
 import capstone.library.services.BookCopyTypeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,12 +19,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class BookCopyTypeServiceImpl implements BookCopyTypeService {
     @Autowired
     BookCopyTypeRepository bookCopyTypeRepository;
+    @Autowired
+    BookCopyRepository bookCopyRepository;
     @Autowired
     ObjectMapper objectMapper;
 
@@ -86,6 +92,8 @@ public class BookCopyTypeServiceImpl implements BookCopyTypeService {
         BookCopyType bookCopyType = bookCopyTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BookCopy Type",
                         "Cannot find BookCopy type with id: " + id));
+        Optional<BookCopy> bookCopyOpt = bookCopyRepository.getTopByBookCopyType_Id(id);
+        if (bookCopyOpt.isPresent()) throw new InvalidRequestException("There is book copy using this book copy type.");
         bookCopyTypeRepository.delete(bookCopyType);
         return true;
     }
