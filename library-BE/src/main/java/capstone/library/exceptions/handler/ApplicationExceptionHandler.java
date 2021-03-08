@@ -45,13 +45,26 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    /* For forbidden exception*/
     @ResponseBody
     @ExceptionHandler(value = AccessDeniedException.class)
     public ResponseEntity<ErrorDto> handleException(AccessDeniedException exception) {
-        logger.error(exception.getMessage());
+        logger.error(exception);
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 ErrorStatus.ACCESS_DENIED.getCode(),
                 ErrorStatus.ACCESS_DENIED.getReason(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /* For invalid jwt */
+    @ResponseBody
+    @ExceptionHandler(value = InvalidTokenException.class)
+    public ResponseEntity<ErrorDto> handleException(InvalidTokenException exception) {
+        logger.error(exception);
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.INVALID_TOKEN.getCode(),
+                ErrorStatus.INVALID_TOKEN.getReason(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -112,8 +125,8 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorDto> handleException(DisabledException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.UNAUTHORIZED.value(),
-                ConstantUtil.EXCEPTION_DISABLE_USER,
+                ErrorStatus.UNAUTHENTICATED.getCode(),
+                ErrorStatus.UNAUTHENTICATED.getReason(),
                 "The user is disable");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -123,8 +136,8 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorDto> handleException(BadCredentialsException exception) {
         logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
-                HttpStatus.UNAUTHORIZED.value(),
-                ConstantUtil.EXCEPTION_BAD_CREDENTIAL,
+                ErrorStatus.UNAUTHENTICATED.getCode(),
+                ErrorStatus.UNAUTHENTICATED.getReason(),
                 "Invalid username or password");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

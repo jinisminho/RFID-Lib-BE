@@ -23,14 +23,14 @@ public class MailController {
     @Autowired
     MailService mailService;
 
-    //@Secured({LIBRARIAN, ADMIN})
+    @Secured({LIBRARIAN, ADMIN})
     @PostMapping("/checkout")
     void sendCheckoutEmail (@RequestParam(name = "patronEmail")String patronEmail,
                             @RequestBody @Valid CheckoutResponseDto request){
         mailService.sendCheckoutMail(patronEmail, request);
     }
 
-    //@Secured({LIBRARIAN, ADMIN})
+    @Secured({LIBRARIAN, ADMIN})
     @PostMapping("/return")
     void sendReturnEmail (@RequestBody @Valid ReturnBooksResponse books){
         mailService.sendReturnMail(books.getReturnedBooks());
