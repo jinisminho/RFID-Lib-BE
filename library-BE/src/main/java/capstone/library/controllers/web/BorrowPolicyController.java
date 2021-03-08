@@ -7,9 +7,12 @@ import capstone.library.services.BorrowPolicyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
+import static capstone.library.util.constants.SecurityConstant.*;
 
 @RestController
 @RequestMapping("/borrowPolicy")
@@ -20,7 +23,7 @@ public class BorrowPolicyController {
     BorrowPolicyService borrowPolicyService;
 
 
-    //@Secured(ADMIN)
+    @Secured({LIBRARIAN, ADMIN, PATRON})
     @GetMapping("/get")
     public Page<BorrowPolicyResponse> getBorrowPolicies(Pageable pageable,
                                                         @RequestParam(required = false, name = "patronTypeId") Integer patronTypeId,
@@ -28,19 +31,19 @@ public class BorrowPolicyController {
         return borrowPolicyService.getBorrowPolicies(pageable, patronTypeId, bookCopyTypeId);
     }
 
-    //@Secured(ADMIN)
+    @Secured({ADMIN})
     @PostMapping("/add")
     public BorrowPolicyResponse addBorrowPolicy (@RequestBody @Valid CreateBorrowPolicyRequest request){
         return borrowPolicyService.addBorrowPolicy(request);
     }
 
-    //@Secured(ADMIN)
+    @Secured({ADMIN})
     @PostMapping("/update")
     public BorrowPolicyResponse updateBorrowPolicy (@RequestBody @Valid UpdateBorrowPolicyRequest request){
         return borrowPolicyService.updateBorrowPolicy(request);
     }
 
-    //@Secured(ADMIN)
+    @Secured({ADMIN})
     @PostMapping("/delete")
     public String deleteBorrowPolicy(@RequestParam(name = "id") int id){
         return borrowPolicyService.deleteBorrowPolicy(id);

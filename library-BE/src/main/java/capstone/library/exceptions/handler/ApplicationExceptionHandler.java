@@ -45,13 +45,26 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    /* For forbidden exception*/
     @ResponseBody
     @ExceptionHandler(value = AccessDeniedException.class)
     public ResponseEntity<ErrorDto> handleException(AccessDeniedException exception) {
-        logger.error(exception.getMessage());
+        logger.error(exception);
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 ErrorStatus.ACCESS_DENIED.getCode(),
                 ErrorStatus.ACCESS_DENIED.getReason(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /* For invalid jwt */
+    @ResponseBody
+    @ExceptionHandler(value = UnauthenticatedException.class)
+    public ResponseEntity<ErrorDto> handleException(UnauthenticatedException exception) {
+        logger.error(exception);
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.UNAUTHENTICATED.getCode(),
+                ErrorStatus.UNAUTHENTICATED.getReason(),
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

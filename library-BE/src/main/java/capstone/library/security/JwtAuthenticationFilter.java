@@ -1,5 +1,6 @@
 package capstone.library.security;
 
+import capstone.library.exceptions.UnauthenticatedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }else{
-                throw new AccessDeniedException("Your access is denied.");
+                throw new UnauthenticatedException("Unauthenticated");
             }
         } catch (Exception ex) {
             LOGGER.error("Could not set user authentication in security context", ex);

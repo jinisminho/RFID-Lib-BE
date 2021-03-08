@@ -10,6 +10,8 @@ public enum ErrorStatus
     DATABASE_INTEGRITY_VIOLATION(424, "Violate Database Constraints"),
     COMMON_DATABSE_ERROR(500, "Could not insert into database"),
     ACCESS_DENIED (403, "Access is denied"),
+    UNAUTHENTICATED (401, "Unauthenticated"),
+
 
     //Business
     BORROWING_POLICY_VIOLATION(450, "Violate Book Borrow Policy");
