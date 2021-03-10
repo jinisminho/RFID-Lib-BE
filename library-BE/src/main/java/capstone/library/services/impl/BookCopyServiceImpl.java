@@ -16,14 +16,23 @@ import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.InvalidRequestException;
+import capstone.library.exceptions.PrintBarcodeException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.Barcode128;
+import com.itextpdf.text.pdf.Barcode39;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.DottedLineSeparator;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +40,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -83,7 +98,7 @@ public class BookCopyServiceImpl implements BookCopyService {
 
     @Override
     @Transactional
-    public String createCopies(CreateCopiesRequestDto request) {
+    public Resource createCopies(CreateCopiesRequestDto request) {
         Book book;
         BookCopyType bookCopyType;
         Account creator;
@@ -104,7 +119,16 @@ public class BookCopyServiceImpl implements BookCopyService {
 
         insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
         updateBookNumberOfCopy(book);
-        return "Success";
+
+        //Tram added to send pdf back
+        File pdfFile = printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
+        InputStreamResource resource;
+        try {
+            resource = new InputStreamResource(new FileInputStream(pdfFile.getPath()));
+        } catch (FileNotFoundException e) {
+            throw new PrintBarcodeException("Cannot download the barcode file");
+        }
+        return resource;
     }
 
     @Override
@@ -458,5 +482,38 @@ public class BookCopyServiceImpl implements BookCopyService {
 
         bookCopyRepository.save(bookCopy);
         return UPDATE_SUCCESS;
+    }
+
+    /**
+     * print new copies' barcode to pdf with printer's label format
+     *
+     * @return pdf location
+     */
+    private File printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
+        String pdfFilename = book.getIsbn() + "-" + bookCopyType.getName() + "-" + price;
+        Document document = new Document(new Rectangle(185, 50));
+        document.setMargins(10, 10, 10, 10);
+        PdfWriter writer = null;
+        File pdf = null;
+        try {
+            pdf = new File(pdfFilename+".pdf");
+            writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFilename));
+            document.open();
+            PdfContentByte cb = writer.getDirectContent();
+            for (String bar : barcodes) {
+                Barcode39 code39 = new Barcode39();
+                code39.setCode(bar.trim());
+                code39.setCodeType(Barcode39.CODABAR);
+                Image code39Image = code39.createImageWithBarcode(cb, null, null);
+                code39Image.scalePercent(100);
+                document.add(code39Image);
+                //document.add(new Paragraph("    "));
+            }
+        } catch (DocumentException | FileNotFoundException e) {
+            throw new PrintBarcodeException(e.getMessage());
+        } finally {
+            document.close();
+        }
+        return pdf;
     }
 }
