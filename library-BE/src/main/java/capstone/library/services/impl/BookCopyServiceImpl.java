@@ -96,6 +96,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
+    public static final String PDF_LOCATION = "src/main/java/capstone/library/files/";
     @Override
     @Transactional
     public Resource createCopies(CreateCopiesRequestDto request) {
@@ -121,12 +122,12 @@ public class BookCopyServiceImpl implements BookCopyService {
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
-        File pdfFile = printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
+        String pdfPath = printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
         InputStreamResource resource;
         try {
-            resource = new InputStreamResource(new FileInputStream(pdfFile.getPath()));
+            resource = new InputStreamResource(new FileInputStream(pdfPath));
         } catch (FileNotFoundException e) {
-            throw new PrintBarcodeException("Cannot download the barcode file");
+            throw new PrintBarcodeException(e.getMessage());
         }
         return resource;
     }
@@ -489,15 +490,16 @@ public class BookCopyServiceImpl implements BookCopyService {
      *
      * @return pdf location
      */
-    private File printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
+    private String printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
         String pdfFilename = book.getIsbn() + "-" + bookCopyType.getName() + "-" + price;
+        String pdfPath = PDF_LOCATION + "/" + pdfFilename + ".pdf";
         Document document = new Document(new Rectangle(185, 50));
         document.setMargins(10, 10, 10, 10);
         PdfWriter writer = null;
         File pdf = null;
         try {
-            pdf = new File(pdfFilename+".pdf");
-            writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFilename));
+            pdf = new File(pdfPath);
+            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf));
             document.open();
             PdfContentByte cb = writer.getDirectContent();
             for (String bar : barcodes) {
@@ -514,6 +516,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         } finally {
             document.close();
         }
-        return pdf;
+        return pdfPath;
     }
 }
