@@ -8,10 +8,14 @@ import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.ApiPageable;
+import capstone.library.util.tools.BarcodePrinter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -75,4 +79,10 @@ public class BookCopyController {
         return bookCopyService.getCopyById(id);
     }
 
+    @GetMapping(value = "/barbecue/ean13/{barcode}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<String> barbecueEAN13Barcode(@PathVariable("barcode") String barcode)
+            throws Exception {
+        BarcodePrinter.createImage(barcode);
+        return new ResponseEntity<>( "OK",HttpStatus.OK);
+    }
 }

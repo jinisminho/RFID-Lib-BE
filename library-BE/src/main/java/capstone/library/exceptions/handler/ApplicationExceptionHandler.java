@@ -261,4 +261,15 @@ public class ApplicationExceptionHandler {
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ResponseBody
+    @ExceptionHandler(value = PrintBarcodeException.class)
+    public ResponseEntity<ErrorDto> handleException(PrintBarcodeException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.SYSTEM_ERROR.getCode(),
+                ErrorStatus.SYSTEM_ERROR.getReason(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

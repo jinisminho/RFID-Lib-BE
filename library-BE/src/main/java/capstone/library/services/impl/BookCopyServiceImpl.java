@@ -430,10 +430,10 @@ public class BookCopyServiceImpl implements BookCopyService {
         /*Update book's copies status to match new status
          * Only update status of copies inside library, borrowed copies will be updated at return.
          * Cannot update discarded or lost copies*/
-        if (!bookStatus.equals(BookStatus.DISCARD) &&
-                bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE) &&
-                bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) &&
-                bookCopy.getStatus().equals(BookCopyStatus.OUT_OF_CIRCULATION)) {
+        if (!bookStatus.equals(BookStatus.DISCARD) && (
+                bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE) ||
+                        bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) ||
+                        bookCopy.getStatus().equals(BookCopyStatus.OUT_OF_CIRCULATION))) {
             if (bookStatus.equals(BookStatus.IN_CIRCULATION)) {
                 bookCopy.setStatus(BookCopyStatus.AVAILABLE);
             } else if (bookCopy.getBook().getStatus().equals(BookStatus.OUT_OF_CIRCULATION)) {
@@ -448,11 +448,11 @@ public class BookCopyServiceImpl implements BookCopyService {
         "AVAILABLE" or "LIB_USE_ONLY" or "IN_PROCESS" or "OUT_OF_CIRCULATION" to "DISCARD".
         Borrowed copies will be updated at return.
         */
-        if (bookStatus.equals(BookStatus.DISCARD) &&
-                bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) &&
-                bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE) &&
-                bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) &&
-                bookCopy.getStatus().equals(BookCopyStatus.OUT_OF_CIRCULATION)) {
+        if (bookStatus.equals(BookStatus.DISCARD) && (
+                bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) ||
+                        bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE) ||
+                        bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) ||
+                        bookCopy.getStatus().equals(BookCopyStatus.OUT_OF_CIRCULATION))) {
             bookCopy.setStatus(BookCopyStatus.DISCARD);
         }
 
