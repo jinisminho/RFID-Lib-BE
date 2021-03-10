@@ -6,13 +6,17 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.exceptions.PrintBarcodeException;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.ApiPageable;
 import capstone.library.util.tools.BarcodePrinter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +26,8 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 @RestController
@@ -31,8 +37,12 @@ public class BookCopyController {
     BookCopyService bookCopyService;
 
     @PostMapping("/add")
-    public String addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
-        return bookCopyService.createCopies(request);
+    public ResponseEntity<Resource> addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
+        Resource resource = bookCopyService.createCopies(request);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 
     @GetMapping("/list")
@@ -79,10 +89,5 @@ public class BookCopyController {
         return bookCopyService.getCopyById(id);
     }
 
-    @GetMapping(value = "/barbecue/ean13/{barcode}", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<String> barbecueEAN13Barcode(@PathVariable("barcode") String barcode)
-            throws Exception {
-        BarcodePrinter.createImage(barcode);
-        return new ResponseEntity<>( "OK",HttpStatus.OK);
-    }
+
 }
