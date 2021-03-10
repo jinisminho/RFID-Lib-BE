@@ -29,6 +29,12 @@ public class Author
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
+    @Column(name = "country", length = 50, nullable = false)
+    private String country;
+
+    @Column(name = "birth_year")
+    private Integer birthYear;
+
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "author")
     public Set<BookAuthor> bookAuthors;
 

@@ -14,4 +14,10 @@ public class AuthorResponseDto
     private int id;
 
     private String name;
+
+    //Tram added country and birthYear
+    private String country;
+
+    private Integer birthYear;
+
 }
