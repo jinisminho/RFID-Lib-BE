@@ -9,6 +9,7 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.dtos.response.DownloadPDFResponse;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
@@ -96,10 +97,10 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
-    public static final String PDF_LOCATION = "src/main/java/capstone/library/files/";
+    public static final String PDF_LOCATION = "src/main/java/capstone/library/files/barcodes.pdf";
     @Override
     @Transactional
-    public Resource createCopies(CreateCopiesRequestDto request) {
+    public DownloadPDFResponse createCopies(CreateCopiesRequestDto request) {
         Book book;
         BookCopyType bookCopyType;
         Account creator;
@@ -122,14 +123,14 @@ public class BookCopyServiceImpl implements BookCopyService {
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
-        String pdfPath = printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
+        printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
         InputStreamResource resource;
         try {
-            resource = new InputStreamResource(new FileInputStream(pdfPath));
+            resource = new InputStreamResource(new FileInputStream(PDF_LOCATION));
         } catch (FileNotFoundException e) {
             throw new PrintBarcodeException(e.getMessage());
         }
-        return resource;
+        return new DownloadPDFResponse(resource, book.getTitle(), book.getEdition(), bookCopyType.getName(), request.getPrice());
     }
 
     @Override
@@ -490,15 +491,13 @@ public class BookCopyServiceImpl implements BookCopyService {
      *
      * @return pdf location
      */
-    private String printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
-        String pdfFilename = book.getIsbn() + "-" + bookCopyType.getName() + "-" + price;
-        String pdfPath = PDF_LOCATION + "/" + pdfFilename + ".pdf";
+    private void printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
         Document document = new Document(new Rectangle(185, 50));
         document.setMargins(10, 10, 10, 10);
         PdfWriter writer = null;
         File pdf = null;
         try {
-            pdf = new File(pdfPath);
+            pdf = new File(PDF_LOCATION);
             writer = PdfWriter.getInstance(document, new FileOutputStream(pdf));
             document.open();
             PdfContentByte cb = writer.getDirectContent();
@@ -516,6 +515,5 @@ public class BookCopyServiceImpl implements BookCopyService {
         } finally {
             document.close();
         }
-        return pdfPath;
     }
 }

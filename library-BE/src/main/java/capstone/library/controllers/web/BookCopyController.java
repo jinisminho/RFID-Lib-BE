@@ -6,6 +6,7 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.dtos.response.DownloadPDFResponse;
 import capstone.library.exceptions.PrintBarcodeException;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.ApiPageable;
@@ -38,11 +39,12 @@ public class BookCopyController {
 
     @PostMapping("/add")
     public ResponseEntity<Resource> addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
-        Resource resource = bookCopyService.createCopies(request);
+        DownloadPDFResponse res = bookCopyService.createCopies(request);
+        String returnFileName = res.getTitle() + "-" + res.getEdition() + "-" + res.getType() + "-" + res.getPrice();
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+                .header("Content-Disposition", "attachment; filename=" + returnFileName)
+                .body(res.getResource());
     }
 
     @GetMapping("/list")
