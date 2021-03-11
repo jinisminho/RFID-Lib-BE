@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class AlarmLogResponseDto {
+    private int id;
     private CopyResponseDto bookCopy;
     private LocalDateTime loggedAt;
 }
