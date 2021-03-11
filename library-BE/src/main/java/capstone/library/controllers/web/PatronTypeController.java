@@ -23,7 +23,8 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static capstone.library.util.constants.SecurityConstant.*;
+import static capstone.library.util.constants.SecurityConstant.ADMIN;
+import static capstone.library.util.constants.SecurityConstant.LIBRARIAN;
 
 @RestController
 @RequestMapping("/patronType")
@@ -32,7 +33,7 @@ public class PatronTypeController {
     @Autowired
     PatronTypeService patronTypeService;
 
-    @Secured({LIBRARIAN,ADMIN})
+    @Secured({LIBRARIAN, ADMIN})
     @GetMapping("/getAll")
     public List<PatronTypeDto> findAllPatronType() {
         return patronTypeService.getAllPatronType();
@@ -54,6 +55,7 @@ public class PatronTypeController {
     @ApiOperation(value = "This API create new patron type")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/add")
+    @Secured({ADMIN})
     public ResponseEntity<?> addPatronType(@RequestBody @Valid AddPatronTypeReqDto request) {
 
         boolean bool = patronTypeService.addPatronType(request);
@@ -70,6 +72,7 @@ public class PatronTypeController {
     @ApiOperation(value = "This API update patron type")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/update/{id}")
+    @Secured({ADMIN})
     public ResponseEntity<?> updatePatronType(@NotNull @PathVariable int id, @RequestBody @Valid PatronTypeReqDto request) {
 
         boolean bool = patronTypeService.updatePatronType(id, request);
@@ -86,6 +89,7 @@ public class PatronTypeController {
     @ApiOperation(value = "This API delete patron type")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/delete/{id}")
+    @Secured({ADMIN})
     public ResponseEntity<?> deletePatronType(@NotNull @PathVariable int id) {
 
         boolean bool = patronTypeService.deletePatronType(id);

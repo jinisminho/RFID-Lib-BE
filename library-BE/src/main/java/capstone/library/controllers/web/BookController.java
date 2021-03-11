@@ -13,12 +13,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import static capstone.library.util.constants.SecurityConstant.*;
 
 @RestController
 @RequestMapping("/book")
@@ -30,6 +33,7 @@ public class BookController {
     @ApiOperation(value = "This API use to search book by like title-subtitle and exact ISBN")
     @ApiPageable
     @GetMapping("/search")
+    @Secured({ADMIN, LIBRARIAN, PATRON})
     public Page<BookResDto> findBooks(@RequestParam(required = false, value = "searchValue") String searchValue, @RequestParam(required = false, value = "status") List<String> status, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
         return bookService.findBooks(searchValue, status, pageable);
     }
