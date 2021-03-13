@@ -62,7 +62,7 @@ public class BookCopyController {
     @GetMapping("/validate/{rfidOrBarcode}")
     public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable("rfidOrBarcode") @NotEmpty String key,
                                                       @RequestParam @NotEmpty int patronId) {
-        return bookCopyService.validateCopyByRFID(key, patronId);
+        return bookCopyService.validateCopyByRFIDOrBarcode(key, patronId);
     }
 
     @GetMapping("/get/barcode/{barcode}")
