@@ -15,6 +15,8 @@ import java.util.Set;
 public interface BookCopyRepository extends JpaRepository<BookCopy, Integer> {
     Optional<BookCopy> findByRfid(String rfid);
 
+    Optional<BookCopy> findByRfidOrBarcode(String rfid, String barcode);
+
     Optional<BookCopy> findByRfidAndStatus(String rfid, BookCopyStatus status);
 
     Optional<BookCopy> findByStatusAndRfidOrBarcode(BookCopyStatus status, String rfid, String barcode);

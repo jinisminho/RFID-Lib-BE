@@ -35,4 +35,6 @@ public interface BookCopyService {
 
     String updateCopyStatusBasedOnBookStatus(BookCopy copy, BookStatus bookStatus);
 
+    CheckCopyPolicyResponseDto validateCopyByRFIDOrBarcode(String key, int patronId);
+
 }
