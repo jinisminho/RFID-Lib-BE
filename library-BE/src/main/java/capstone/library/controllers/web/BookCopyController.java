@@ -53,10 +53,16 @@ public class BookCopyController {
         return bookCopyService.tagCopy(request);
     }
 
-    @GetMapping("/validate/{rfid}")
-    public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable @NotEmpty String rfid,
+//    @GetMapping("/validate/{rfid}")
+//    public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable @NotEmpty String rfid,
+//                                                      @RequestParam @NotEmpty int patronId) {
+//        return bookCopyService.validateCopyByRFID(rfid, patronId);
+//    }
+
+    @GetMapping("/validate/{rfidOrBarcode}")
+    public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable("rfidOrBarcode") @NotEmpty String key,
                                                       @RequestParam @NotEmpty int patronId) {
-        return bookCopyService.validateCopyByRFID(rfid, patronId);
+        return bookCopyService.validateCopyByRFIDOrBarcode(key, patronId);
     }
 
     @GetMapping("/get/barcode/{barcode}")
