@@ -37,7 +37,7 @@ public class LibrarianController {
 //        return librarianService.validateReturnRequest(rfid);
 //    }
 
-    @GetMapping("/return/validate/")
+    @GetMapping("/return/validate")
     @ApiOperation(value = "Validate return request by rfid or barcode")
     @Secured({ADMIN, LIBRARIAN})
     public ReturnBookResponseDto valildateReturnRequestByRfidOrBarcode(@RequestParam(name = "rfidOrBarcode") String value) {
