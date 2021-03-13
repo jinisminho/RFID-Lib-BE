@@ -9,6 +9,7 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.dtos.response.DownloadPDFResponse;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
@@ -23,12 +24,13 @@ import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.Barcode128;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.Barcode39;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.draw.DottedLineSeparator;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -46,9 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -96,9 +96,10 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
+    public static final String PDF_LOCATION = "src/main/java/capstone/library/files/barcodes.pdf";
     @Override
     @Transactional
-    public Resource createCopies(CreateCopiesRequestDto request) {
+    public DownloadPDFResponse createCopies(CreateCopiesRequestDto request) {
         Book book;
         BookCopyType bookCopyType;
         Account creator;
@@ -121,14 +122,14 @@ public class BookCopyServiceImpl implements BookCopyService {
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
-        File pdfFile = printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
+        printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
         InputStreamResource resource;
         try {
-            resource = new InputStreamResource(new FileInputStream(pdfFile.getPath()));
+            resource = new InputStreamResource(new FileInputStream(PDF_LOCATION));
         } catch (FileNotFoundException e) {
-            throw new PrintBarcodeException("Cannot download the barcode file");
+            throw new PrintBarcodeException(e.getMessage());
         }
-        return resource;
+        return new DownloadPDFResponse(resource, book.getTitle(), book.getEdition(), bookCopyType.getName(), request.getPrice());
     }
 
     @Override
@@ -253,6 +254,80 @@ public class BookCopyServiceImpl implements BookCopyService {
         /*Prepare response*/
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(rfid);
+        response.setCopy(myBookDto);
+        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
+                replace("]", "").replace("[", ""));
+        response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
+                replace("]", "").replace("[", ""));
+        response.getCopy().setBarcode(bookCopy.getBarcode());
+        response.setViolatePolicy(violatePolicy);
+        response.setReasons(reasons);
+        LocalDate dueAt = LocalDate.now().plusDays(borrowDuration);
+        while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            dueAt = dueAt.plusDays(1);
+        }
+        response.setDueAt(dueAt.toString());
+        /*=================*/
+
+
+        return response;
+    }
+
+    @Override
+    public CheckCopyPolicyResponseDto validateCopyByRFIDOrBarcode(String key, int patronId) {
+        boolean violatePolicy = false;
+        List<String> reasons = new ArrayList<>();
+        CheckCopyPolicyResponseDto response = new CheckCopyPolicyResponseDto();
+        Account patron;
+        BookCopy bookCopy;
+        int borrowDuration = 0;
+
+        /*Get Patron and Copy*/
+        Optional<Account> patronOptional = accountRepository.findById(patronId);
+        if (patronOptional.isPresent()) {
+            patron = patronOptional.get();
+            if (patron.getRole().getId() != RoleIdEnum.ROLE_PATRON.getRoleId()) {
+                throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
+            }
+        } else {
+            throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+        }
+
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfidOrBarcode(key, key);
+        if (bookCopyOptional.isPresent()) {
+            bookCopy = bookCopyOptional.get();
+        } else {
+            throw new ResourceNotFoundException("Copy", COPY_NOT_FOUND);
+        }
+        /*=====================*/
+
+        /* 1. Check policy
+         * 2. Check book status
+         * 3. Check copy status*/
+        // 1
+        Optional<BorrowPolicy> borrowPolicyOptional = borrowPolicyRepository.
+                findByPatronTypeIdAndBookCopyTypeId(patron.getPatronType().getId(), bookCopy.getBookCopyType().getId());
+        if (borrowPolicyOptional.isEmpty()) {
+            violatePolicy = true;
+            reasons.add(POLICY_PATRON_TYPE_COPY_TYPE);
+        } else {
+            borrowDuration = borrowPolicyOptional.get().getDueDuration();
+        }
+        // 2
+        if (!bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION)) {
+            violatePolicy = true;
+            reasons.add(POLICY_BOOK_STATUS);
+        }
+        // 3
+        if (!bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE)) {
+            violatePolicy = true;
+            reasons.add(POLICY_COPY_STATUS);
+        }
+        /*===========*/
+
+        /*Prepare response*/
+        MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
+        myBookDto.setRfid(bookCopy.getRfid());
         response.setCopy(myBookDto);
         response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
                 replace("]", "").replace("[", ""));
@@ -489,15 +564,14 @@ public class BookCopyServiceImpl implements BookCopyService {
      *
      * @return pdf location
      */
-    private File printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
-        String pdfFilename = book.getIsbn() + "-" + bookCopyType.getName() + "-" + price;
+    private void printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
         Document document = new Document(new Rectangle(185, 50));
         document.setMargins(10, 10, 10, 10);
         PdfWriter writer = null;
         File pdf = null;
         try {
-            pdf = new File(pdfFilename+".pdf");
-            writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFilename));
+            pdf = new File(PDF_LOCATION);
+            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf));
             document.open();
             PdfContentByte cb = writer.getDirectContent();
             for (String bar : barcodes) {
@@ -514,6 +588,5 @@ public class BookCopyServiceImpl implements BookCopyService {
         } finally {
             document.close();
         }
-        return pdf;
     }
 }
