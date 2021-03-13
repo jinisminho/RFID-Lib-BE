@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 import static capstone.library.util.constants.SecurityConstant.ADMIN;
@@ -32,16 +31,16 @@ public class LibrarianController {
         return librarianService.validateCheckoutPolicy(request);
     }
 
-    @GetMapping("/return/validate")
-    @ApiOperation(value = "Validate return request")
-    public ReturnBookResponseDto valildateReturnRequest(String rfid) {
-        return librarianService.validateReturnRequest(rfid);
-    }
+//    @GetMapping("/return/validate")
+//    @ApiOperation(value = "Validate return request")
+//    public ReturnBookResponseDto valildateReturnRequest(String rfid) {
+//        return librarianService.validateReturnRequest(rfid);
+//    }
 
-    @GetMapping("/return/validate/{rfidOrBarcode}")
+    @GetMapping("/return/validate/")
     @ApiOperation(value = "Validate return request by rfid or barcode")
     @Secured({ADMIN, LIBRARIAN})
-    public ReturnBookResponseDto valildateReturnRequestByRfidOrBarcode(@PathVariable("rfidOrBarcode") @NotEmpty String value) {
+    public ReturnBookResponseDto valildateReturnRequestByRfidOrBarcode(@RequestParam(name = "rfidOrBarcode") String value) {
         return librarianService.validateReturnRequestByRfidOrBarcode(value);
     }
 
