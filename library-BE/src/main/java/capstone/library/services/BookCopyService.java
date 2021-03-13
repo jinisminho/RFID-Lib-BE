@@ -6,6 +6,7 @@ import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.dtos.response.DownloadPDFResponse;
 import capstone.library.entities.BookCopy;
 import capstone.library.enums.BookStatus;
 import org.springframework.core.io.Resource;
@@ -15,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface BookCopyService {
-    Resource createCopies(CreateCopiesRequestDto request);
+    DownloadPDFResponse createCopies(CreateCopiesRequestDto request);
 
     Page<CopyResponseDto> getCopiesList(Pageable pageable);
 
