@@ -5,8 +5,7 @@ import capstone.library.dtos.response.*;
 
 import java.util.List;
 
-public interface LibrarianService
-{
+public interface LibrarianService {
 
     CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto scannedRFIDCopiesRequestDto);
 
@@ -19,4 +18,6 @@ public interface LibrarianService
     GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId);
 
     ReturnBookResponseDto validateReturnRequest(String rfid);
+
+    ReturnBookResponseDto validateReturnRequestByRfidOrBarcode(String value);
 }
