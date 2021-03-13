@@ -21,5 +21,7 @@ public interface PatronService {
 
     PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid);
 
+    PatronCheckoutInfoResponseDto getCheckoutAccountByRfidOrEmail(String key);
+
     ProfileAccountResDto findProfileByRfidOrEmail(String searchValue);
 }

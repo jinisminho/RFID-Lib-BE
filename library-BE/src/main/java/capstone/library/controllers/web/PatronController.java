@@ -92,12 +92,20 @@ public class PatronController {
 //        return patronService.getBorrowingHistories(patronId, pageable);
 //    }
 
-    @ApiOperation(value = "Get patron info by RFID (Patron Card)")
+//    @ApiOperation(value = "Get patron info by RFID (Patron Card)")
+//    @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
+//    @GetMapping("/profile/getCheckoutPatron/{rfid}")
+//    @Secured({ADMIN, LIBRARIAN})
+//    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid) {
+//        return patronService.getCheckoutAccountByRfid(rfid);
+//    }
+
+    @ApiOperation(value = "Get patron info by RFID or Email (Patron Card)")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
-    @GetMapping("/profile/getCheckoutPatron/{rfid}")
+    @GetMapping("/profile/getCheckoutPatron/{rfidOrEmail}")
     @Secured({ADMIN, LIBRARIAN})
-    public PatronCheckoutInfoResponseDto getProfileByRfid(@PathVariable @NotEmpty String rfid) {
-        return patronService.getCheckoutAccountByRfid(rfid);
+    public PatronCheckoutInfoResponseDto getProfileByRfidOrEmail(@PathVariable("rfidOrEmail") @NotEmpty String key) {
+        return patronService.getCheckoutAccountByRfidOrEmail(key);
     }
 
     @ApiOperation(value = "This API get profile of patron by its RFID or Email")
