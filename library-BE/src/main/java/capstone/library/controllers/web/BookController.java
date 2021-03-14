@@ -46,26 +46,31 @@ public class BookController {
     }
 
     @GetMapping("/all")
+    @Secured({ADMIN, LIBRARIAN, PATRON})
     public Page<BookResponseDto> findAllBooks(Pageable pageable) {
         return bookService.findAllBooks(pageable);
     }
 
     @PostMapping("/add")
+    @Secured({ADMIN, LIBRARIAN})
     public String addBook(@RequestBody @Valid CreateBookRequestDto request) {
         return bookService.addBook(request);
     }
 
     @PostMapping("/update/status/{id}")
+    @Secured({ADMIN, LIBRARIAN})
     public String updateBookStatus(@NotNull @PathVariable int id, @RequestParam(value = "status") BookStatus status) {
         return bookService.updateBookStatus(id, status);
     }
 
     @PostMapping("/update")
+    @Secured({ADMIN, LIBRARIAN})
     public String updateBookInfo(@RequestBody @Valid UpdateBookInfoRequestDto request) {
         return bookService.updateBookInfo(request);
     }
 
     @GetMapping("/findByISBN")
+    @Secured({ADMIN, LIBRARIAN, PATRON})
     public BookResponseDto findByISBN(String isbn) {
         return bookService.findByISBN(isbn);
     }
