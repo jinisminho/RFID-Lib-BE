@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -22,11 +23,8 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import io.swagger.annotations.ApiOperation;
-import org.springframework.security.access.annotation.Secured;
-import capstone.library.dtos.common.BookCopyTypeDto;
-
-import static capstone.library.util.constants.SecurityConstant.*;
+import static capstone.library.util.constants.SecurityConstant.ADMIN;
+import static capstone.library.util.constants.SecurityConstant.LIBRARIAN;
 
 @RestController
 @RequestMapping("/copyType")
@@ -50,6 +48,7 @@ public class BookCopyTypeController {
     @ApiOperation(value = "This API create new book copy type")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/add")
+    @Secured({ADMIN, LIBRARIAN})
     public ResponseEntity<?> addBookCopyType(@RequestBody @Valid AddBookCopyTypeReqDto request) {
 
         boolean bool = bookCopyTypeService.addBookCopyType(request);
@@ -66,6 +65,7 @@ public class BookCopyTypeController {
     @ApiOperation(value = "This API update book copy type")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/update/{id}")
+    @Secured({ADMIN, LIBRARIAN})
     public ResponseEntity<?> updateBookCopyType(@NotNull @PathVariable int id, @RequestBody @Valid BookCopyTypeReqDto request) {
 
         boolean bool = bookCopyTypeService.updateBookCopyType(id, request);
@@ -82,6 +82,7 @@ public class BookCopyTypeController {
     @ApiOperation(value = "This API delete book copy type")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Missing input", response = ErrorDto.class)})
     @PostMapping("/delete/{id}")
+    @Secured({ADMIN, LIBRARIAN})
     public ResponseEntity<?> deleteBookCopyType(@NotNull @PathVariable int id) {
 
         boolean bool = bookCopyTypeService.deleteBookCopyType(id);
@@ -96,6 +97,7 @@ public class BookCopyTypeController {
     }
 
     @GetMapping("/find")
+    @Secured({ADMIN, LIBRARIAN})
     public Page<BookCopyTypeDto> findBookCopyType(Pageable pageable,
                                                   @RequestParam(required = false, name = "name") String name) {
         return bookCopyTypeService.getPatronType(pageable, name);
