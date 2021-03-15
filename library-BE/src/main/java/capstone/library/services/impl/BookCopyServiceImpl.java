@@ -24,12 +24,13 @@ import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.Barcode128;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.Barcode39;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.draw.DottedLineSeparator;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -47,9 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -255,6 +254,80 @@ public class BookCopyServiceImpl implements BookCopyService {
         /*Prepare response*/
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(rfid);
+        response.setCopy(myBookDto);
+        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
+                replace("]", "").replace("[", ""));
+        response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
+                replace("]", "").replace("[", ""));
+        response.getCopy().setBarcode(bookCopy.getBarcode());
+        response.setViolatePolicy(violatePolicy);
+        response.setReasons(reasons);
+        LocalDate dueAt = LocalDate.now().plusDays(borrowDuration);
+        while (dueAt.getDayOfWeek().equals(DayOfWeek.SATURDAY) || dueAt.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            dueAt = dueAt.plusDays(1);
+        }
+        response.setDueAt(dueAt.toString());
+        /*=================*/
+
+
+        return response;
+    }
+
+    @Override
+    public CheckCopyPolicyResponseDto validateCopyByRFIDOrBarcode(String key, int patronId) {
+        boolean violatePolicy = false;
+        List<String> reasons = new ArrayList<>();
+        CheckCopyPolicyResponseDto response = new CheckCopyPolicyResponseDto();
+        Account patron;
+        BookCopy bookCopy;
+        int borrowDuration = 0;
+
+        /*Get Patron and Copy*/
+        Optional<Account> patronOptional = accountRepository.findById(patronId);
+        if (patronOptional.isPresent()) {
+            patron = patronOptional.get();
+            if (patron.getRole().getId() != RoleIdEnum.ROLE_PATRON.getRoleId()) {
+                throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
+            }
+        } else {
+            throw new ResourceNotFoundException("Account", ACCOUNT_NOT_FOUND);
+        }
+
+        Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfidOrBarcode(key, key);
+        if (bookCopyOptional.isPresent()) {
+            bookCopy = bookCopyOptional.get();
+        } else {
+            throw new ResourceNotFoundException("Copy", COPY_NOT_FOUND);
+        }
+        /*=====================*/
+
+        /* 1. Check policy
+         * 2. Check book status
+         * 3. Check copy status*/
+        // 1
+        Optional<BorrowPolicy> borrowPolicyOptional = borrowPolicyRepository.
+                findByPatronTypeIdAndBookCopyTypeId(patron.getPatronType().getId(), bookCopy.getBookCopyType().getId());
+        if (borrowPolicyOptional.isEmpty()) {
+            violatePolicy = true;
+            reasons.add(POLICY_PATRON_TYPE_COPY_TYPE);
+        } else {
+            borrowDuration = borrowPolicyOptional.get().getDueDuration();
+        }
+        // 2
+        if (!bookCopy.getBook().getStatus().equals(BookStatus.IN_CIRCULATION)) {
+            violatePolicy = true;
+            reasons.add(POLICY_BOOK_STATUS);
+        }
+        // 3
+        if (!bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE)) {
+            violatePolicy = true;
+            reasons.add(POLICY_COPY_STATUS);
+        }
+        /*===========*/
+
+        /*Prepare response*/
+        MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
+        myBookDto.setRfid(bookCopy.getRfid());
         response.setCopy(myBookDto);
         response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
                 replace("]", "").replace("[", ""));

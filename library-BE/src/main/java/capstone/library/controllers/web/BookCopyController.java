@@ -7,7 +7,6 @@ import capstone.library.dtos.response.BookCopyResDto;
 import capstone.library.dtos.response.CheckCopyPolicyResponseDto;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.dtos.response.DownloadPDFResponse;
-import capstone.library.exceptions.PrintBarcodeException;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.ApiPageable;
 import io.swagger.annotations.ApiOperation;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -43,7 +41,7 @@ public class BookCopyController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=" + returnFileName)
-                .header("Access-Control-Expose-Headers","Content-Disposition")
+                .header("Access-Control-Expose-Headers", "Content-Disposition")
                 .body(res.getResource());
     }
 
@@ -57,10 +55,16 @@ public class BookCopyController {
         return bookCopyService.tagCopy(request);
     }
 
-    @GetMapping("/validate/{rfid}")
-    public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable @NotEmpty String rfid,
+//    @GetMapping("/validate/{rfid}")
+//    public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable @NotEmpty String rfid,
+//                                                      @RequestParam @NotEmpty int patronId) {
+//        return bookCopyService.validateCopyByRFID(rfid, patronId);
+//    }
+
+    @GetMapping("/validate/{rfidOrBarcode}")
+    public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable("rfidOrBarcode") @NotEmpty String key,
                                                       @RequestParam @NotEmpty int patronId) {
-        return bookCopyService.validateCopyByRFID(rfid, patronId);
+        return bookCopyService.validateCopyByRFIDOrBarcode(key, patronId);
     }
 
     @GetMapping("/get/barcode/{barcode}")
