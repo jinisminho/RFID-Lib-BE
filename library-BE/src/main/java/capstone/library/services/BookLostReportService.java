@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 public interface BookLostReportService {
     Page<BookLostResponse> findBookLostInPeriod (LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
-    LostBookFineResponseDto getLostBookFine(int bookBorrowingId);
+    LostBookFineResponseDto getLostBookFine(int bookLostReportId);
 
     String confirmBookLost(ConfirmLostBookRequest lostBook);
 

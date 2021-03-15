@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p th:text="#{greetings(${patron})}"></p>
+
+<p> As you report book:
+    <span th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></span>
+    has lost at <span th:text="${reportedAt}"></span>
+</p>
+<p>
+    You must pay: <span th:text="${fine}"></span> VND
+</p>
+<br/>
+<p th:text="#{regards}"></p>
+<p>
+    <em th:text="#{signature}"></em> <br />
+</p>
+</body>
+</html>

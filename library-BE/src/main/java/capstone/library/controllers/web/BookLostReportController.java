@@ -27,9 +27,9 @@ public class BookLostReportController {
     BookLostReportService bookLostReportService;
 
     @Secured({LIBRARIAN, ADMIN})
-    @GetMapping("/getLostBookFine/{bookBorrowingId}")
-    public LostBookFineResponseDto getLostBookFine(@PathVariable @NotNull int bookBorrowingId) {
-        return bookLostReportService.getLostBookFine(bookBorrowingId);
+    @GetMapping("/getLostBookFine/{bookLostReportId}")
+    public LostBookFineResponseDto getLostBookFine(@PathVariable(name = "bookLostReportId") @NotNull int bookLostReportId) {
+        return bookLostReportService.getLostBookFine(bookLostReportId);
     }
 
     @ApiOperation(value = "This API use to get all lost books in a period or by status")

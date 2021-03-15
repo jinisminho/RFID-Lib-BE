@@ -14,4 +14,9 @@ public class LostBookFineResponseDto {
     BookBorrowingDto bookBorrowingInfo;
     double lostBookFineInMarket;
     double lostBookFineNotInMarket;
+
+    //Tram added
+    private int overdueDays;
+
+    private double overdueFee;
 }

@@ -4,18 +4,17 @@ import capstone.library.dtos.common.BookBorrowingDto;
 import capstone.library.dtos.request.ConfirmLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
-import capstone.library.entities.Account;
-import capstone.library.entities.BookBorrowing;
-import capstone.library.entities.BookLostReport;
-import capstone.library.entities.FeePolicy;
+import capstone.library.entities.*;
+import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.LostBookStatus;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
-import capstone.library.repositories.AccountRepository;
-import capstone.library.repositories.BookBorrowingRepository;
-import capstone.library.repositories.BookLostReportRepository;
-import capstone.library.repositories.FeePolicyRepository;
+import capstone.library.repositories.*;
 import capstone.library.services.BookLostReportService;
+import capstone.library.services.MailService;
+import capstone.library.util.tools.CommonUtil;
+import capstone.library.util.tools.DateTimeUtils;
+import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,6 +40,12 @@ public class BookLostReportServiceImpl implements BookLostReportService {
     private BookLostReportRepository bookLostReportRepository;
 
     @Autowired
+    private MailService mailService;
+
+    @Autowired
+    private BookCopyRepository bookCopyRepository;
+
+    @Autowired
     private AccountRepository accountRepository;
 
     @Autowired
@@ -47,22 +53,38 @@ public class BookLostReportServiceImpl implements BookLostReportService {
 
     private static final String BOOK_BORROWING_NOT_FOUND_ERROR = "Cannot find this borrowing section";
 
+    //Tram added overdueDays and overdueFee
     @Override
-    public LostBookFineResponseDto getLostBookFine(int bookBorrowingId) {
-        BookBorrowing bookBorrowing = bookBorrowingRepository.findById(bookBorrowingId).
-                orElseThrow(() -> new ResourceNotFoundException("Book borrowing", BOOK_BORROWING_NOT_FOUND_ERROR));
+    public LostBookFineResponseDto getLostBookFine(int bookLostReportId) {
+        BookLostReport bookLostReport = bookLostReportRepository
+                .findById(bookLostReportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Book Lost Report",
+                        "Cannot find book lost report with id: " + bookLostReportId));
+
+        BookBorrowing bookBorrowing = bookLostReport.getBookBorrowing();
+
+        DateTimeUtils dateTimeUtils = new DateTimeUtils();
+        int tmpFine = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+        int overdueDays = 0;
+        double overdueFee = 0.0;
+        if (tmpFine > 0) {
+            overdueDays = tmpFine;
+            overdueFee = CommonUtil.calculateOverdueFine(bookBorrowing.getFeePolicy(), bookBorrowing.getBookCopy().getPrice(), overdueDays);
+        }
 
         LostBookFineResponseDto response = new LostBookFineResponseDto();
         response.setBookBorrowingInfo(objectMapper.convertValue(bookBorrowing, BookBorrowingDto.class));
         response.setLostBookFineInMarket(calculateLostFineInMarket(bookBorrowing));
         response.setLostBookFineNotInMarket(calculateLostFineNotInMarket(bookBorrowing));
+        response.setOverdueDays(overdueDays);
+        response.setOverdueFee(overdueFee);
         return response;
     }
 
     @Override
     @Transactional
     public String confirmBookLost(ConfirmLostBookRequest lostBook) {
-        if(lostBook == null){
+        if (lostBook == null) {
             throw new MissingInputException("missing lost book");
         }
         Account auditor = accountRepository
@@ -75,22 +97,24 @@ public class BookLostReportServiceImpl implements BookLostReportService {
                 .orElseThrow(() -> new ResourceNotFoundException("Book Lost Report",
                         "Cannot find book lost report with id: " + lostBook.getBookLostReportId()));
 
-       bookLost.setFine(lostBook.getFine());
-       bookLost.setLibrarian(auditor);
-       bookLost.setStatus(LostBookStatus.CONFIRMED);
-
-       //email to patron
-
-       return UPDATE_SUCCESS;
+        bookLost.setFine(lostBook.getFine());
+        bookLost.setLibrarian(auditor);
+        bookLost.setStatus(LostBookStatus.CONFIRMED);
+        bookLost.setReason(lostBook.getReason());
+        bookLostReportRepository.save(bookLost);
+        //email to patron
+        mailService.sendLostBookFine(bookLost);
+        return UPDATE_SUCCESS;
     }
 
     //when patron request lost book
     @Override
+    @Transactional
     public String reportLostByPatron(int bookBorrowingId) {
         BookBorrowing borrowing = bookBorrowingRepository
                 .findById(bookBorrowingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book Borrowing",
-                        "Cannot find book borrowing with id: "+ bookBorrowingId));
+                        "Cannot find book borrowing with id: " + bookBorrowingId));
 
         LocalDateTime lostAt = LocalDateTime.now();
         BookLostReport bookLostReport = new BookLostReport();
@@ -101,6 +125,9 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         bookLostReportRepository.save(bookLostReport);
         borrowing.setLostAt(lostAt);
         bookBorrowingRepository.save(borrowing);
+        BookCopy copy = borrowing.getBookCopy();
+        copy.setStatus(BookCopyStatus.LOST);
+        bookCopyRepository.save(copy);
         return CREATE_SUCCESS;
     }
 
@@ -115,7 +142,7 @@ public class BookLostReportServiceImpl implements BookLostReportService {
             endDate = tmp;
         }
         return bookLostReportRepository
-                .findByStatusAndLostAtBetweenOrderByLostAtDesc(status,startDate, endDate, pageable)
+                .findByStatusAndLostAtBetweenOrderByLostAtDesc(status, startDate, endDate, pageable)
                 .map(this::mapBookLostEntityToBookLostDto);
     }
 
@@ -149,18 +176,17 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         dto.setSubtitle(entity.getBookBorrowing().getBookCopy().getBook().getSubtitle());
         dto.setEdition(entity.getBookBorrowing().getBookCopy().getBook().getEdition());
         dto.setISBN(entity.getBookBorrowing().getBookCopy().getBook().getIsbn());
+        dto.setStatus(entity.getStatus());
         return dto;
     }
 
     private double calculateLostFineInMarket(BookBorrowing bookBorrowing) {
-        //Get the latest fee policy. latest fee policy is the first item in the list
-        List<FeePolicy> feePolicies = feePolicyRepository.findAllByOrderByCreatedAtDesc();
-        return bookBorrowing.getBookCopy().getPrice() + feePolicies.get(0).getDocumentProcessing_Fee();
+        return bookBorrowing.getBookCopy().getPrice() + bookBorrowing.getFeePolicy().getDocumentProcessing_Fee();
     }
 
     private double calculateLostFineNotInMarket(BookBorrowing bookBorrowing) {
-        //Get the latest fee policy. latest fee policy is the first item in the list
-        List<FeePolicy> feePolicies = feePolicyRepository.findAllByOrderByCreatedAtDesc();
-        return bookBorrowing.getBookCopy().getPrice() * feePolicies.get(0).getMissingDocMultiplier();
+        return bookBorrowing.getBookCopy().getPrice() * bookBorrowing.getFeePolicy().getMissingDocMultiplier();
     }
+
+
 }

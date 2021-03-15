@@ -29,7 +29,7 @@ public class BookLostReport
     @CreatedDate
     private LocalDateTime lostAt;
 
-    @Column(name = "reason", length = 100, nullable = false)
+    @Column(name = "reason", length = 100)
     private String reason;
 
     @Column(name = "fine")
