@@ -1,13 +1,14 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.BookBorrowingDto;
-import capstone.library.dtos.request.AddLostBookRequest;
+import capstone.library.dtos.request.ConfirmLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
 import capstone.library.entities.Account;
 import capstone.library.entities.BookBorrowing;
 import capstone.library.entities.BookLostReport;
 import capstone.library.entities.FeePolicy;
+import capstone.library.enums.LostBookStatus;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
+import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
 
 
 @Service
@@ -59,7 +61,7 @@ public class BookLostReportServiceImpl implements BookLostReportService {
 
     @Override
     @Transactional
-    public String addLostBook(AddLostBookRequest lostBook) {
+    public String confirmBookLost(ConfirmLostBookRequest lostBook) {
         if(lostBook == null){
             throw new MissingInputException("missing lost book");
         }
@@ -67,22 +69,54 @@ public class BookLostReportServiceImpl implements BookLostReportService {
                 .findById(lostBook.getAuditorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
                         "Cannot found account with id: " + lostBook.getAuditorId()));
+
+        BookLostReport bookLost = bookLostReportRepository
+                .findById(lostBook.getBookLostReportId())
+                .orElseThrow(() -> new ResourceNotFoundException("Book Lost Report",
+                        "Cannot find book lost report with id: " + lostBook.getBookLostReportId()));
+
+       bookLost.setFine(lostBook.getFine());
+       bookLost.setLibrarian(auditor);
+       bookLost.setStatus(LostBookStatus.CONFIRMED);
+
+       //email to patron
+
+       return UPDATE_SUCCESS;
+    }
+
+    //when patron request lost book
+    @Override
+    public String reportLostByPatron(int bookBorrowingId) {
         BookBorrowing borrowing = bookBorrowingRepository
-                .findById(lostBook.getBookBorrowingId())
+                .findById(bookBorrowingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book Borrowing",
-                        "Cannot find book borrowing with id: "+ lostBook.getBookBorrowingId()));
+                        "Cannot find book borrowing with id: "+ bookBorrowingId));
 
         LocalDateTime lostAt = LocalDateTime.now();
         BookLostReport bookLostReport = new BookLostReport();
         bookLostReport.setLostAt(lostAt);
-        bookLostReport.setReason(lostBook.getReason());
-        bookLostReport.setFine(lostBook.getFine());
+        bookLostReport.setFine(0.0);
         bookLostReport.setBookBorrowing(borrowing);
-        bookLostReport.setLibrarian(auditor);
+        bookLostReport.setStatus(LostBookStatus.PENDING);
         bookLostReportRepository.save(bookLostReport);
         borrowing.setLostAt(lostAt);
         bookBorrowingRepository.save(borrowing);
         return CREATE_SUCCESS;
+    }
+
+    @Override
+    public Page<BookLostResponse> findBookLostByStatus(LostBookStatus status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        if (startDate == null || endDate == null) {
+            throw new MissingInputException("missing startDate or endDate");
+        }
+        if (startDate.isAfter(endDate)) {
+            LocalDateTime tmp = startDate;
+            startDate = endDate;
+            endDate = tmp;
+        }
+        return bookLostReportRepository
+                .findByStatusAndLostAtBetweenOrderByLostAtDesc(status,startDate, endDate, pageable)
+                .map(this::mapBookLostEntityToBookLostDto);
     }
 
     @Override

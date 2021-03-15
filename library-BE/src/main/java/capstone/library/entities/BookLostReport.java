@@ -1,5 +1,6 @@
 package capstone.library.entities;
 
+import capstone.library.enums.LostBookStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,12 +35,16 @@ public class BookLostReport
     @Column(name = "fine")
     private Double fine;
 
+    @Column(name = "status", length = 30, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private LostBookStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrow_id")
     private BookBorrowing bookBorrowing;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reported_by")
+    @JoinColumn(name = "confirmed_by")
     private Account librarian;
 
 }
