@@ -23,12 +23,11 @@ import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
+import capstone.library.util.tools.PriceFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.Barcode39;
+import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.commons.lang3.EnumUtils;
@@ -49,8 +48,11 @@ import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
+import static capstone.library.util.constants.BarcodeLabelConstant.LABEL_LENGTH;
+import static capstone.library.util.constants.BarcodeLabelConstant.LABEL_WIDTH;
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
 
 @Service
@@ -129,7 +131,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         } catch (FileNotFoundException e) {
             throw new PrintBarcodeException(e.getMessage());
         }
-        return new DownloadPDFResponse(resource, book.getTitle(), book.getEdition(), bookCopyType.getName(), request.getPrice());
+        return new DownloadPDFResponse(resource, book.getTitle(), book.getEdition(), bookCopyType.getName(), request.getPrice(), book.getIsbn());
     }
 
     @Override
@@ -561,12 +563,10 @@ public class BookCopyServiceImpl implements BookCopyService {
 
     /**
      * print new copies' barcode to pdf with printer's label format
-     *
-     * @return pdf location
      */
     private void printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
-        Document document = new Document(new Rectangle(185, 50));
-        document.setMargins(10, 10, 10, 10);
+        Document document = new Document(new Rectangle(LABEL_LENGTH, LABEL_WIDTH));
+        document.setMargins(7, 7, 20, 20);
         PdfWriter writer = null;
         File pdf = null;
         try {
@@ -578,10 +578,10 @@ public class BookCopyServiceImpl implements BookCopyService {
                 Barcode39 code39 = new Barcode39();
                 code39.setCode(bar.trim());
                 code39.setCodeType(Barcode39.CODABAR);
+                code39.setStartStopText(false);
                 Image code39Image = code39.createImageWithBarcode(cb, null, null);
-                code39Image.scalePercent(100);
+                code39Image.scalePercent(90);
                 document.add(code39Image);
-                //document.add(new Paragraph("    "));
             }
         } catch (DocumentException | FileNotFoundException e) {
             throw new PrintBarcodeException(e.getMessage());

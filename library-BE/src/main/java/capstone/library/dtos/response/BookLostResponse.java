@@ -3,6 +3,7 @@ package capstone.library.dtos.response;
 import capstone.library.entities.Account;
 import capstone.library.entities.BookBorrowing;
 import capstone.library.entities.BookCopy;
+import capstone.library.enums.LostBookStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,4 +40,6 @@ public class BookLostResponse {
     private Integer edition;
 
     private String ISBN;
+
+    private LostBookStatus status;
 }

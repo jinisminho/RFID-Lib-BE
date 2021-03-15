@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddLostBookRequest {
+public class ConfirmLostBookRequest {
 
-    private int bookBorrowingId;
+    private int bookLostReportId;
 
     private double fine;
 

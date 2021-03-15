@@ -1,6 +1,7 @@
 package capstone.library.repositories;
 
 import capstone.library.entities.BookLostReport;
+import capstone.library.enums.LostBookStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,9 @@ public interface BookLostReportRepository extends JpaRepository<BookLostReport, 
     Page<BookLostReport> findByLostAtBetweenOrderByLostAtDesc(LocalDateTime startDate,
                                                               LocalDateTime enDate,
                                                               Pageable pageable);
+
+    Page<BookLostReport> findByStatusAndLostAtBetweenOrderByLostAtDesc(LostBookStatus status,
+                                                                       LocalDateTime startDate,
+                                                                       LocalDateTime enDate,
+                                                                       Pageable pageable);
 }
