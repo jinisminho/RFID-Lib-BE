@@ -43,6 +43,7 @@ public class BookCopyController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=" + returnFileName)
+                .header("Access-Control-Expose-Headers","Content-Disposition")
                 .body(res.getResource());
     }
 
