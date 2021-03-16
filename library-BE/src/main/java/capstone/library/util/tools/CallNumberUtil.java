@@ -28,7 +28,7 @@ public class CallNumberUtil {
     //Reformat double
     private String convertFloatToString(double ddc) {
         if (ddc == (long) ddc) {
-            return String.format("%d", (long) ddc);
+            return String.format("%03d", (long) ddc);
         } else {
             return String.format("%s", ddc);
         }
