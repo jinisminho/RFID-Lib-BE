@@ -66,9 +66,6 @@ public class Book extends Audit {
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
     public Set<BookAuthor> bookAuthors;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
-    public Set<BookGenre> bookGenres;
-
 
     @Override
     public String toString() {
