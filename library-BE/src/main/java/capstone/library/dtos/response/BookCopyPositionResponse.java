@@ -15,8 +15,10 @@ public class BookCopyPositionResponse {
 
     private String callNumber;
 
-    private String floor;
+    private String line;
 
     private String shelf;
+
+    private String status;
 
 }

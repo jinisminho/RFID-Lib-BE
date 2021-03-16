@@ -13,24 +13,18 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "book_copy_position")
-public class BookCopyPosition
-{
+public class BookCopyPosition {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "floor", nullable = false)
-    private int floor;
-
-    @Column(name = "shelf", length = 50, nullable = false)
+    @Column(name = "shelf", length = 100, nullable = false, unique = true)
     private String shelf;
 
-    @Column(name = "from_call_number", length = 50, nullable = false)
-    private String fromCallNumber;
+    @Column(name = "line", nullable = false)
+    private Integer line;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_copy_type_id")
-    private BookCopyType bookCopyType;
 
 }
