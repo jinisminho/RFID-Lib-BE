@@ -27,7 +27,7 @@ public class UpdateBookInfoRequestDto implements Serializable {
 
     private String subtitle;
 
-    private String callNumber;
+    private double ddc;
 
     @Length(min = 1, max = 255, message = "{UpdateBookInfoRequestDto.publisher.length}")
     private String publisher;

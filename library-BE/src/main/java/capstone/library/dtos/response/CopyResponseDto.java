@@ -3,6 +3,7 @@ package capstone.library.dtos.response;
 
 import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
+import capstone.library.dtos.common.PositionDto;
 import capstone.library.enums.BookCopyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,9 +16,10 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CopyResponseDto implements Serializable
-{
+public class CopyResponseDto implements Serializable {
     private int id;
+
+    private PositionDto position;
 
     private String barcode;
 
