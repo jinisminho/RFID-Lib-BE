@@ -4,7 +4,10 @@ import capstone.library.dtos.common.BookBorrowingDto;
 import capstone.library.dtos.request.ConfirmLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
-import capstone.library.entities.*;
+import capstone.library.entities.Account;
+import capstone.library.entities.BookBorrowing;
+import capstone.library.entities.BookCopy;
+import capstone.library.entities.BookLostReport;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.LostBookStatus;
 import capstone.library.exceptions.MissingInputException;
@@ -14,7 +17,6 @@ import capstone.library.services.BookLostReportService;
 import capstone.library.services.MailService;
 import capstone.library.util.tools.CommonUtil;
 import capstone.library.util.tools.DateTimeUtils;
-import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,7 +26,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -188,5 +189,24 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         return bookBorrowing.getBookCopy().getPrice() * bookBorrowing.getFeePolicy().getMissingDocMultiplier();
     }
 
+    //
+    @Override
+    public Page<BookLostResponse> findBookLostOfPatron(LocalDateTime startDate,
+                                                       LocalDateTime endDate,
+                                                       Pageable pageable,
+                                                       int patronId) {
+        if (startDate != null || endDate != null) {
+            if (startDate.isAfter(endDate)) {
+                LocalDateTime tmp = startDate;
+                startDate = endDate;
+                endDate = tmp;
+            }
+            return bookLostReportRepository
+                    .findByBookBorrowing_Borrowing_Borrower_IdAndLostAtBetweenOrderByLostAtDesc(patronId, startDate, endDate, pageable)
+                    .map(this::mapBookLostEntityToBookLostDto);
+        }
 
+        return bookLostReportRepository.findByBookBorrowing_Borrowing_Borrower_Id(patronId, pageable).map(this::mapBookLostEntityToBookLostDto);
+
+    }
 }
