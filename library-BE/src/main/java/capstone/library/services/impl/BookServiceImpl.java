@@ -15,6 +15,7 @@ import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
+import capstone.library.util.tools.CallNumberUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static capstone.library.util.constants.ConstantUtil.CALL_NUMBER_FORMAT_REGEX;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -59,6 +58,7 @@ public class BookServiceImpl implements BookService {
     private AccountRepository accountRepository;
     @Autowired
     private BookCopyService bookCopyService;
+    CallNumberUtil callNumberUtil = new CallNumberUtil();
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
@@ -169,6 +169,14 @@ public class BookServiceImpl implements BookService {
 
             /*Validate and set data from requestDto to new Book*/
             setBasicBookInfo(book, request);
+
+            //Create call number from the request
+            StringBuilder authorName = new StringBuilder();
+            for (int id : request.getAuthorIds()) {
+                authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
+            }
+            book.setCallNumber(callNumberUtil.
+                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
 
             /*Get account to add to updateBy*/
             Account updateBy = accountRepository.findById(request.getUpdateBy()).
@@ -296,19 +304,12 @@ public class BookServiceImpl implements BookService {
         if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0) {
             book.setPageNumber(request.getPageNumber());
         }
-        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            if (!request.getCallNumber().trim().matches(CALL_NUMBER_FORMAT_REGEX)) {
-                throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
-            }
-            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
-        }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
         if (request.getStatus() != null) {
             updateBookStatus(request.getId(), request.getStatus());
         }
-
     }
 
     //Title, subtitle, publisher, language, call number is trimmed and removed of duplicate spaces
@@ -328,9 +329,6 @@ public class BookServiceImpl implements BookService {
         if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
             book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
         }
-        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
-        }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
@@ -339,15 +337,21 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public String addBook(CreateBookRequestDto request) {
-        //Call number must matches ###.ABCDXYZ
-        if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
-            throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
-        }
         if (request.getPageNumber() == 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Page number is 0", "Page number must be more than 0");
         }
         Book book = objectMapper.convertValue(request, Book.class);
+
         transformCreateBookStringInput(book, request);
+
+        //Create call number from the request
+        StringBuilder authorName = new StringBuilder();
+        for (int id : request.getAuthorIds()) {
+            authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
+        }
+        book.setCallNumber(callNumberUtil.
+                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
