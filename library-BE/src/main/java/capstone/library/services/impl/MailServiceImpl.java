@@ -14,6 +14,7 @@ import capstone.library.repositories.BookBorrowingRepository;
 import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.WishlistRepository;
 import capstone.library.services.MailService;
+import capstone.library.util.tools.DateTimeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,8 @@ public class MailServiceImpl implements MailService {
     private  static  final  String DUE_DATE_EMAIL_SUBJECT = "[no-reply] REMIND BORROWING BOOK WILL BE DUE ON";
 
     private  static  final  String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
+
+    private  static  final  String BOOK_LOST_EMAIL_SUBJECT = "[no-reply] BOOK LOST FINE";
 
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
@@ -169,6 +172,25 @@ public class MailServiceImpl implements MailService {
             throw new EmailException(e.getMessage());
         }
 
+    }
+
+    @Override
+    public void sendLostBookFine(BookLostReport bookLostReport) {
+        DateTimeUtils dateTimeUtils = new DateTimeUtils();
+        String email = bookLostReport.getBookBorrowing().getBorrowing().getBorrower().getEmail();
+        Map<String, Object> templateModel = new HashMap<>();
+        templateModel.put("patron", bookLostReport.getBookBorrowing().getBorrowing().getBorrower().getProfile().getFullName());
+        templateModel.put("book", bookLostReport.getBookBorrowing().getBookCopy().getBook());
+        templateModel.put("reportedAt", dateTimeUtils.convertDateTimeToString(bookLostReport.getLostAt()) );
+        templateModel.put("fine", bookLostReport.getFine());
+        Context thymeleafContext = new Context();
+        thymeleafContext.setVariables(templateModel);
+        String htmlBody = thymeleafTemplateEngine.process("bookLostFineTemplate.html", thymeleafContext);
+        try {
+            sendHtmlMessage(email, BOOK_LOST_EMAIL_SUBJECT, htmlBody);
+        }catch(MessagingException e){
+            throw new EmailException(e.getMessage());
+        }
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {

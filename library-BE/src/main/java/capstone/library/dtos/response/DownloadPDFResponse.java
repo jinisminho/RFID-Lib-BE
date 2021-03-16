@@ -22,4 +22,6 @@ public class DownloadPDFResponse {
 
     private Double price;
 
+    private String isbn;
+
 }

@@ -46,7 +46,7 @@ create table wishlist_book(
 create table book_lost_report(
 	id int not null auto_increment,
 	lost_at datetime not null default now(),
-    reason varchar(100) not null,
+    reason varchar(100),
     fine double precision not null,
     
     borrow_id int,
