@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface PortableSearchBookService {
 
-    List<PortableSearchBookResponse> findBookSearchingList(int patronId);
+    List<PortableSearchBookResponse> findBookSearchingList(int accountId);
 
     String addSearchingBooksToFile (AddPortableSearchingBooksRequest request);
 
-    String deleteSearchingFileOfAPatron(int patronId);
+    String deleteSearchingFile(int accountId);
 }

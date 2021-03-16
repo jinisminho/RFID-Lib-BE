@@ -32,13 +32,12 @@ public class PortableSearchBookResponse {
 
     private String callNumber;
 
-    private Integer numberOfCopy;
-
-    private String status;
+    private boolean isAvailable;
 
     private String authors;
 
-    private List<BookCopyPositionResponse> positionList;
+    private List<PortableBookSearchPositionResponse> positionList;
 
-    private List<String> CopyRfidList;
+    private List<String> copyRfidList;
+
 }
