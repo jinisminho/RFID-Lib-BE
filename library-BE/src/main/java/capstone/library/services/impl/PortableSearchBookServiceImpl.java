@@ -156,7 +156,7 @@ public class PortableSearchBookServiceImpl implements PortableSearchBookService 
         if (isDeleted) {
             return DELETE_SUCCESS;
         } else {
-            return "Delete failed";
+            throw new RuntimeException("Cannot delete the file");
         }
 
     }
