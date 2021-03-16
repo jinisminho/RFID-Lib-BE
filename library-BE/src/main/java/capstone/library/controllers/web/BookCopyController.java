@@ -26,8 +26,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-import static capstone.library.util.constants.SecurityConstant.ADMIN;
-import static capstone.library.util.constants.SecurityConstant.LIBRARIAN;
+import static capstone.library.util.constants.SecurityConstant.*;
 
 @RestController
 @RequestMapping("/copy")
@@ -36,6 +35,7 @@ public class BookCopyController {
     BookCopyService bookCopyService;
 
     @PostMapping("/add")
+    @Secured({ADMIN, LIBRARIAN, PATRON})
     public ResponseEntity<Resource> addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
         DownloadPDFResponse res = bookCopyService.createCopies(request);
         String returnFileName = res.getIsbn() + "-" + res.getType() + "-" + DoubleFormatter.formatToDecimal(res.getPrice()) + ".pdf";
@@ -47,11 +47,13 @@ public class BookCopyController {
     }
 
     @GetMapping("/list")
+    @Secured({ADMIN, LIBRARIAN, PATRON})
     public Page<CopyResponseDto> getCopiesList(Pageable pageable) {
         return bookCopyService.getCopiesList(pageable);
     }
 
     @PostMapping("/tag")
+    @Secured({ADMIN, LIBRARIAN})
     public String tagCopy(@RequestBody @Valid @NotNull TagCopyRequestDto request) {
         return bookCopyService.tagCopy(request);
     }
@@ -63,23 +65,27 @@ public class BookCopyController {
 //    }
 
     @GetMapping("/validate/{rfidOrBarcode}")
+    @Secured({ADMIN, LIBRARIAN})
     public CheckCopyPolicyResponseDto checkCopyPolicy(@PathVariable("rfidOrBarcode") @NotEmpty String key,
                                                       @RequestParam @NotEmpty int patronId) {
         return bookCopyService.validateCopyByRFIDOrBarcode(key, patronId);
     }
 
     @GetMapping("/get/barcode/{barcode}")
+    @Secured({ADMIN, LIBRARIAN})
     public CopyResponseDto getCopyByBarcode(@PathVariable @NotEmpty String barcode) {
         return bookCopyService.getCopyByBarcode(barcode);
     }
 
     @GetMapping("/get/rfid/{rfid}")
+    @Secured({ADMIN, LIBRARIAN})
     public CopyResponseDto getCopyByRfid(@PathVariable @NotEmpty String rfid) {
         return bookCopyService.getCopyByRfid(rfid);
     }
 
     @PostMapping("/update")
     @ApiOperation("Update a book copy by id")
+    @Secured({ADMIN, LIBRARIAN})
     public String updateCopy(@RequestBody @Valid @NotNull UpdateCopyRequest request) {
         return bookCopyService.updateCopy(request);
     }

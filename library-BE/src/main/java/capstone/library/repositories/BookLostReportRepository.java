@@ -20,4 +20,12 @@ public interface BookLostReportRepository extends JpaRepository<BookLostReport, 
                                                                        LocalDateTime startDate,
                                                                        LocalDateTime enDate,
                                                                        Pageable pageable);
+
+    Page<BookLostReport> findByBookBorrowing_Borrowing_Borrower_IdAndLostAtBetweenOrderByLostAtDesc(int id,
+                                                                                                    LocalDateTime startDate,
+                                                                                                    LocalDateTime enDate,
+                                                                                                    Pageable pageable);
+
+    Page<BookLostReport> findByBookBorrowing_Borrowing_Borrower_Id(int id,
+                                                                   Pageable pageable);
 }

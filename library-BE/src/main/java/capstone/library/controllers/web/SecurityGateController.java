@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 import static capstone.library.util.constants.ConstantUtil.DATE_PATTERN;
+import static capstone.library.util.constants.SecurityConstant.ADMIN;
+import static capstone.library.util.constants.SecurityConstant.LIBRARIAN;
 
 @RestController
 @RequestMapping("/securityGate")
@@ -25,6 +28,7 @@ public class SecurityGateController {
     @ApiOperation(value = "Get security alarm log by specific date")
     @ApiPageable
     @GetMapping("/getAlarmLog/{date}")
+    @Secured({ADMIN, LIBRARIAN})
     public Page<AlarmLogResponseDto> getAlarmLog(Pageable pageable,
                                                  @NotNull
                                                  @PathVariable
