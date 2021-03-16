@@ -1,6 +1,6 @@
-package capstone.library.repositories;
+package capstone.library.demo.repositories;
 
-import capstone.library.entities.Genre;
+import capstone.library.demo.entities.Genre;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,5 +10,4 @@ import java.util.List;
 public interface GenreRepository extends JpaRepository<Genre, Integer> {
 
     List<Genre> findByOrderByDdcAsc();
-
 }

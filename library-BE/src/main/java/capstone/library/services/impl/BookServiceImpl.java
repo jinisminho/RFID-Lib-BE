@@ -15,6 +15,7 @@ import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
+import capstone.library.util.tools.GenreUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,7 @@ public class BookServiceImpl implements BookService {
     private GenreRepository genreRepository;
     @Autowired
     private BookAuthorRepository bookAuthorRepository;
-    @Autowired
-    private BookGenreRepository bookGenreRepository;
+
     @Autowired
     private BookJpaRepository bookJpaRepository;
     @Autowired
@@ -147,8 +147,11 @@ public class BookServiceImpl implements BookService {
             }
             dto.setAuthors(book.getBookAuthors().toString().
                     replace("]", "").replace("[", ""));
-            dto.setGenres(book.getBookGenres().toString().
-                    replace("]", "").replace("[", ""));
+            //Tram added --
+            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+            String genres = GenreUtil.getGenreFormCallNumber(book.getCallNumber(), genreList);
+            //---
+            dto.setGenres(genres);
             dto.setBookId(book.getId());
             responseDtos.add(dto);
         }
@@ -176,7 +179,6 @@ public class BookServiceImpl implements BookService {
             book.setUpdater(updateBy);
 
             Set<BookAuthor> bookAuthorSet = new HashSet<>();
-            Set<BookGenre> bookGenreSet = new HashSet<>();
 
             /*Remove old book authors and book relationships
              * to create new book authors and book relationships from the request*/
@@ -195,6 +197,8 @@ public class BookServiceImpl implements BookService {
 
             /*Remove old book genres and book relationships
              * to create new book genres and book relationships from the request*/
+
+            /* Tram deleted ---
             if (request.getGenreIds() != null) {
                 setBookGenre(book, bookGenreSet, request.getGenreIds());
                 for (BookGenre bookGenre : book.getBookGenres()) {
@@ -207,6 +211,8 @@ public class BookServiceImpl implements BookService {
                 }
                 book.setBookGenres(bookGenreSet);
             }
+
+            ----- */
 
             try {
                 myBookRepository.save(book);
@@ -229,8 +235,12 @@ public class BookServiceImpl implements BookService {
             BookResponseDto response = objectMapper.convertValue(book, BookResponseDto.class);
             response.setAuthors(book.getBookAuthors().toString().
                     replace("[", "").replace("]", ""));
-            response.setGenres(book.getBookGenres().toString().
-                    replace("[", "").replace("]", ""));
+            //Tram added ---
+            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+            String genres = GenreUtil.getGenreFormCallNumber(book.getCallNumber(), genreList);
+            // ---
+
+            response.setGenres(genres);
             int availableCopies = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).size();
             availableCopies += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).size();
             response.setAvailableCopies(availableCopies);
@@ -239,6 +249,7 @@ public class BookServiceImpl implements BookService {
         throw new ResourceNotFoundException("Book", BOOK_NOT_FOUND);
     }
 
+    /* Tram deleted ----------
     private void setBookGenre(Book book, Set<BookGenre> bookGenreSet, List<Integer> genreIds) {
         for (int id : genreIds) {
             Optional<Genre> genreOptional = genreRepository.findById(id);
@@ -253,6 +264,8 @@ public class BookServiceImpl implements BookService {
         }
 
     }
+
+   ---------  */
 
     private void setBookAuthor(Book book, Set<BookAuthor> bookAuthorSet, List<Integer> authorIds) {
         for (int id : authorIds) {
@@ -349,14 +362,14 @@ public class BookServiceImpl implements BookService {
         Book book = objectMapper.convertValue(request, Book.class);
         transformCreateBookStringInput(book, request);
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
-        Set<BookGenre> bookGenreSet = new HashSet<>();
+        //Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
         if (bookAuthorSet.isEmpty()) {
             throw new ResourceNotFoundException("Author", "Author is not found");
         }
-        setBookGenre(book, bookGenreSet, request.getGenreIds());
+        //setBookGenre(book, bookGenreSet, request.getGenreIds());
         book.setBookAuthors(bookAuthorSet);
-        book.setBookGenres(bookGenreSet);
+        //book.setBookGenres(bookGenreSet);
         book.setCreator(accountRepository.findById(request.getCreatorId()).
                 orElseThrow(() -> new ResourceNotFoundException("Account", CREATOR_NOT_FOUND)));
         if (request.getImg().isBlank()) {

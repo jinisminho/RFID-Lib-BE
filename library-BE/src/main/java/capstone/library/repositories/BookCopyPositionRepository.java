@@ -9,8 +9,4 @@ import java.util.List;
 @Repository
 public interface BookCopyPositionRepository extends JpaRepository<BookCopyPosition, Integer> {
 
-    List<BookCopyPosition> findByBookCopyTypeIdOrderByFromCallNumberAsc (int bookCopyTypeId);
-
-    List<BookCopyPosition> findByOrderByFromCallNumberAsc ();
-
 }

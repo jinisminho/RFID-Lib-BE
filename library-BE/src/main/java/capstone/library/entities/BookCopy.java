@@ -63,4 +63,9 @@ public class BookCopy extends Audit {
     @Version
     @Setter(AccessLevel.NONE)
     private Long version;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_position_id")
+    private BookCopyPosition bookCopyPosition;
+
 }

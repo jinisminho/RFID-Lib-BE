@@ -9,7 +9,7 @@ import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.dtos.response.DownloadPDFResponse;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.ApiPageable;
-import capstone.library.util.tools.PriceFormatter;
+import capstone.library.util.tools.DoubleFormatter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -38,7 +38,7 @@ public class BookCopyController {
     @PostMapping("/add")
     public ResponseEntity<Resource> addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
         DownloadPDFResponse res = bookCopyService.createCopies(request);
-        String returnFileName = res.getIsbn() + "-" + res.getType() + "-" + PriceFormatter.formatPrice(res.getPrice()) + ".pdf";
+        String returnFileName = res.getIsbn() + "-" + res.getType() + "-" + DoubleFormatter.formatToDecimal(res.getPrice()) + ".pdf";
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=" + returnFileName)

@@ -9,16 +9,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookCopyPositionResponse {
-
-    private String bookCopyType;
-
-    private String callNumber;
-
-    private String line;
+public class PortableBookSearchPositionResponse {
 
     private String shelf;
 
-    private String status;
+    private String line;
 
+    public String toString(){
+        return this.shelf + "-" + this.line;
+    }
 }
