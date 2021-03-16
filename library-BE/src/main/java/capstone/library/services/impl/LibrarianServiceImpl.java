@@ -262,8 +262,6 @@ public class LibrarianServiceImpl implements LibrarianService {
 
                 // Prepare dto
                 MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
-                myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
-                        replace("]", "").replace("[", ""));
                 myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
                         replace("]", "").replace("[", ""));
                 myBookDto.setBarcode(bookCopy.getBarcode());
@@ -332,8 +330,6 @@ public class LibrarianServiceImpl implements LibrarianService {
 
             // Prepare dto
             MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
-            myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
-                    replace("]", "").replace("[", ""));
             myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
                     replace("]", "").replace("[", ""));
             myBookDto.setBarcode(bookCopy.getBarcode());
@@ -463,10 +459,7 @@ public class LibrarianServiceImpl implements LibrarianService {
                 }
 
                 // Prepare dto
-
                 MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
-                myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
-                        replace("]", "").replace("[", ""));
                 myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
                         replace("]", "").replace("[", ""));
                 dto.setBook(myBookDto);
@@ -625,8 +618,6 @@ public class LibrarianServiceImpl implements LibrarianService {
             BookResponseDto dto = objectMapper.convertValue(book, BookResponseDto.class);
             dto.setBookId(book.getId());
             dto.setAuthors(book.getBookAuthors().toString().
-                    replace("[", "").replace("]", ""));
-            dto.setGenres(book.getBookGenres().toString().
                     replace("[", "").replace("]", ""));
             response.setBookInfo(dto);
         } else {

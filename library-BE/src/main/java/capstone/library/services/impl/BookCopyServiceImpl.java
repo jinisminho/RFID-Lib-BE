@@ -23,17 +23,17 @@ import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
-import capstone.library.util.tools.PriceFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.*;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.Barcode39;
-import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.BarcodeLabelConstant.LABEL_LENGTH;
@@ -142,8 +141,6 @@ public class BookCopyServiceImpl implements BookCopyService {
             CopyResponseDto dto;
             dto = objectMapper.convertValue(copy, CopyResponseDto.class);
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
-                    toString().replace("]", "").replace("[", ""));
-            dto.getBook().setGenres(copy.getBook().getBookGenres().
                     toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
             response.add(dto);
@@ -257,8 +254,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(rfid);
         response.setCopy(myBookDto);
-        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
-                replace("]", "").replace("[", ""));
         response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                 replace("]", "").replace("[", ""));
         response.getCopy().setBarcode(bookCopy.getBarcode());
@@ -331,8 +326,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(bookCopy.getRfid());
         response.setCopy(myBookDto);
-        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
-                replace("]", "").replace("[", ""));
         response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                 replace("]", "").replace("[", ""));
         response.getCopy().setBarcode(bookCopy.getBarcode());
@@ -423,8 +416,6 @@ public class BookCopyServiceImpl implements BookCopyService {
             CopyResponseDto dto = objectMapper.convertValue(copy, CopyResponseDto.class);
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
                     toString().replace("]", "").replace("[", ""));
-            dto.getBook().setGenres(copy.getBook().getBookGenres().
-                    toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
             if (copy.getStatus().equals(BookCopyStatus.BORROWED)) {
                 Optional<BookBorrowing> bookBorrowingOptional =
@@ -464,8 +455,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         for (BookCopy bookCopy : books) {
             BookCopyResDto dto = bookCopyMapper.toResDto(bookCopy);
             dto.getBook().setAuthorsString(bookCopy.getBook().getBookAuthors().toString().
-                    replace("[", "").replace("]", ""));
-            dto.getBook().setGenresString(bookCopy.getBook().getBookGenres().toString().
                     replace("[", "").replace("]", ""));
             dto.setBookCopyTypeDto(objectMapper.convertValue(bookCopy.getBookCopyType(), BookCopyTypeDto.class));
             res.add(dto);

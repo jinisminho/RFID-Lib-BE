@@ -2,10 +2,8 @@ package capstone.library.mappers;
 
 import capstone.library.dtos.response.AuthorResDto;
 import capstone.library.dtos.response.BookResDto;
-import capstone.library.dtos.response.GenreResDto;
 import capstone.library.entities.Book;
 import capstone.library.entities.BookAuthor;
-import capstone.library.entities.BookGenre;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -26,16 +24,6 @@ public interface BookMapper {
     Set<AuthorResDto> toAuthorDtos(Set<BookAuthor> entities);
 
     @Mappings({
-            @Mapping(target = "id", source = "genre.id"),
-            @Mapping(target = "name", source = "genre.name"),
-    })
-    GenreResDto toGenreResDto(BookGenre entity);
-
-    Set<GenreResDto> toGenreResDtos(Set<BookGenre> entities);
-
-    @Mappings({
-
-            @Mapping(target = "genres", source = "bookGenres"),
             @Mapping(target = "author", source = "bookAuthors"),
     })
     BookResDto toResDto(Book entity);

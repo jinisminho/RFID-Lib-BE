@@ -16,6 +16,7 @@ import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
 import capstone.library.util.tools.CommonUtil;
 import capstone.library.util.tools.DateTimeUtils;
+import capstone.library.util.tools.GenreUtil;
 import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 @Service
 public class PatronServiceImpl implements PatronService {
 
+    @Autowired
+    private GenreRepository genreRepository;
     @Autowired
     private BookJpaRepository bookJpaRepository;
     @Autowired
@@ -193,8 +196,12 @@ public class PatronServiceImpl implements PatronService {
             dto.setBook(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class));
             dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                     replace("]", "").replace("[", ""));
-            dto.getBook().setGenres(bookCopy.getBook().getBookGenres().toString().
-                    replace("]", "").replace("[", ""));
+
+            //Tram added ----
+            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+            String genres = GenreUtil.getGenreFormCallNumber(bookCopy.getBook().getCallNumber(), genreList);
+            // -----------
+            dto.getBook().setGenres(genres);
             Optional<BookBorrowing> bookBorrowingOptional =
                     bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
             if (bookBorrowingOptional.isPresent()) {
@@ -266,8 +273,12 @@ public class PatronServiceImpl implements PatronService {
             dto.setBook(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class));
             dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                     replace("]", "").replace("[", ""));
-            dto.getBook().setGenres(bookCopy.getBook().getBookGenres().toString().
-                    replace("]", "").replace("[", ""));
+            //Tram added ----
+            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+            String genres = GenreUtil.getGenreFormCallNumber(bookCopy.getBook().getCallNumber(), genreList);
+            // -----------
+            dto.getBook().setGenres(genres);
+
             Optional<BookBorrowing> bookBorrowingOptional =
                     bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
             if (bookBorrowingOptional.isPresent()) {

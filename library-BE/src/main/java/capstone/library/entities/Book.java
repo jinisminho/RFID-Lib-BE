@@ -78,9 +78,6 @@ public class Book extends Audit {
     public Set<BookAuthor> bookAuthors;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
-    public Set<BookGenre> bookGenres;
-
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "book")
     public Set<BookCopy> bookCopies;
 
     @ManyToOne(fetch = FetchType.LAZY)
