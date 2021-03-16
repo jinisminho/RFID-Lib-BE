@@ -13,4 +13,6 @@ public interface PortableSearchBookService {
     List<PortableSearchBookResponse> findBookSearchingList(int patronId);
 
     String addSearchingBooksToFile (AddPortableSearchingBooksRequest request);
+
+    String deleteSearchingFileOfAPatron(int patronId);
 }
