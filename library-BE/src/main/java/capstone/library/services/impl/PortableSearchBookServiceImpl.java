@@ -1,8 +1,13 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.request.AddPortableSearchingBooksRequest;
+import capstone.library.dtos.response.PortableBookSearchPositionResponse;
 import capstone.library.dtos.response.PortableSearchBookResponse;
 import capstone.library.entities.Account;
+import capstone.library.entities.Book;
+import capstone.library.entities.BookCopy;
+import capstone.library.entities.BookCopyPosition;
+import capstone.library.enums.BookCopyStatus;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
@@ -16,13 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.ConstantUtil.DELETE_SUCCESS;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 
 @Service
 public class PortableSearchBookServiceImpl implements PortableSearchBookService {
@@ -54,10 +60,53 @@ public class PortableSearchBookServiceImpl implements PortableSearchBookService 
         String fileName = BOOK_FILE_PREFIX + "-" + accountId + FILE_TEXT_EXTENSION;
         String filePath = FILE_DIRECTORY + fileName;
 
-        AddPortableSearchingBooksRequest rs = readFile(filePath);
+        List<PortableSearchBookResponse> result = new ArrayList<>();
+        AddPortableSearchingBooksRequest itemInFile = readFile(filePath);
 
+        //search tung cuon sach xem co available + lib-use ok
+        //neu available thi tra ve position cua copy available + lib-use vaf rfid cua no
+        Set<BookCopyStatus> availableCopyStatus = new HashSet<>();
+        availableCopyStatus.add(BookCopyStatus.AVAILABLE);
+        availableCopyStatus.add(BookCopyStatus.LIB_USE_ONLY);
+        for (Integer bookId : itemInFile.getBookIdList()) {
+            Book book = bookRepository.findById(bookId)
+                    .orElse(null);
+            if (book != null) {
+                List<BookCopy> copies = bookCopyRepository.findByBookIdAndStatusIn(bookId, availableCopyStatus);
+                PortableSearchBookResponse tmp = mapper.convertValue(book, PortableSearchBookResponse.class);
+                String authors = book.getBookAuthors()
+                        .stream()
+                        .map(a -> a.getAuthor().getName())
+                        .collect(Collectors.joining(", "));
+                tmp.setAuthors(authors);
+                if (copies.isEmpty()) {
+                    tmp.setAvailable(false);
+                    tmp.setPositionList(new ArrayList<>());
+                    tmp.setCopyRfidList(new ArrayList<>());
+                } else {
+                    tmp.setAvailable(true);
+                    List<String> copyRfids = copies.stream().map(BookCopy::getRfid).collect(Collectors.toList());
+                    tmp.setCopyRfidList(copyRfids);
+                    //extract all positions from available copies
+                    List<PortableBookSearchPositionResponse>
+                            positions = copies.stream().map(
+                            c -> {
+                                return new PortableBookSearchPositionResponse(c.getBookCopyPosition().getShelf(),
+                                        c.getBookCopyPosition().getLine().toString());
+                            }
+                    ).collect(Collectors.toList());
+                    //only get unique positions
+                    List<PortableBookSearchPositionResponse> uniquePositions = positions
+                            .stream()
+                            .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(PortableBookSearchPositionResponse::toString))),
+                                    ArrayList::new));
+                    tmp.setPositionList(uniquePositions);
+                }
+                result.add(tmp);
 
-
+            }
+        }
+        return result;
     }
 
     @Override
@@ -91,7 +140,7 @@ public class PortableSearchBookServiceImpl implements PortableSearchBookService 
     }
 
     @Override
-    public String deleteSearchingFileOfAPatron(int accountId) {
+    public String deleteSearchingFile(int accountId) {
         boolean isDeleted;
         accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
