@@ -388,7 +388,7 @@ ALTER TABLE book
 ADD CONSTRAINT UK_book_isbn UNIQUE (ISBN);
 
 ALTER TABLE book_copy_position
-ADD CONSTRAINT UK_bookCopyPositioin_shelf UNIQUE (shelf);
+ADD CONSTRAINT UK_bookCopyPositioin_shelf_line UNIQUE (shelf, line);
 
 ALTER TABLE genre
 ADD CONSTRAINT UK_genre_ddc UNIQUE (ddc);
