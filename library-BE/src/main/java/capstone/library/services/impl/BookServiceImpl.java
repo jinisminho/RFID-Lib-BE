@@ -15,6 +15,8 @@ import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
+import capstone.library.util.tools.CallNumberUtil;
+import capstone.library.util.tools.GenreUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +98,14 @@ public class BookServiceImpl implements BookService {
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
         for (BookResDto book : res) {
+            //Get Genre by ddc (floored)
+            double ddc = Math.floor(Double.parseDouble(book.getCallNumber().split("\\.", 0)[0]) / 100) * 100;
+            Optional<Genre> genreOpt = genreRepository.findByDdc(ddc);
+            if (genreOpt.isPresent()) {
+                book.setGenre(genreOpt.get().getName());
+            }
+
+            //Count available items
             int stockSize = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             stockSize += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             if (stockSize > 0) {
