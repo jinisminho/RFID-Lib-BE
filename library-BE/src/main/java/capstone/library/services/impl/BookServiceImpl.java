@@ -186,8 +186,10 @@ public class BookServiceImpl implements BookService {
             for (int id : request.getAuthorIds()) {
                 authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
             }
-            book.setCallNumber(callNumberUtil.
-                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+
+//            book.setCallNumber(callNumberUtil.
+//                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+            book.setCallNumber(request.getCallNumber());
 
             /*Get account to add to updateBy*/
             Account updateBy = accountRepository.findById(request.getUpdateBy()).
@@ -370,8 +372,10 @@ public class BookServiceImpl implements BookService {
         for (int id : request.getAuthorIds()) {
             authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
         }
-        book.setCallNumber(callNumberUtil.
-                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+
+//        book.setCallNumber(callNumberUtil.
+//                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+        book.setCallNumber(request.getCallNumber());
 
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         //Set<BookGenre> bookGenreSet = new HashSet<>();
