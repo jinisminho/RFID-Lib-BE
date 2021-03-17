@@ -138,13 +138,13 @@ public class PatronServiceImpl implements PatronService {
 
         switch (status) {
             case RETURNED:
-                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNotNull(patronId, pageable);
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNotNullAndLostAtIsNull(patronId, pageable);
                 break;
             case BORROWING:
-                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtFromCurrentDateOnward(patronId, pageable);
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtFromCurrentDateOnwardAndLostAtIsNull(patronId, pageable);
                 break;
             case OVERDUED:
-                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDate(patronId, pageable);
+                histories = bookBorrowingRepository.findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDateAndLostAtIsNull(patronId, pageable);
                 break;
             default:
                 histories = new PageImpl<>(new ArrayList<>(), pageable, 0);

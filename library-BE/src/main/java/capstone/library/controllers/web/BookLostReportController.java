@@ -41,25 +41,38 @@ public class BookLostReportController {
                                                                 LocalDateTime startDate,
                                                         @RequestParam(required = false, name = "endDate")
                                                         @DateTimeFormat(pattern = DATE_TIME_PATTERN)
-                                                                LocalDateTime endDate, @RequestParam(required = false, name = "status")LostBookStatus status) {
-        if(status != null){
+                                                                LocalDateTime endDate, @RequestParam(required = false, name = "status") LostBookStatus status) {
+        if (status != null) {
             return bookLostReportService.findBookLostByStatus(status, startDate, endDate, pageable);
-        }else{
+        } else {
             return bookLostReportService.findBookLostInPeriod(startDate, endDate, pageable);
         }
+    }
+
+    @Secured({LIBRARIAN, ADMIN, PATRON})
+    @GetMapping("/find/{patronId}")
+    public Page<BookLostResponse> findLostBooksOfPatron(Pageable pageable,
+                                                        @RequestParam(required = false, name = "startDate")
+                                                        @DateTimeFormat(pattern = DATE_TIME_PATTERN)
+                                                                LocalDateTime startDate,
+                                                        @RequestParam(required = false, name = "endDate")
+                                                        @DateTimeFormat(pattern = DATE_TIME_PATTERN)
+                                                                LocalDateTime endDate,
+                                                        @PathVariable("patronId") int patronId) {
+        return bookLostReportService.findBookLostOfPatron(startDate, endDate, pageable, patronId);
     }
 
     @ApiOperation(value = "This API use to confirm pending book lost report and send email to patron")
     @Secured({LIBRARIAN, ADMIN})
     @PostMapping("/confirm")
-    public String confirmBookLost (@RequestBody @NotNull ConfirmLostBookRequest request){
+    public String confirmBookLost(@RequestBody @NotNull ConfirmLostBookRequest request) {
         return bookLostReportService.confirmBookLost(request);
     }
 
     @ApiOperation(value = "This API allow  patron to report lost for:  overdue or borrowing book")
     @Secured({PATRON})
     @GetMapping("/reportByPatron/{bookBorrowingId}")
-    public String reportBookLostByPatron(@PathVariable(name = "bookBorrowingId")int bookBorrowingId){
+    public String reportBookLostByPatron(@PathVariable(name = "bookBorrowingId") int bookBorrowingId) {
         return bookLostReportService.reportLostByPatron(bookBorrowingId);
     }
 }
