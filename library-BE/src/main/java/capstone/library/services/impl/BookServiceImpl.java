@@ -15,8 +15,8 @@ import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
-import capstone.library.util.tools.GenreUtil;
 import capstone.library.util.tools.CallNumberUtil;
+import capstone.library.util.tools.GenreUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,8 +178,10 @@ public class BookServiceImpl implements BookService {
             for (int id : request.getAuthorIds()) {
                 authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
             }
-            book.setCallNumber(callNumberUtil.
-                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+
+//            book.setCallNumber(callNumberUtil.
+//                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+            book.setCallNumber(request.getCallNumber());
 
             /*Get account to add to updateBy*/
             Account updateBy = accountRepository.findById(request.getUpdateBy()).
@@ -362,8 +364,10 @@ public class BookServiceImpl implements BookService {
         for (int id : request.getAuthorIds()) {
             authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
         }
-        book.setCallNumber(callNumberUtil.
-                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+
+//        book.setCallNumber(callNumberUtil.
+//                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+        book.setCallNumber(request.getCallNumber());
 
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         //Set<BookGenre> bookGenreSet = new HashSet<>();
