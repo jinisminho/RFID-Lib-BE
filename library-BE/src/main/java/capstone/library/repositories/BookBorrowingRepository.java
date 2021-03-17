@@ -47,12 +47,12 @@ public interface BookBorrowingRepository extends JpaRepository<BookBorrowing, In
     List<BookBorrowing> findByDueAtAndReturnedAtIsNullAndLostAtIsNull(LocalDate dueAt);
 
     @Query("SELECT b FROM BookBorrowing b WHERE b.returnedAt IS NOT NULL AND b.borrowing.borrower.id = :borrower_id AND b.lostAt is null")
-    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNotNull(@Param("borrower_id") Integer patronId, Pageable pageable);
+    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNotNullAndLostAtIsNull(@Param("borrower_id") Integer patronId, Pageable pageable);
 
     @Query("SELECT b FROM BookBorrowing b WHERE b.returnedAt IS NULL AND b.borrowing.borrower.id = :borrower_id AND b.dueAt < CURRENT_DATE AND b.lostAt is null")
-    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDate(@Param("borrower_id") Integer patronId, Pageable pageable);
+    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNullAndDueAtBeforeCurrentDateAndLostAtIsNull(@Param("borrower_id") Integer patronId, Pageable pageable);
 
     @Query("SELECT b FROM BookBorrowing b WHERE b.returnedAt IS NULL AND b.borrowing.borrower.id = :borrower_id AND b.dueAt >= CURRENT_DATE AND b.lostAt is null")
-    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNullAndDueAtFromCurrentDateOnward(@Param("borrower_id") Integer patronId, Pageable pageable);
+    Page<BookBorrowing> findAllByBorrowerIdAndReturnedAtIsNullAndDueAtFromCurrentDateOnwardAndLostAtIsNull(@Param("borrower_id") Integer patronId, Pageable pageable);
 
 }
