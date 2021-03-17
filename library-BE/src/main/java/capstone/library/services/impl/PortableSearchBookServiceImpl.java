@@ -3,19 +3,15 @@ package capstone.library.services.impl;
 import capstone.library.dtos.request.AddPortableSearchingBooksRequest;
 import capstone.library.dtos.response.PortableBookSearchPositionResponse;
 import capstone.library.dtos.response.PortableSearchBookResponse;
-import capstone.library.entities.Account;
 import capstone.library.entities.Book;
 import capstone.library.entities.BookCopy;
-import capstone.library.entities.BookCopyPosition;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.BookEntityRepository;
-import capstone.library.repositories.BookRepository;
 import capstone.library.services.PortableSearchBookService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,7 +74,7 @@ public class PortableSearchBookServiceImpl implements PortableSearchBookService 
                         .stream()
                         .map(a -> a.getAuthor().getName())
                         .collect(Collectors.joining(", "));
-                tmp.setAuthors(authors);
+                tmp.setAuthorNames(authors);
                 if (copies.isEmpty()) {
                     tmp.setAvailable(false);
                     tmp.setPositionList(new ArrayList<>());

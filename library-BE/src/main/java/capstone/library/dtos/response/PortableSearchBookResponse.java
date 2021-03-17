@@ -18,6 +18,8 @@ public class PortableSearchBookResponse {
 
     private int id;
 
+    private String img;
+
     private String isbn;
 
     private String title;
@@ -34,7 +36,7 @@ public class PortableSearchBookResponse {
 
     private boolean isAvailable;
 
-    private String authors;
+    private String authorNames;
 
     private List<PortableBookSearchPositionResponse> positionList;
 
