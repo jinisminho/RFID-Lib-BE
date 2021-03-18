@@ -96,6 +96,27 @@ public class BookServiceImpl implements BookService {
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
         for (BookResDto book : res) {
+            //Get Genre by ddc (floored)
+            double ddc = 0;
+            double ddcFloored = 0;
+            try {
+
+                ddc = Double.parseDouble(book.getCallNumber().split("[ ]", 0)[0]);
+                ddcFloored = Math.floor(ddc / 100) * 100; //floor(double/100)*100 e.g.: 123.1 -> 100
+
+                Optional<Genre> genreOpt = genreRepository.findByDdc(ddcFloored);
+                if (genreOpt.isPresent()) {
+                    book.setGenre(genreOpt.get().getName());
+                }
+
+            } catch (NullPointerException nullE) {
+                //if the string was given to pareseDouble was null
+            } catch (NumberFormatException numE) {
+                //if the string was given to pareseDouble did not contain a parsable double
+            }
+            //Get Genre by ddc (floored) - end here
+
+            //Count available items
             int stockSize = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             stockSize += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             if (stockSize > 0) {

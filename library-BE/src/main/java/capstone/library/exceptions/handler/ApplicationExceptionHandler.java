@@ -149,7 +149,7 @@ public class ApplicationExceptionHandler {
         ErrorDto errorDto = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.CONFLICT.value(),
                 ConstantUtil.EXCEPTION_FK_DUPLICATED,
-                exception.getMessage());
+                "Data Integrity Violation");
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("FK_copy_book")) {
             errorDto.setMessage("Cannot delete this book because there are existing copies of this book");
@@ -178,6 +178,31 @@ public class ApplicationExceptionHandler {
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
                 && exception.getRootCause().getMessage().contains("UK_bookCopy_rfid")) {
             errorDto.setMessage("Book copy's rfid must be unique");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_patronType_name")) {
+            errorDto.setMessage("Patron type's name must be unique");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_copyType_name")) {
+            errorDto.setMessage("Book copy type's name must be unique");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_book_isbn")) {
+            errorDto.setMessage("Book's ISBN must be unique");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_bookCopyPositioin_shelf_line")) {
+            errorDto.setMessage("Position of shelf-line must be unique");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+        }
+        if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null
+                && exception.getRootCause().getMessage().contains("UK_genre_ddc")) {
+            errorDto.setMessage("DDC must be unique");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
         }
         if (exception.getRootCause() != null && exception.getRootCause().getMessage() != null

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -73,12 +74,19 @@ public class BookLostReportServiceImpl implements BookLostReportService {
             overdueFee = CommonUtil.calculateOverdueFine(bookBorrowing.getFeePolicy(), bookBorrowing.getBookCopy().getPrice(), overdueDays);
         }
 
+        String authors = bookBorrowing.getBookCopy().getBook().getBookAuthors()
+                .stream()
+                .map(a -> a.getAuthor().getName())
+                .collect(Collectors.joining(", "));
+
         LostBookFineResponseDto response = new LostBookFineResponseDto();
         response.setBookBorrowingInfo(objectMapper.convertValue(bookBorrowing, BookBorrowingDto.class));
+        response.getBookBorrowingInfo().getBookCopy().getBook().setAuthors(authors);
         response.setLostBookFineInMarket(calculateLostFineInMarket(bookBorrowing));
         response.setLostBookFineNotInMarket(calculateLostFineNotInMarket(bookBorrowing));
         response.setOverdueDays(overdueDays);
         response.setOverdueFee(overdueFee);
+        response.setId(bookLostReport.getId());
         return response;
     }
 

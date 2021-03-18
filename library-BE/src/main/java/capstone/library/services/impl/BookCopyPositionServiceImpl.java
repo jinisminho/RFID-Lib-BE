@@ -4,6 +4,7 @@ import capstone.library.dtos.common.PositionDto;
 import capstone.library.dtos.request.SaveSamplePositionRequestDto;
 import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
+import capstone.library.dtos.response.PortableBookSearchPositionResponse;
 import capstone.library.entities.BookCopy;
 import capstone.library.entities.BookCopyPosition;
 import capstone.library.enums.BookCopyStatus;
@@ -18,10 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 
 @Service
 public class BookCopyPositionServiceImpl implements BookCopyPositionService {
@@ -54,30 +55,30 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
         String searchCallNumber = bookCopy.getBook().getCallNumber();
         BookCopyPosition position = bookCopy.getBookCopyPosition();
         if (position == null) {
-            return new BookCopyPositionResponse(bookCopy.getBookCopyType().getName(),
+            return new BookCopyPositionResponse(
                     bookCopy.getBook().getCallNumber(),
                     "N/A",
-                    "N/A",
-                    bookCopy.getStatus().toString());
+                    "N/A");
         }
-        return new BookCopyPositionResponse(bookCopy.getBookCopyType().getName(),
+        return new BookCopyPositionResponse(
                 bookCopy.getBook().getCallNumber(),
                 position.getLine().toString(),
-                position.getShelf(),
-                bookCopy.getStatus().toString());
+                position.getShelf());
     }
 
+    /* Only return available or lib-in-use position with unique pair of shelf-line*/
     @Override
     public List<BookCopyPositionResponse> findPositionForBook(int bookId) {
         List<BookCopyPositionResponse> rs = new ArrayList<>();
-        List<BookCopy> bookCopyList = bookCopyRepository.findByBookId(bookId);
-        if (!bookCopyList.isEmpty()) {
-            for (BookCopy copy : bookCopyList) {
+        Set<BookCopyStatus> availableCopyStatus = new HashSet<>();
+        availableCopyStatus.add(BookCopyStatus.AVAILABLE);
+        availableCopyStatus.add(BookCopyStatus.LIB_USE_ONLY);
+        List<BookCopy> availableBookCopyList = bookCopyRepository.findByBookIdAndStatusIn(bookId, availableCopyStatus);
+        if (!availableBookCopyList.isEmpty()) {
+            for (BookCopy copy : availableBookCopyList) {
                 BookCopyPosition position = copy.getBookCopyPosition();
                 BookCopyPositionResponse response = new BookCopyPositionResponse();
-                response.setBookCopyType(copy.getBookCopyType().getName());
                 response.setCallNumber(copy.getBook().getCallNumber());
-                response.setStatus(copy.getStatus().toString());
                 if (position != null) {
                     response.setLine(position.getLine().toString());
                     response.setShelf(position.getShelf());
@@ -89,7 +90,10 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
             }
 
         }
-        return rs;
+        return rs
+                .stream()
+                .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(BookCopyPositionResponse::toString))),
+                        ArrayList::new));
     }
 
     @Override
