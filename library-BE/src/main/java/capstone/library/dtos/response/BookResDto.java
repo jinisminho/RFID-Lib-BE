@@ -52,9 +52,11 @@ public class BookResDto {
 
     private String authorsString;
 
-    public Set<GenreResDto> genres;
+//    public Set<GenreResDto> genres;
 
-    private String genresString;
+//    private String genresString;
+
+    private String genre;
 
     private String img;
 
