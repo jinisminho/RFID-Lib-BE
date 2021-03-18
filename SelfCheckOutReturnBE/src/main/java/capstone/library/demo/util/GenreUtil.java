@@ -16,11 +16,11 @@ public class GenreUtil {
             throw new IllegalArgumentException("callNumber is invalid");
         }
         try {
-            int callNumberPrefix = Integer.parseInt(callNumber.substring(0, 3));
+            double callNumberPrefix = Double.parseDouble(callNumber.substring(0, 3));
             if (!genres.isEmpty()) {
                 Genre holdingGenre = genres.get(0);
                 for (Genre genre : genres) {
-                    int tmpDDC = Integer.parseInt(genre.getDdc().toString());
+                    double tmpDDC = genre.getDdc();
                     if (tmpDDC > callNumberPrefix) {
                         break;
                     }else{
