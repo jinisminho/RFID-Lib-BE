@@ -1,15 +1,18 @@
 package capstone.library;
 
-import capstone.library.util.tools.CallNumberUtil;
+import capstone.library.repositories.GenreRepository;
 import capstone.library.util.tools.PasswordUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 class LibraryApplicationTests {
 
+    @Mock
+    GenreRepository genreRepository;
 
     @Test
     void contextLoads() {
@@ -19,8 +22,7 @@ class LibraryApplicationTests {
 
     @Test
     void test() {
-        CallNumberUtil callNumberUtil = new CallNumberUtil();
-        System.out.println(callNumberUtil.createCallNumber(250, "J.K Rowling, Harry Potter", 2010));
+        System.out.println(Integer.parseInt("100.0"));
     }
 
 
