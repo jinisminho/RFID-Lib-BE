@@ -431,13 +431,27 @@ public class BookCopyServiceImpl implements BookCopyService {
                     dto.getBorrower().setRoleName(borrower.getRole().getName());
                 }
             }
-            
+
             //Get Genre by ddc (floored)
-            double ddc = Math.floor(Double.parseDouble(dto.getBook().getCallNumber().split("\\.", 0)[0]) / 100) * 100;
-            Optional<Genre> genreOpt = genreRepository.findByDdc(ddc);
-            if (genreOpt.isPresent()) {
-                dto.getBook().setGenres(genreOpt.get().getName());
+            double ddc = 0;
+            double ddcFloored = 0;
+            try {
+
+                ddc = Double.parseDouble(dto.getBook().getCallNumber().split("[ ]", 0)[0]);
+                ddcFloored = Math.floor(ddc / 100) * 100; //floor(double/100)*100 e.g.: 123.1 -> 100
+
+                Optional<Genre> genreOpt = genreRepository.findByDdc(ddcFloored);
+                if (genreOpt.isPresent()) {
+                    dto.getBook().setGenres(genreOpt.get().getName());
+                }
+
+            } catch (NullPointerException nullE) {
+                //if the string was given to pareseDouble was null
+            } catch (NumberFormatException numE) {
+                //if the string was given to pareseDouble did not contain a parsable double
             }
+            //Get Genre by ddc (floored) - end here
+
             return dto;
         }
         throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
@@ -473,11 +487,24 @@ public class BookCopyServiceImpl implements BookCopyService {
 
         for (BookCopyResDto copy : res) {
             //Get Genre by ddc (floored)
-            double ddc = Math.floor(Double.parseDouble(copy.getBook().getCallNumber().split("\\.", 0)[0]) / 100) * 100;
-            Optional<Genre> genreOpt = genreRepository.findByDdc(ddc);
-            if (genreOpt.isPresent()) {
-                copy.getBook().setGenre(genreOpt.get().getName());
+            double ddc = 0;
+            double ddcFloored = 0;
+            try {
+
+                ddc = Double.parseDouble(copy.getBook().getCallNumber().split("[ ]", 0)[0]);
+                ddcFloored = Math.floor(ddc / 100) * 100; //floor(double/100)*100 e.g.: 123.1 -> 100
+
+                Optional<Genre> genreOpt = genreRepository.findByDdc(ddcFloored);
+                if (genreOpt.isPresent()) {
+                    copy.getBook().setGenre(genreOpt.get().getName());
+                }
+
+            } catch (NullPointerException nullE) {
+                //if the string was given to pareseDouble was null
+            } catch (NumberFormatException numE) {
+                //if the string was given to pareseDouble did not contain a parsable double
             }
+            //Get Genre by ddc (floored) - end here
 
             //Count available items
             int stockSize = bookCopyRepository.findByBookIdAndStatus(copy.getBook().getId(), BookCopyStatus.AVAILABLE).stream().map(cop -> bookCopyMapper.toResDto(cop)).collect(Collectors.toList()).size();
