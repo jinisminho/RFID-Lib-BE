@@ -109,7 +109,7 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         bookLost.setFine(lostBook.getFine());
         bookLost.setLibrarian(auditor);
         bookLost.setStatus(LostBookStatus.CONFIRMED);
-        bookLost.setReason(lostBook.getReason());
+        bookLost.setReason(lostBook.getNote());
         bookLostReportRepository.save(bookLost);
         //email to patron
         mailService.sendLostBookFine(bookLost);

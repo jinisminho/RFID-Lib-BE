@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -90,10 +91,18 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
             }
 
         }
-        return rs
+        List<BookCopyPositionResponse> uniquePositions = rs
                 .stream()
                 .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(BookCopyPositionResponse::toString))),
                         ArrayList::new));
+        if(uniquePositions.size() == 1  && uniquePositions.get(0).getShelf().equals("N/A")){
+            return uniquePositions;
+        }else{
+            return uniquePositions
+                    .stream()
+                    .filter(b -> !b.getShelf().equals("N/A"))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
