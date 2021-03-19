@@ -17,7 +17,7 @@ class LibraryApplicationTests {
     @Test
     void contextLoads() {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        System.out.println(encoder.encode("4123"));
+        System.out.println(encoder.encode("123456"));
     }
 
     @Test

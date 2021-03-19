@@ -87,15 +87,30 @@ public class PortableSearchBookServiceImpl implements PortableSearchBookService 
                     List<PortableBookSearchPositionResponse>
                             positions = copies.stream().map(
                             c -> {
-                                return new PortableBookSearchPositionResponse(c.getBookCopyPosition().getShelf(),
-                                        c.getBookCopyPosition().getLine().toString());
+                                if(c.getBookCopyPosition() != null){
+                                    return new PortableBookSearchPositionResponse(c.getBookCopyPosition().getShelf(),
+                                            c.getBookCopyPosition().getLine().toString());
+                                }else{
+                                    return new PortableBookSearchPositionResponse("N/A", "N/A");
+                                }
                             }
                     ).collect(Collectors.toList());
-                    //only get unique positions
-                    List<PortableBookSearchPositionResponse> uniquePositions = positions
+                    //get unique positions: if there is only 1 position but N/A return N/A if more than 1 position then remove N/A position
+                    List<PortableBookSearchPositionResponse> uniquePositions;
+                    List<PortableBookSearchPositionResponse> tmpPositions =
+                             positions
                             .stream()
                             .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(PortableBookSearchPositionResponse::toString))),
                                     ArrayList::new));
+
+                    if(tmpPositions.size() == 1 && tmpPositions.get(0).getShelf().equals("N/A")){
+                        uniquePositions = tmpPositions;
+                    }else{
+                        uniquePositions = tmpPositions
+                                .stream()
+                                .filter(b -> !b.getShelf().equals("N/A"))
+                                .collect(Collectors.toList());
+                    }
                     tmp.setPositionList(uniquePositions);
                 }
                 result.add(tmp);
