@@ -15,7 +15,7 @@ public class ConfirmLostBookRequest {
 
     private double fine;
 
-    private String reason;
+    private String note;
 
     private int auditorId;
 }
