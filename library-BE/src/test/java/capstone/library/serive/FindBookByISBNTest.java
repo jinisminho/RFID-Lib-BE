@@ -63,7 +63,7 @@ public class FindBookByISBNTest {
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         bookAuthorSet.add(bookAuthor);
         book.setBookAuthors(bookAuthorSet);
-        book.setCallNumber("100.0 AAA 2001");
+        book.setCallNumber("123.123 AAA 2001");
 
         bookCopy = new BookCopy();
         genre = new Genre();
@@ -72,7 +72,7 @@ public class FindBookByISBNTest {
     }
 
     @Test
-    public void testSuccess() {
+    public void findSuccess() {
         when(myBookRepository.findByIsbn(ISBN)).thenReturn(Optional.of(book));
 
         when(objectMapper.convertValue(book, BookResponseDto.class)).thenReturn(dto);
@@ -89,7 +89,7 @@ public class FindBookByISBNTest {
     }
 
     @Test
-    public void testNotFound() {
+    public void bookNotFound() {
         when(myBookRepository.findByIsbn(ISBN)).thenReturn(Optional.empty());
         expectedException.expect(ResourceNotFoundException.class);
         expectedException.expectMessage(BOOK_NOT_FOUND);

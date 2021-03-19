@@ -84,16 +84,15 @@ public class LibrarianServiceImpl implements LibrarianService {
     @Override
     @Transactional
     public CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto request) {
-        List<CheckoutResponseDto> checkoutResponseDtos = new ArrayList<>();
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
         Optional<Account> librarianOptional = accountRepository.findById(request.getLibrarianId());
-        //Return 404 if no patron with 'getLibrarianId' is found
+        //Return 404 if no account with 'getLibrarianId' is found
         if (librarianOptional.isEmpty()) {
             throw new ResourceNotFoundException(
                     "Librarian",
-                    "Librarian with id: " + request.getPatronId() + NOT_FOUND);
+                    "Librarian with id: " + request.getLibrarianId() + NOT_FOUND);
         }
         Account issuingLibrarian = librarianOptional.get();
         /*========================*/
