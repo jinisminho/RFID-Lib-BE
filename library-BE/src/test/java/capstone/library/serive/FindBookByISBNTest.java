@@ -68,7 +68,7 @@ public class FindBookByISBNTest {
         bookCopy = new BookCopy();
         genre = new Genre();
         genre.setDdc(100.9);
-        genre.setName("Hello");
+        genre.setName("Book genre");
     }
 
     @Test

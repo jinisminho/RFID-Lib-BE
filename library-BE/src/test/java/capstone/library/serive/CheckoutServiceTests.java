@@ -6,12 +6,16 @@ import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.RoleIdEnum;
+import capstone.library.exceptions.InvalidRequestException;
+import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
 import capstone.library.services.LibrarianService;
 import capstone.library.services.SecurityGateService;
 import capstone.library.services.impl.LibrarianServiceImpl;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,6 +25,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,9 +46,10 @@ public class CheckoutServiceTests {
     private SecurityGateService securityGateService;
 
     @InjectMocks
-    private LibrarianService librarianService = new LibrarianServiceImpl();
-//    @InjectMocks
-//    private SecurityGateService securityGateService = new SecurityGateServiceImpl();
+    private final LibrarianService librarianService = new LibrarianServiceImpl();
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private static final int LIBRARIAN_ID = 2;
     private static final int PATRON_ID = 7;
@@ -58,7 +64,8 @@ public class CheckoutServiceTests {
     private static final String AUTHOR_NAME = "John";
     private static final String ROLE_NAME = "Student";
     private static final String BOOK_NOT_FOUND_MESSAGE = "Cannot find this book in database";
-
+    private static final String NOT_FOUND = " not found";
+    private static final String PATRON_INACTIVE = "This patron is inactive";
 
     ScannedRFIDCopiesRequestDto request;
     CheckoutResponseDto response;
@@ -77,6 +84,9 @@ public class CheckoutServiceTests {
     Author author;
     CheckoutCopyDto dto;
     Role role;
+
+    public CheckoutServiceTests() {
+    }
 
     @Before
     public void init() {
@@ -246,6 +256,72 @@ public class CheckoutServiceTests {
         request.setCheckoutNote("");
         setSuccessResponse();
         assertEquals(BOOK_NOT_FOUND_MESSAGE, librarianService.checkout(request).getCheckoutCopyDto().get(0).getReason());
+    }
+
+    @Test
+    public void librarianNotFound() {
+        //Mock librarian account
+        when(accountRepository.findById(LIBRARIAN_ID)).thenReturn(Optional.empty());
+        expectedException.expect(ResourceNotFoundException.class);
+        expectedException.expectMessage("Librarian with id: " + librarianAccount.getId() + NOT_FOUND);
+        //set test request
+        request.setLibrarianId(LIBRARIAN_ID);
+        given(librarianService.checkout(request)).willThrow(new ResourceNotFoundException());
+    }
+
+    @Test
+    public void patronNotFound() {
+        //Mock librarian account
+        when(accountRepository.findById(LIBRARIAN_ID)).thenReturn(Optional.of(librarianAccount));
+        //Mock patron account
+        when(accountRepository.findByIdAndRoleId(PATRON_ID, RoleIdEnum.ROLE_PATRON.getRoleId()))
+                .thenReturn(Optional.empty());
+        expectedException.expect(ResourceNotFoundException.class);
+        expectedException.expectMessage("Patron with id: " + patronAccount.getId() + NOT_FOUND);
+        //set test request
+        request.setPatronId(PATRON_ID);
+        request.setLibrarianId(LIBRARIAN_ID);
+        given(librarianService.checkout(request)).willThrow(new ResourceNotFoundException());
+    }
+
+    @Test
+    public void feePolicyNotFound() {
+        //Mock librarian account
+        when(accountRepository.findById(LIBRARIAN_ID)).thenReturn(Optional.of(librarianAccount));
+        //Mock patron account
+        patronAccount.setRole(role);
+        patronAccount.setActive(true);
+        patronType.setId(DEFAULT_ID);
+        patronAccount.setPatronType(patronType);
+        when(accountRepository.findByIdAndRoleId(PATRON_ID, RoleIdEnum.ROLE_PATRON.getRoleId()))
+                .thenReturn(Optional.of(patronAccount));
+        //Mock fee policy list
+        when(feePolicyRepository.findAllByOrderByCreatedAtAsc()).thenReturn(new ArrayList<>());
+        expectedException.expect(ResourceNotFoundException.class);
+        expectedException.expectMessage("Fee Policy " + NOT_FOUND);
+        //set test request
+        request.setPatronId(PATRON_ID);
+        request.setLibrarianId(LIBRARIAN_ID);
+        given(librarianService.checkout(request)).willThrow(new ResourceNotFoundException());
+    }
+
+    @Test
+    public void patronInactive() {
+        //Mock librarian account
+        when(accountRepository.findById(LIBRARIAN_ID)).thenReturn(Optional.of(librarianAccount));
+        //Mock patron account
+        patronAccount.setRole(role);
+        patronAccount.setActive(false);
+        patronType.setId(DEFAULT_ID);
+        patronAccount.setPatronType(patronType);
+        when(accountRepository.findByIdAndRoleId(PATRON_ID, RoleIdEnum.ROLE_PATRON.getRoleId()))
+                .thenReturn(Optional.of(patronAccount));
+        expectedException.expect(InvalidRequestException.class);
+        expectedException.expectMessage(PATRON_INACTIVE);
+        //set test request
+        request.setPatronId(PATRON_ID);
+        request.setLibrarianId(LIBRARIAN_ID);
+        given(librarianService.checkout(request)).willThrow(new InvalidRequestException());
     }
 
     private void setSuccessResponse() {
