@@ -10,6 +10,7 @@ import capstone.library.repositories.MyBookRepository;
 import capstone.library.services.BookService;
 import capstone.library.services.impl.BookServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -55,24 +57,31 @@ public class FindBookByISBNTest {
     @Before
     public void init() {
         author = new Author();
-        author.setName("John");
         dto = new BookResponseDto();
         book = new Book();
         bookAuthor = new BookAuthor();
-        bookAuthor.setAuthor(author);
-        Set<BookAuthor> bookAuthorSet = new HashSet<>();
-        bookAuthorSet.add(bookAuthor);
-        book.setBookAuthors(bookAuthorSet);
-        book.setCallNumber("123.123 AAA 2001");
+
 
         bookCopy = new BookCopy();
         genre = new Genre();
-        genre.setDdc(100.9);
-        genre.setName("Book genre");
     }
 
     @Test
     public void findSuccess() {
+        Set<BookAuthor> bookAuthorSet = new HashSet<>();
+        author.setName("John");
+        bookAuthor.setAuthor(author);
+        bookAuthorSet.add(bookAuthor);
+        author = new Author();
+        author.setName("Andy");
+        bookAuthor = new BookAuthor();
+        bookAuthor.setAuthor(author);
+        bookAuthorSet.add(bookAuthor);
+        book.setBookAuthors(bookAuthorSet);
+        book.setCallNumber("123.123 AAA 2001");
+        genre.setDdc(100.9);
+        genre.setName("Book genre");
+
         when(myBookRepository.findByIsbn(ISBN)).thenReturn(Optional.of(book));
 
         when(objectMapper.convertValue(book, BookResponseDto.class)).thenReturn(dto);
@@ -85,7 +94,12 @@ public class FindBookByISBNTest {
         bookCopies.add(bookCopy);
         when(bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE)).thenReturn(bookCopies);
 
-        assertEquals(dto, bookService.findByISBN(ISBN));
+        String author1 = "John";
+        String author2 = "Andy";
+        dto.setGenres("Book genre");
+        assertEquals(dto.getGenres(), bookService.findByISBN(ISBN).getGenres());
+        assertThat(bookService.findByISBN(ISBN).getAuthors(), CoreMatchers.containsString(author1));
+        assertThat(bookService.findByISBN(ISBN).getAuthors(), CoreMatchers.containsString(author2));
     }
 
     @Test
