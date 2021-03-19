@@ -8,9 +8,7 @@ import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
-import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
-import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
@@ -22,7 +20,6 @@ import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -84,16 +81,15 @@ public class LibrarianServiceImpl implements LibrarianService {
     @Override
     @Transactional
     public CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto request) {
-        List<CheckoutResponseDto> checkoutResponseDtos = new ArrayList<>();
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
         Optional<Account> librarianOptional = accountRepository.findById(request.getLibrarianId());
-        //Return 404 if no patron with 'getLibrarianId' is found
+        //Return 404 if no account with 'getLibrarianId' is found
         if (librarianOptional.isEmpty()) {
             throw new ResourceNotFoundException(
                     "Librarian",
-                    "Librarian with id: " + request.getPatronId() + NOT_FOUND);
+                    "Librarian with id: " + request.getLibrarianId() + NOT_FOUND);
         }
         Account issuingLibrarian = librarianOptional.get();
         /*========================*/
@@ -448,14 +444,7 @@ public class LibrarianServiceImpl implements LibrarianService {
                     }
 
                     //Insert return transaction to database
-                    try {
-
-                        bookCopyRepository.save(bookCopy);
-
-                    } catch (Exception e) {
-                        throw new CustomException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
-                    }
+                    bookCopyRepository.save(bookCopy);
                 }
 
                 // Prepare dto
