@@ -3,6 +3,7 @@ package capstone.library.services;
 import capstone.library.dtos.email.EmailCheckOutBookDto;
 import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.BookLostReport;
 
@@ -21,4 +22,6 @@ public interface MailService {
     void sendAccountPassword(String email, String password);
 
     void sendLostBookFine(BookLostReport bookLostReport);
+
+    void sendAccountBatch(ImportPatronResponse request);
 }

@@ -297,4 +297,15 @@ public class ApplicationExceptionHandler {
                 exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ResponseBody
+    @ExceptionHandler(value = ImportFileException.class)
+    public ResponseEntity<ErrorDto> handleException(ImportFileException exception) {
+        logger.error(exception.getMessage());
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                ErrorStatus.IMPORT_ERROR.getCode(),
+                ErrorStatus.IMPORT_ERROR.getReason(),
+                exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

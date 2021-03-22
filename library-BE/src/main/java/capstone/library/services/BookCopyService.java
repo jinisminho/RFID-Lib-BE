@@ -38,4 +38,6 @@ public interface BookCopyService {
 
     CheckCopyPolicyResponseDto validateCopyByRFIDOrBarcode(String key, int patronId);
 
+    Resource generateBarcodesByBatch(List<Integer> bookCopyIdList);
+
 }

@@ -1,6 +1,7 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.CreateCopiesRequestDto;
+import capstone.library.dtos.request.PrintBarcodesBatchRequest;
 import capstone.library.dtos.request.TagCopyRequestDto;
 import capstone.library.dtos.request.UpdateCopyRequest;
 import capstone.library.dtos.response.BookCopyResDto;
@@ -38,7 +39,7 @@ public class BookCopyController {
     @Secured({ADMIN, LIBRARIAN, PATRON})
     public ResponseEntity<Resource> addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
         DownloadPDFResponse res = bookCopyService.createCopies(request);
-        String returnFileName = res.getIsbn() + "-" + res.getType() + "-" + DoubleFormatter.formatToDecimal(res.getPrice()) + ".pdf";
+        String returnFileName = "Barcodes-" + res.getIsbn() + "-" + res.getType() + "-" + DoubleFormatter.formatToDecimal(res.getPrice()) + ".pdf";
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=" + returnFileName)
@@ -104,5 +105,18 @@ public class BookCopyController {
         return bookCopyService.getCopyById(id);
     }
 
+
+    @ApiOperation("Print barcodes by batch by select row")
+    @PostMapping("/printBarcodes")
+    @Secured({ADMIN, LIBRARIAN})
+    public ResponseEntity<Resource> printBarcodesByBatch (@RequestBody @Valid PrintBarcodesBatchRequest request) {
+        Resource res = bookCopyService.generateBarcodesByBatch(request.getBookCopyIdList());
+        String returnFileName = "Barcodes.pdf";
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=" + returnFileName)
+                .header("Access-Control-Expose-Headers", "Content-Disposition")
+                .body(res);
+    }
 
 }

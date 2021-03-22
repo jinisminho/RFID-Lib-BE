@@ -1,6 +1,7 @@
 package capstone.library.entities;
 
 import capstone.library.enums.BookCopyStatus;
+import capstone.library.util.tools.DoubleFormatter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
@@ -67,5 +68,9 @@ public class BookCopy extends Audit {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_copy_position_id")
     private BookCopyPosition bookCopyPosition;
+
+    public String generateStringBarcode(){
+        return this.book.getIsbn() + "-" + this.bookCopyType.getName() + "-" + DoubleFormatter.formatToDecimal(this.price);
+    }
 
 }
