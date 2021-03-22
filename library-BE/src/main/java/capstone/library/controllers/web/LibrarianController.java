@@ -21,12 +21,14 @@ public class LibrarianController {
 
     @PostMapping("/checkout")
     @ApiOperation(value = "Checkout a list of book copies")
+    @Secured({ADMIN, LIBRARIAN})
     public CheckoutResponseDto checkoutBookCopies(@RequestBody ScannedRFIDCopiesRequestDto request) {
         return librarianService.checkout(request);
     }
 
     @PostMapping("/checkout/validate")
     @ApiOperation(value = "Validate policy for a list of book copies")
+    @Secured({ADMIN, LIBRARIAN})
     public CheckoutPolicyValidationResponseDto validateCheckoutPolicy(@RequestBody ScannedRFIDCopiesRequestDto request) {
         return librarianService.validateCheckoutPolicy(request);
     }
@@ -47,6 +49,7 @@ public class LibrarianController {
 
     @PostMapping("/return")
     @ApiOperation(value = "Return (Checkin) a list of book copies")
+    @Secured({ADMIN, LIBRARIAN})
     public ReturnBooksResponse returnBookCopies(@RequestBody ScannedRFIDCopiesRequestDto request) {
         request.setCheckin(true);
         ReturnBooksResponse rs = new ReturnBooksResponse();
@@ -56,12 +59,14 @@ public class LibrarianController {
 
     @GetMapping("/overdue/{patronId}")
     @ApiOperation(value = "return a list of overdue books based on borrower")
+    @Secured({ADMIN, LIBRARIAN})
     public List<BookResponseDto> getOverdueCopiesByBorrower(@PathVariable int patronId) {
         return librarianService.getOverdueBooksByBorrower(patronId);
     }
 
     @GetMapping("/barcodes/generate")
     @ApiOperation(value = "return a list of barcodes based on book id")
+    @Secured({ADMIN, LIBRARIAN})
     public GenerateBarcodesResponseDto generateBarcodes(int numberOfCopies, String isbn, int copyTypeId) {
         return librarianService.generateBarcodes(numberOfCopies, isbn, copyTypeId);
     }

@@ -41,4 +41,10 @@ public class BookCopy extends Audit{
     @JoinColumn(name = "book_copy_type_id")
     private BookCopyType bookCopyType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_position_id")
+    private BookCopyPosition bookCopyPosition;
+
+
+
 }

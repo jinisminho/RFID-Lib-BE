@@ -25,6 +25,7 @@ public class CreateBookRequestDto implements Serializable {
     private String subtitle;
     @NotNull(message = "{AddBookRequestDto.callNumber.notNull}")
 //    @Length(min = 1, max = 255, message = "{AddBookRequestDto.callNumber.length}")
+    private double ddc;
     private String callNumber;
     @NotNull(message = "{AddBookRequestDto.publisher.notNull}")
     @Length(min = 1, max = 255, message = "{AddBookRequestDto.publisher.length}")
@@ -40,8 +41,8 @@ public class CreateBookRequestDto implements Serializable {
     private int publishYear;
     @NotNull(message = "{AddBookRequestDto.edition.notNull}")
     private int edition;
-    @NotNull(message = "{AddBookRequestDto.genres.notNull}")
-    private List<Integer> genreIds;
+    //    @NotNull(message = "{AddBookRequestDto.genres.notNull}")
+//    private List<Integer> genreIds;
     @NotNull(message = "{AddBookRequestDto.status.notNull}")
     @Length(min = 1, max = 30, message = "{AddBookRequestDto.status.length}")
     private String status;

@@ -15,6 +15,7 @@ import capstone.library.demo.repositories.*;
 import capstone.library.demo.services.BookBorrowingService;
 import capstone.library.demo.services.SecurityGateService;
 import capstone.library.demo.util.DateTimeUtil;
+import capstone.library.demo.util.GenreUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +53,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
 
     @Autowired
     SecurityGateService securityGateService;
+
+    @Autowired
+    GenreRepository genreRepository;
 
     @Override
     @Transactional
@@ -206,10 +210,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 .map(a -> a.getAuthor().getName())
                 .collect(Collectors.joining(", "));
 
-        String genres = copy.getBook().getBookGenres()
-                .stream()
-                .map(g -> g.getGenre().getName())
-                .collect(Collectors.joining(","));
+        List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+        String genres = GenreUtil.getGenreFormCallNumber(copy.getBook().getCallNumber(), genreList);
 
         dto.setAuthors(authors);
         dto.setEdition(copy.getBook().getEdition());
@@ -232,10 +234,9 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                 .map(a -> a.getAuthor().getName())
                 .collect(Collectors.joining(", "));
 
-        String genres = copy.getBook().getBookGenres()
-                .stream()
-                .map(g -> g.getGenre().getName())
-                .collect(Collectors.joining(","));
+        List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+        String genres = GenreUtil.getGenreFormCallNumber(copy.getBook().getCallNumber(), genreList);
+
 
         dto.setAuthors(authors);
         dto.setEdition(copy.getBook().getEdition());

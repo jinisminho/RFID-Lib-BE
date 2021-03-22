@@ -19,4 +19,6 @@ public class LostBookFineResponseDto {
     private int overdueDays;
 
     private double overdueFee;
+
+    private Integer id;
 }

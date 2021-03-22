@@ -8,9 +8,7 @@ import capstone.library.dtos.response.*;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.BookStatus;
-import capstone.library.enums.ErrorStatus;
 import capstone.library.enums.RoleIdEnum;
-import capstone.library.exceptions.CustomException;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
@@ -22,7 +20,6 @@ import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -84,16 +81,15 @@ public class LibrarianServiceImpl implements LibrarianService {
     @Override
     @Transactional
     public CheckoutResponseDto checkout(ScannedRFIDCopiesRequestDto request) {
-        List<CheckoutResponseDto> checkoutResponseDtos = new ArrayList<>();
         List<String> rfidTags = request.getBookRfidTags();
 
         /*Get the librarian to add to issued_by in book_borrowing table*/
         Optional<Account> librarianOptional = accountRepository.findById(request.getLibrarianId());
-        //Return 404 if no patron with 'getLibrarianId' is found
+        //Return 404 if no account with 'getLibrarianId' is found
         if (librarianOptional.isEmpty()) {
             throw new ResourceNotFoundException(
                     "Librarian",
-                    "Librarian with id: " + request.getPatronId() + NOT_FOUND);
+                    "Librarian with id: " + request.getLibrarianId() + NOT_FOUND);
         }
         Account issuingLibrarian = librarianOptional.get();
         /*========================*/
@@ -262,8 +258,6 @@ public class LibrarianServiceImpl implements LibrarianService {
 
                 // Prepare dto
                 MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
-                myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
-                        replace("]", "").replace("[", ""));
                 myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
                         replace("]", "").replace("[", ""));
                 myBookDto.setBarcode(bookCopy.getBarcode());
@@ -332,8 +326,6 @@ public class LibrarianServiceImpl implements LibrarianService {
 
             // Prepare dto
             MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
-            myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
-                    replace("]", "").replace("[", ""));
             myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
                     replace("]", "").replace("[", ""));
             myBookDto.setBarcode(bookCopy.getBarcode());
@@ -452,21 +444,11 @@ public class LibrarianServiceImpl implements LibrarianService {
                     }
 
                     //Insert return transaction to database
-                    try {
-
-                        bookCopyRepository.save(bookCopy);
-
-                    } catch (Exception e) {
-                        throw new CustomException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
-                    }
+                    bookCopyRepository.save(bookCopy);
                 }
 
                 // Prepare dto
-
                 MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
-                myBookDto.setGenres(bookCopy.getBook().getBookGenres().toString().
-                        replace("]", "").replace("[", ""));
                 myBookDto.setAuthors(bookCopy.getBook().getBookAuthors().toString().
                         replace("]", "").replace("[", ""));
                 dto.setBook(myBookDto);
@@ -517,12 +499,12 @@ public class LibrarianServiceImpl implements LibrarianService {
         /*Check if patron is borrowing exceeding total allowance*/
         PatronType patronType = getPatronTypeInfo(patron.getPatronType().getId());
         int totalMaxAllowance = patronType.getMaxBorrowNumber();
-        List<BookBorrowing> borrowingCopies = bookBorrowingRepository.
+        List<BookBorrowing> borrowedCopies = bookBorrowingRepository.
                 findByBorrowerIdAndReturnedAtIsNullAndLostAtIsNull(patron.getId());
-        if ((request.getBookRfidTags().size() + borrowingCopies.size()) > totalMaxAllowance) {
+        if ((request.getBookRfidTags().size() + borrowedCopies.size()) > totalMaxAllowance) {
             violatePolicy = true;
             reasons.add(POLICY_EXCEEDS_TOTAL_BORROW_ALLOWANCE + totalMaxAllowance + ". (This patron is keeping " +
-                    borrowingCopies.size() + " books)");
+                    borrowedCopies.size() + " books)");
         }
         /*===============*/
 
@@ -556,7 +538,15 @@ public class LibrarianServiceImpl implements LibrarianService {
                 violatePolicy = true;
                 reasons.add(POLICY_PATRON_TYPE_COPY_TYPE + type.getName());
             } else {
-                if (Collections.frequency(copyTypeIdList, type.getId()) > max) {
+                int totalBorrowedOfEachCopyType = 0;
+                for (BookBorrowing bookBorrowing : borrowedCopies) {
+                    if (bookBorrowing.getBookCopy().getBookCopyType().equals(type)) {
+                        totalBorrowedOfEachCopyType++;
+                    }
+                }
+                int totalBorrowingOfEachCopyType =
+                        Collections.frequency(copyTypeIdList, type.getId()) + totalBorrowedOfEachCopyType;
+                if (totalBorrowingOfEachCopyType > max) {
                     violatePolicy = true;
                     StringBuilder violatingCopies = new StringBuilder();
                     for (BookCopy bookCopy : checkoutCopies) {
@@ -566,7 +556,7 @@ public class LibrarianServiceImpl implements LibrarianService {
                     }
 
                     reasons.add(POLICY_EXCEEDS_TYPE_BORROW_ALLOWANCE + type.getName() +
-                            " (" + Collections.frequency(copyTypeIdList, type.getId()) + "/" + max + "). "
+                            " (" + totalBorrowingOfEachCopyType + "/" + max + "). "
                             + violatingCopies.toString().trim());
                 }
             }
@@ -588,7 +578,7 @@ public class LibrarianServiceImpl implements LibrarianService {
 
         //Add all BORROWED copy's book's ID to bookIdList (including all duplicates if present)
         //Add the BORROWED copy's book to a HashSet (excluding duplicating books)
-        for (BookBorrowing bookBorrowing : borrowingCopies) {
+        for (BookBorrowing bookBorrowing : borrowedCopies) {
             bookIdList.add(bookBorrowing.getBookCopy().getBook().getId());
             bookHashSet.add(bookBorrowing.getBookCopy().getBook());
         }
@@ -625,8 +615,6 @@ public class LibrarianServiceImpl implements LibrarianService {
             BookResponseDto dto = objectMapper.convertValue(book, BookResponseDto.class);
             dto.setBookId(book.getId());
             dto.setAuthors(book.getBookAuthors().toString().
-                    replace("[", "").replace("]", ""));
-            dto.setGenres(book.getBookGenres().toString().
                     replace("[", "").replace("]", ""));
             response.setBookInfo(dto);
         } else {

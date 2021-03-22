@@ -15,6 +15,8 @@ import capstone.library.mappers.BookMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.services.BookService;
+import capstone.library.util.tools.CallNumberUtil;
+import capstone.library.util.tools.GenreUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +29,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static capstone.library.util.constants.ConstantUtil.CALL_NUMBER_FORMAT_REGEX;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -51,14 +51,14 @@ public class BookServiceImpl implements BookService {
     private GenreRepository genreRepository;
     @Autowired
     private BookAuthorRepository bookAuthorRepository;
-    @Autowired
-    private BookGenreRepository bookGenreRepository;
+
     @Autowired
     private BookJpaRepository bookJpaRepository;
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
     private BookCopyService bookCopyService;
+    CallNumberUtil callNumberUtil = new CallNumberUtil();
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String DATABASE_ERROR = "Database error";
@@ -96,6 +96,27 @@ public class BookServiceImpl implements BookService {
         res = books.stream().map(book -> bookMapper.toResDto(book)).collect(Collectors.toList());
 
         for (BookResDto book : res) {
+            //Get Genre by ddc (floored)
+            double ddc = 0;
+            double ddcFloored = 0;
+            try {
+
+                ddc = Double.parseDouble(book.getCallNumber().split("[ ]", 0)[0]);
+                ddcFloored = Math.floor(ddc / 100) * 100; //floor(double/100)*100 e.g.: 123.1 -> 100
+
+                Optional<Genre> genreOpt = genreRepository.findByDdc(ddcFloored);
+                if (genreOpt.isPresent()) {
+                    book.setGenre(genreOpt.get().getName());
+                }
+
+            } catch (NullPointerException nullE) {
+                //if the string was given to pareseDouble was null
+            } catch (NumberFormatException numE) {
+                //if the string was given to pareseDouble did not contain a parsable double
+            }
+            //Get Genre by ddc (floored) - end here
+
+            //Count available items
             int stockSize = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             stockSize += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).stream().map(copy -> bookCopyMapper.toResDto(copy)).collect(Collectors.toList()).size();
             if (stockSize > 0) {
@@ -147,8 +168,11 @@ public class BookServiceImpl implements BookService {
             }
             dto.setAuthors(book.getBookAuthors().toString().
                     replace("]", "").replace("[", ""));
-            dto.setGenres(book.getBookGenres().toString().
-                    replace("]", "").replace("[", ""));
+            //Tram added --
+            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+            String genres = GenreUtil.getGenreFormCallNumber(book.getCallNumber(), genreList);
+            //---
+            dto.setGenres(genres);
             dto.setBookId(book.getId());
             responseDtos.add(dto);
         }
@@ -170,13 +194,22 @@ public class BookServiceImpl implements BookService {
             /*Validate and set data from requestDto to new Book*/
             setBasicBookInfo(book, request);
 
+            //Create call number from the request
+            StringBuilder authorName = new StringBuilder();
+            for (int id : request.getAuthorIds()) {
+                authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
+            }
+
+//            book.setCallNumber(callNumberUtil.
+//                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+            book.setCallNumber(request.getCallNumber());
+
             /*Get account to add to updateBy*/
             Account updateBy = accountRepository.findById(request.getUpdateBy()).
                     orElseThrow(() -> new ResourceNotFoundException("Account", UPDATER_NOT_FOUND));
             book.setUpdater(updateBy);
 
             Set<BookAuthor> bookAuthorSet = new HashSet<>();
-            Set<BookGenre> bookGenreSet = new HashSet<>();
 
             /*Remove old book authors and book relationships
              * to create new book authors and book relationships from the request*/
@@ -195,6 +228,8 @@ public class BookServiceImpl implements BookService {
 
             /*Remove old book genres and book relationships
              * to create new book genres and book relationships from the request*/
+
+            /* Tram deleted ---
             if (request.getGenreIds() != null) {
                 setBookGenre(book, bookGenreSet, request.getGenreIds());
                 for (BookGenre bookGenre : book.getBookGenres()) {
@@ -207,6 +242,8 @@ public class BookServiceImpl implements BookService {
                 }
                 book.setBookGenres(bookGenreSet);
             }
+
+            ----- */
 
             try {
                 myBookRepository.save(book);
@@ -229,8 +266,12 @@ public class BookServiceImpl implements BookService {
             BookResponseDto response = objectMapper.convertValue(book, BookResponseDto.class);
             response.setAuthors(book.getBookAuthors().toString().
                     replace("[", "").replace("]", ""));
-            response.setGenres(book.getBookGenres().toString().
-                    replace("[", "").replace("]", ""));
+            //Tram added ---
+            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+            String genres = GenreUtil.getGenreFormCallNumber(book.getCallNumber(), genreList);
+            // ---
+
+            response.setGenres(genres);
             int availableCopies = bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.AVAILABLE).size();
             availableCopies += bookCopyRepository.findByBookIdAndStatus(book.getId(), BookCopyStatus.LIB_USE_ONLY).size();
             response.setAvailableCopies(availableCopies);
@@ -239,6 +280,7 @@ public class BookServiceImpl implements BookService {
         throw new ResourceNotFoundException("Book", BOOK_NOT_FOUND);
     }
 
+    /* Tram deleted ----------
     private void setBookGenre(Book book, Set<BookGenre> bookGenreSet, List<Integer> genreIds) {
         for (int id : genreIds) {
             Optional<Genre> genreOptional = genreRepository.findById(id);
@@ -253,6 +295,8 @@ public class BookServiceImpl implements BookService {
         }
 
     }
+
+   ---------  */
 
     private void setBookAuthor(Book book, Set<BookAuthor> bookAuthorSet, List<Integer> authorIds) {
         for (int id : authorIds) {
@@ -296,19 +340,12 @@ public class BookServiceImpl implements BookService {
         if (request.getPageNumber() != null && !book.getPageNumber().equals(request.getPageNumber()) && request.getPageNumber() > 0) {
             book.setPageNumber(request.getPageNumber());
         }
-        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            if (!request.getCallNumber().trim().matches(CALL_NUMBER_FORMAT_REGEX)) {
-                throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
-            }
-            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
-        }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
         if (request.getStatus() != null) {
             updateBookStatus(request.getId(), request.getStatus());
         }
-
     }
 
     //Title, subtitle, publisher, language, call number is trimmed and removed of duplicate spaces
@@ -328,9 +365,6 @@ public class BookServiceImpl implements BookService {
         if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
             book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
         }
-        if (request.getCallNumber() != null && !request.getCallNumber().isBlank()) {
-            book.setCallNumber(request.getCallNumber().trim().replaceAll(" +", " ").toUpperCase());
-        }
         if (request.getImg() != null && !request.getImg().isBlank()) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
@@ -339,24 +373,32 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public String addBook(CreateBookRequestDto request) {
-        //Call number must matches ###.ABCDXYZ
-        if (!request.getCallNumber().matches(CALL_NUMBER_FORMAT_REGEX)) {
-            throw new InvalidRequestException(CALL_NUMBER_INVALID_ERROR);
-        }
         if (request.getPageNumber() == 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Page number is 0", "Page number must be more than 0");
         }
         Book book = objectMapper.convertValue(request, Book.class);
+
         transformCreateBookStringInput(book, request);
+
+        //Create call number from the request
+        StringBuilder authorName = new StringBuilder();
+        for (int id : request.getAuthorIds()) {
+            authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
+        }
+
+//        book.setCallNumber(callNumberUtil.
+//                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
+        book.setCallNumber(request.getCallNumber());
+
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
-        Set<BookGenre> bookGenreSet = new HashSet<>();
+        //Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
         if (bookAuthorSet.isEmpty()) {
             throw new ResourceNotFoundException("Author", "Author is not found");
         }
-        setBookGenre(book, bookGenreSet, request.getGenreIds());
+        //setBookGenre(book, bookGenreSet, request.getGenreIds());
         book.setBookAuthors(bookAuthorSet);
-        book.setBookGenres(bookGenreSet);
+        //book.setBookGenres(bookGenreSet);
         book.setCreator(accountRepository.findById(request.getCreatorId()).
                 orElseThrow(() -> new ResourceNotFoundException("Account", CREATOR_NOT_FOUND)));
         if (request.getImg().isBlank()) {

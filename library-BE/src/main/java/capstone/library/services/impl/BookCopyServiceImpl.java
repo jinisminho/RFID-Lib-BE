@@ -23,17 +23,17 @@ import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
-import capstone.library.util.tools.PriceFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.*;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.Barcode39;
-import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.BarcodeLabelConstant.LABEL_LENGTH;
@@ -77,6 +76,9 @@ public class BookCopyServiceImpl implements BookCopyService {
     FeePolicyRepository feePolicyRepository;
     @Autowired
     BookCopyMapper bookCopyMapper;
+    @Autowired
+    private GenreRepository genreRepository;
+
     DateTimeUtils dateTimeUtils;
 
     private static final String PATRON_NOT_FOUND = "Cannot find this patron in database";
@@ -99,6 +101,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     public static final String PDF_LOCATION = "src/main/java/capstone/library/files/barcodes.pdf";
+
     @Override
     @Transactional
     public DownloadPDFResponse createCopies(CreateCopiesRequestDto request) {
@@ -142,8 +145,6 @@ public class BookCopyServiceImpl implements BookCopyService {
             CopyResponseDto dto;
             dto = objectMapper.convertValue(copy, CopyResponseDto.class);
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
-                    toString().replace("]", "").replace("[", ""));
-            dto.getBook().setGenres(copy.getBook().getBookGenres().
                     toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
             response.add(dto);
@@ -257,8 +258,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(rfid);
         response.setCopy(myBookDto);
-        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
-                replace("]", "").replace("[", ""));
         response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                 replace("]", "").replace("[", ""));
         response.getCopy().setBarcode(bookCopy.getBarcode());
@@ -331,8 +330,6 @@ public class BookCopyServiceImpl implements BookCopyService {
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(bookCopy.getRfid());
         response.setCopy(myBookDto);
-        response.getCopy().setGenres(bookCopy.getBook().getBookGenres().toString().
-                replace("]", "").replace("[", ""));
         response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                 replace("]", "").replace("[", ""));
         response.getCopy().setBarcode(bookCopy.getBarcode());
@@ -423,8 +420,6 @@ public class BookCopyServiceImpl implements BookCopyService {
             CopyResponseDto dto = objectMapper.convertValue(copy, CopyResponseDto.class);
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
                     toString().replace("]", "").replace("[", ""));
-            dto.getBook().setGenres(copy.getBook().getBookGenres().
-                    toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
             if (copy.getStatus().equals(BookCopyStatus.BORROWED)) {
                 Optional<BookBorrowing> bookBorrowingOptional =
@@ -436,6 +431,27 @@ public class BookCopyServiceImpl implements BookCopyService {
                     dto.getBorrower().setRoleName(borrower.getRole().getName());
                 }
             }
+
+            //Get Genre by ddc (floored)
+            double ddc = 0;
+            double ddcFloored = 0;
+            try {
+
+                ddc = Double.parseDouble(dto.getBook().getCallNumber().split("[ ]", 0)[0]);
+                ddcFloored = Math.floor(ddc / 100) * 100; //floor(double/100)*100 e.g.: 123.1 -> 100
+
+                Optional<Genre> genreOpt = genreRepository.findByDdc(ddcFloored);
+                if (genreOpt.isPresent()) {
+                    dto.getBook().setGenres(genreOpt.get().getName());
+                }
+
+            } catch (NullPointerException nullE) {
+                //if the string was given to pareseDouble was null
+            } catch (NumberFormatException numE) {
+                //if the string was given to pareseDouble did not contain a parsable double
+            }
+            //Get Genre by ddc (floored) - end here
+
             return dto;
         }
         throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
@@ -465,13 +481,32 @@ public class BookCopyServiceImpl implements BookCopyService {
             BookCopyResDto dto = bookCopyMapper.toResDto(bookCopy);
             dto.getBook().setAuthorsString(bookCopy.getBook().getBookAuthors().toString().
                     replace("[", "").replace("]", ""));
-            dto.getBook().setGenresString(bookCopy.getBook().getBookGenres().toString().
-                    replace("[", "").replace("]", ""));
             dto.setBookCopyTypeDto(objectMapper.convertValue(bookCopy.getBookCopyType(), BookCopyTypeDto.class));
             res.add(dto);
         }
 
         for (BookCopyResDto copy : res) {
+            //Get Genre by ddc (floored)
+            double ddc = 0;
+            double ddcFloored = 0;
+            try {
+
+                ddc = Double.parseDouble(copy.getBook().getCallNumber().split("[ ]", 0)[0]);
+                ddcFloored = Math.floor(ddc / 100) * 100; //floor(double/100)*100 e.g.: 123.1 -> 100
+
+                Optional<Genre> genreOpt = genreRepository.findByDdc(ddcFloored);
+                if (genreOpt.isPresent()) {
+                    copy.getBook().setGenre(genreOpt.get().getName());
+                }
+
+            } catch (NullPointerException nullE) {
+                //if the string was given to pareseDouble was null
+            } catch (NumberFormatException numE) {
+                //if the string was given to pareseDouble did not contain a parsable double
+            }
+            //Get Genre by ddc (floored) - end here
+
+            //Count available items
             int stockSize = bookCopyRepository.findByBookIdAndStatus(copy.getBook().getId(), BookCopyStatus.AVAILABLE).stream().map(cop -> bookCopyMapper.toResDto(cop)).collect(Collectors.toList()).size();
 
             if (stockSize > 0) {

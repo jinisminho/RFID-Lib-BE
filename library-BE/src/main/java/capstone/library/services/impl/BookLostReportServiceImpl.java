@@ -4,7 +4,10 @@ import capstone.library.dtos.common.BookBorrowingDto;
 import capstone.library.dtos.request.ConfirmLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
-import capstone.library.entities.*;
+import capstone.library.entities.Account;
+import capstone.library.entities.BookBorrowing;
+import capstone.library.entities.BookCopy;
+import capstone.library.entities.BookLostReport;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.LostBookStatus;
 import capstone.library.exceptions.MissingInputException;
@@ -14,7 +17,6 @@ import capstone.library.services.BookLostReportService;
 import capstone.library.services.MailService;
 import capstone.library.util.tools.CommonUtil;
 import capstone.library.util.tools.DateTimeUtils;
-import capstone.library.util.tools.OverdueBooksFinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,7 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -72,12 +74,19 @@ public class BookLostReportServiceImpl implements BookLostReportService {
             overdueFee = CommonUtil.calculateOverdueFine(bookBorrowing.getFeePolicy(), bookBorrowing.getBookCopy().getPrice(), overdueDays);
         }
 
+        String authors = bookBorrowing.getBookCopy().getBook().getBookAuthors()
+                .stream()
+                .map(a -> a.getAuthor().getName())
+                .collect(Collectors.joining(", "));
+
         LostBookFineResponseDto response = new LostBookFineResponseDto();
         response.setBookBorrowingInfo(objectMapper.convertValue(bookBorrowing, BookBorrowingDto.class));
+        response.getBookBorrowingInfo().getBookCopy().getBook().setAuthors(authors);
         response.setLostBookFineInMarket(calculateLostFineInMarket(bookBorrowing));
         response.setLostBookFineNotInMarket(calculateLostFineNotInMarket(bookBorrowing));
         response.setOverdueDays(overdueDays);
         response.setOverdueFee(overdueFee);
+        response.setId(bookLostReport.getId());
         return response;
     }
 
@@ -100,7 +109,7 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         bookLost.setFine(lostBook.getFine());
         bookLost.setLibrarian(auditor);
         bookLost.setStatus(LostBookStatus.CONFIRMED);
-        bookLost.setReason(lostBook.getReason());
+        bookLost.setReason(lostBook.getNote());
         bookLostReportRepository.save(bookLost);
         //email to patron
         mailService.sendLostBookFine(bookLost);
@@ -188,5 +197,24 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         return bookBorrowing.getBookCopy().getPrice() * bookBorrowing.getFeePolicy().getMissingDocMultiplier();
     }
 
+    //
+    @Override
+    public Page<BookLostResponse> findBookLostOfPatron(LocalDateTime startDate,
+                                                       LocalDateTime endDate,
+                                                       Pageable pageable,
+                                                       int patronId) {
+        if (startDate != null || endDate != null) {
+            if (startDate.isAfter(endDate)) {
+                LocalDateTime tmp = startDate;
+                startDate = endDate;
+                endDate = tmp;
+            }
+            return bookLostReportRepository
+                    .findByBookBorrowing_Borrowing_Borrower_IdAndLostAtBetweenOrderByLostAtDesc(patronId, startDate, endDate, pageable)
+                    .map(this::mapBookLostEntityToBookLostDto);
+        }
 
+        return bookLostReportRepository.findByBookBorrowing_Borrowing_Borrower_Id(patronId, pageable).map(this::mapBookLostEntityToBookLostDto);
+
+    }
 }

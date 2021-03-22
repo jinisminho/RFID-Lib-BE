@@ -11,12 +11,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BookCopyPositionResponse {
 
-    private String bookCopyType;
-
     private String callNumber;
 
-    private String floor;
+    private String line;
 
     private String shelf;
 
+    @Override
+    public String toString() {
+        return this.shelf + "-" + this.line;
+    }
 }

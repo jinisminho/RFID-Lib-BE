@@ -25,9 +25,11 @@ public class Genre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", length = 50, nullable = false)
+    @Column(name = "ddc", nullable = false, unique = true)
+    private Double ddc;
+
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "genre")
-    public Set<BookGenre> bookGenres;
+
 }
