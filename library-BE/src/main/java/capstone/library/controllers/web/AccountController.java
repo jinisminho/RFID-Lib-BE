@@ -1,6 +1,7 @@
 package capstone.library.controllers.web;
 
 import capstone.library.dtos.request.*;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.LibrarianAccountResponse;
 import capstone.library.dtos.response.PatronAccountResponse;
 import capstone.library.entities.Account;
@@ -16,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.ManyToOne;
 import javax.servlet.http.Cookie;
@@ -111,5 +113,12 @@ public class AccountController {
         cookie.setMaxAge(EXPIRATION_TIME/1000);
         response.addCookie(cookie);
         return newJWT;
+    }
+
+    @PostMapping("/importPatron")
+    public ImportPatronResponse importPatron(@RequestParam("file") MultipartFile file,
+                                             @RequestParam("patronTypeId") int patronTypeId,
+                                             @RequestParam("auditorId") int auditorId){
+        return accountService.importPatron(file, patronTypeId, auditorId);
     }
 }

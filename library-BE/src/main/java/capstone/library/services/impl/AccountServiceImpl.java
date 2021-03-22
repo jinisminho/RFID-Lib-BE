@@ -4,6 +4,7 @@ import capstone.library.dtos.request.CreateLibrarianRequest;
 import capstone.library.dtos.request.CreatePatronRequest;
 import capstone.library.dtos.request.UpdateLibrarianRequest;
 import capstone.library.dtos.request.UpdatePatronRequest;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.LibrarianAccountResponse;
 import capstone.library.dtos.response.PatronAccountResponse;
 import capstone.library.entities.Account;
@@ -31,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 
@@ -293,6 +295,15 @@ public class AccountServiceImpl  implements AccountService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.generateToken(authentication);
         return jwt;
+    }
+
+    @Override
+    public ImportPatronResponse importPatron(MultipartFile file, int patronTypeId, int auditorId) {
+        //check file;
+        
+        //import
+
+        return null;
     }
 
     private Account findAccountById(int id){

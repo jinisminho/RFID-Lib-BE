@@ -2,6 +2,7 @@ package capstone.library.services.impl;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
@@ -191,6 +192,12 @@ public class MailServiceImpl implements MailService {
         }catch(MessagingException e){
             throw new EmailException(e.getMessage());
         }
+    }
+
+    @Override
+    public void sendAccountBatch(ImportPatronResponse request) {
+        request.getImportPatronList()
+                .forEach(account -> sendAccountPassword(account.getEmail(), account.getRawPassword()));
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {

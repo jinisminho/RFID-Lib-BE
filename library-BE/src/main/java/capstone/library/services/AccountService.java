@@ -4,11 +4,13 @@ import capstone.library.dtos.request.CreateLibrarianRequest;
 import capstone.library.dtos.request.CreatePatronRequest;
 import capstone.library.dtos.request.UpdateLibrarianRequest;
 import capstone.library.dtos.request.UpdatePatronRequest;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.LibrarianAccountResponse;
 import capstone.library.dtos.response.PatronAccountResponse;
 import capstone.library.entities.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface AccountService {
 
@@ -35,5 +37,7 @@ public interface AccountService {
     String updateLibrarianAccount(UpdateLibrarianRequest request);
 
     String changePassword(int accountId, String oldPass, String newPass);
+
+    ImportPatronResponse importPatron(MultipartFile file, int patronTypeId,int  auditorId);
 
 }
