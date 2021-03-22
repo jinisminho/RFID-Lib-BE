@@ -29,8 +29,9 @@ public class SecurityGateServiceImpl implements SecurityGateService {
     @Autowired
     ObjectMapper objectMapper;
 
-    static private final String BOOK_COPY_NOT_FOUND_ERROR = "Cannot find this book copy in the system";
-    static private final String BOOK_COPY = "Book copy";
+    private static final String BOOK_COPY_NOT_FOUND_ERROR = "Cannot find this book copy in the system";
+    private static final String BOOK_COPY = "Book copy";
+    private static final int TIME_INTERVAL_SECONDS = 60;
 
     @Override
     public void deleteByRfid(String rfid) {
@@ -47,7 +48,7 @@ public class SecurityGateServiceImpl implements SecurityGateService {
         //Get all logs from 00:00:00 of requested date to 23:59:59 of requested date
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay().minusSeconds(1);
-        return securityGateLogRepository.findAllByLoggedAtBetween(startOfDay, endOfDay, pageable).
+        return securityGateLogRepository.findAllByLoggedAtBetween(startOfDay, endOfDay, TIME_INTERVAL_SECONDS, pageable).
                 map(securityGateLog -> objectMapper.convertValue(securityGateLog, AlarmLogResponseDto.class));
     }
 
