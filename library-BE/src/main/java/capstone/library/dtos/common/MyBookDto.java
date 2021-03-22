@@ -47,4 +47,6 @@ public class MyBookDto implements Serializable {
 
     private String genres;
 
+    private String copyType;
+
 }
