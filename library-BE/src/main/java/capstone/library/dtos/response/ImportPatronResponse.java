@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ImportPatronResponse {
 
-    private List<ImportPatron> importPatronList;
+    private List<ImportPatron> importPatronList = new ArrayList<>();
 
     @Getter
     @Setter
