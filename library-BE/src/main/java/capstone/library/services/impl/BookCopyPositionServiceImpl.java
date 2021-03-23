@@ -4,10 +4,10 @@ import capstone.library.dtos.common.PositionDto;
 import capstone.library.dtos.request.SaveSamplePositionRequestDto;
 import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
-import capstone.library.dtos.response.PortableBookSearchPositionResponse;
 import capstone.library.entities.BookCopy;
 import capstone.library.entities.BookCopyPosition;
 import capstone.library.enums.BookCopyStatus;
+import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookCopyPositionRepository;
@@ -46,6 +46,7 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
     private static final String BOOK_COPY_NOT_FOUND_ERROR = "Book copy not found: ";
     private static final String POSITION_NOT_FOUND_ERROR = "Book copy position not found";
     private static final String UPDATER_NOT_FOUND_ERROR = "Updater account not found: ";
+    private static final String BOOK_COPY_STATUS_ERROR = "Book copy status error. Barcode: ";
 
 
     @Override
@@ -95,9 +96,9 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
                 .stream()
                 .collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(BookCopyPositionResponse::toString))),
                         ArrayList::new));
-        if(uniquePositions.size() == 1  && uniquePositions.get(0).getShelf().equals("N/A")){
+        if (uniquePositions.size() == 1 && uniquePositions.get(0).getShelf().equals("N/A")) {
             return uniquePositions;
-        }else{
+        } else {
             return uniquePositions
                     .stream()
                     .filter(b -> !b.getShelf().equals("N/A"))
@@ -122,18 +123,35 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
 
     @Override
     @Transactional
+    //Hoàng
     public String saveSampledPosition(SaveSamplePositionRequestDto request) {
         BookCopyPosition bookCopyPosition = positionRepository.findById(request.getPositionId()).
                 orElseThrow(() -> new ResourceNotFoundException(POSITION, POSITION_NOT_FOUND_ERROR));
 
+        /*Remove all current book copies from this position (shelf's row)
+         * Then add recently scanned book copies to this position*/
+        List<BookCopy> currentBooks = bookCopyRepository.findAllByBookCopyPositionId(request.getPositionId());
+        for (BookCopy bookCopy : currentBooks) {
+            bookCopy.setBookCopyPosition(null);
+        }
+        /*=======================*/
+
+        /*Add recently scanned book copies to this position*/
         for (String rfid : request.getRfids()) {
             BookCopy bookCopy = bookCopyRepository.findByRfid(rfid).
                     orElseThrow(() -> new ResourceNotFoundException(BOOK_COPY, BOOK_COPY_NOT_FOUND_ERROR + rfid));
+            if (bookCopy.getStatus().equals(BookCopyStatus.BORROWED) ||
+                    bookCopy.getStatus().equals(BookCopyStatus.LOST) ||
+                    bookCopy.getStatus().equals(BookCopyStatus.DISCARD)) {
+                throw new InvalidRequestException(BOOK_COPY_STATUS_ERROR + bookCopy.getBarcode() + ", Status: " + bookCopy.getStatus().name());
+            }
             bookCopy.setBookCopyPosition(bookCopyPosition);
             bookCopy.setUpdater(accountRepository.findById(request.getUpdater()).
                     orElseThrow(() -> new ResourceNotFoundException(UPDATER, UPDATER_NOT_FOUND_ERROR)));
             bookCopyRepository.save(bookCopy);
         }
+        /*==================*/
+
         return SUCCESS_MESSAGE;
     }
 

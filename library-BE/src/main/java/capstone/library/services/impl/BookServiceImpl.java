@@ -350,22 +350,22 @@ public class BookServiceImpl implements BookService {
 
     //Title, subtitle, publisher, language, call number is trimmed and removed of duplicate spaces
     private void transformCreateBookStringInput(Book book, CreateBookRequestDto request) {
-        if (request.getIsbn() != null && !request.getIsbn().isBlank()) {
+        if (request.getIsbn() != null) {
             book.setIsbn(request.getIsbn().trim().replaceAll(" +", " "));
         }
-        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+        if (request.getTitle() != null) {
             book.setTitle(request.getTitle().trim().replaceAll(" +", " "));
         }
-        if (request.getSubtitle() != null && !request.getSubtitle().trim().isBlank()) {
+        if (request.getSubtitle() != null) {
             book.setSubtitle(request.getSubtitle().trim().replaceAll(" +", " "));
         }
-        if (request.getPublisher() != null && !request.getPublisher().isBlank()) {
+        if (request.getPublisher() != null) {
             book.setPublisher(request.getPublisher().trim().replaceAll(" +", " "));
         }
-        if (request.getLanguage() != null && !request.getLanguage().isBlank()) {
+        if (request.getLanguage() != null) {
             book.setLanguage(request.getLanguage().trim().replaceAll(" +", " "));
         }
-        if (request.getImg() != null && !request.getImg().isBlank()) {
+        if (request.getImg() != null) {
             book.setImg(request.getImg().trim().replaceAll(" +", " "));
         }
     }
@@ -380,25 +380,14 @@ public class BookServiceImpl implements BookService {
 
         transformCreateBookStringInput(book, request);
 
-        //Create call number from the request
-        StringBuilder authorName = new StringBuilder();
-        for (int id : request.getAuthorIds()) {
-            authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
-        }
-
-//        book.setCallNumber(callNumberUtil.
-//                createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
         book.setCallNumber(request.getCallNumber());
 
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
-        //Set<BookGenre> bookGenreSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
         if (bookAuthorSet.isEmpty()) {
             throw new ResourceNotFoundException("Author", "Author is not found");
         }
-        //setBookGenre(book, bookGenreSet, request.getGenreIds());
         book.setBookAuthors(bookAuthorSet);
-        //book.setBookGenres(bookGenreSet);
         book.setCreator(accountRepository.findById(request.getCreatorId()).
                 orElseThrow(() -> new ResourceNotFoundException("Account", CREATOR_NOT_FOUND)));
         if (request.getImg().isBlank()) {
