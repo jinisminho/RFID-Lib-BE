@@ -330,6 +330,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         /*Prepare response*/
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
         myBookDto.setRfid(bookCopy.getRfid());
+        myBookDto.setCopyType(bookCopy.getBookCopyType().getName());
         response.setCopy(myBookDto);
         response.getCopy().setAuthors(bookCopy.getBook().getBookAuthors().toString().
                 replace("]", "").replace("[", ""));
