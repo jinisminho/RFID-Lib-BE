@@ -328,6 +328,7 @@ public class BookCopyServiceImpl implements BookCopyService {
 
         /*Prepare response*/
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
+        myBookDto.setId(bookCopy.getId());
         myBookDto.setRfid(bookCopy.getRfid());
         myBookDto.setCopyType(bookCopy.getBookCopyType().getName());
         response.setCopy(myBookDto);
