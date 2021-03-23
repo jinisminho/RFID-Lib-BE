@@ -127,8 +127,8 @@ public class BookCopyServiceImpl implements BookCopyService {
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
-        String header = book.getIsbn() +"-"+ bookCopyType.getName() + "-" + DoubleFormatter.formatToDecimal(request.getPrice());
-        printBarcodesToPDF(request.getBarcodes(),header, false);
+        String header = book.getIsbn() + "-" + bookCopyType.getName() + "-" + DoubleFormatter.formatToDecimal(request.getPrice());
+        printBarcodesToPDF(request.getBarcodes(), header);
         InputStreamResource resource;
         try {
             resource = new InputStreamResource(new FileInputStream(PDF_LOCATION));
@@ -365,12 +365,46 @@ public class BookCopyServiceImpl implements BookCopyService {
             barcodesMap.put(key, barcodes);
         }
 
-        barcodesMap.forEach(
-                (header, barcodes) ->
-                {
-                    printBarcodesToPDF(barcodes, header, true);
-                }
-        );
+        Document document = new Document(new Rectangle(LABEL_LENGTH, LABEL_WIDTH));
+        document.setMargins(7, 7, 20, 20);
+        PdfWriter writer = null;
+        File pdf = null;
+        try {
+            pdf = new File(PDF_LOCATION);
+            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf));
+            document.open();
+            Font f = new Font(Font.FontFamily.TIMES_ROMAN, 9.0f, Font.NORMAL, BaseColor.BLACK);
+
+            PdfWriter finalWriter = writer;
+            barcodesMap.forEach(
+                    (header, barcodes) ->
+                    {
+                        try {
+                            Paragraph paragraph = new Paragraph(header, f);
+                            document.add(paragraph);
+                            document.newPage();
+                            PdfContentByte cb = finalWriter.getDirectContent();
+                            for (String bar : barcodes) {
+                                Barcode39 code39 = new Barcode39();
+                                code39.setCode(bar.trim());
+                                code39.setCodeType(Barcode39.CODABAR);
+                                code39.setStartStopText(false);
+                                Image code39Image = code39.createImageWithBarcode(cb, null, null);
+                                code39Image.scalePercent(90);
+                                document.add(code39Image);
+                            }
+                        } catch (Exception e) {
+                            throw new PrintBarcodeException(e.getMessage());
+                        }
+                    }
+            );
+
+        } catch (Exception e) {
+            throw new PrintBarcodeException(e.getMessage());
+        } finally {
+            document.close();
+        }
+
         InputStreamResource resource;
         try {
             resource = new InputStreamResource(new FileInputStream(PDF_LOCATION));
@@ -633,14 +667,14 @@ public class BookCopyServiceImpl implements BookCopyService {
     /**
      * print new copies' barcode to pdf with printer's label format
      */
-    private void printBarcodesToPDF(Set<String> barcodes, String header, boolean isAppend) {
+    private void printBarcodesToPDF(Set<String> barcodes, String header) {
         Document document = new Document(new Rectangle(LABEL_LENGTH, LABEL_WIDTH));
         document.setMargins(7, 7, 20, 20);
         PdfWriter writer = null;
         File pdf = null;
         try {
             pdf = new File(PDF_LOCATION);
-            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf, isAppend));
+            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf));
             document.open();
             Font f = new Font(Font.FontFamily.TIMES_ROMAN, 9.0f, Font.NORMAL, BaseColor.BLACK);
             Paragraph paragraph = new Paragraph(header, f);
