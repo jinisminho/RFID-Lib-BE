@@ -12,6 +12,7 @@ public enum ErrorStatus
     ACCESS_DENIED (403, "Access is denied"),
     INVALID_TOKEN(402, "Invalid Token"),
     UNAUTHENTICATED(401, "Unauthenticated"),
+    IMPORT_ERROR(425, "Import Error"),
 
     //Business
     BORROWING_POLICY_VIOLATION(450, "Violate Book Borrow Policy");

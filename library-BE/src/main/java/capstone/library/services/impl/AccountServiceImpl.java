@@ -4,6 +4,7 @@ import capstone.library.dtos.request.CreateLibrarianRequest;
 import capstone.library.dtos.request.CreatePatronRequest;
 import capstone.library.dtos.request.UpdateLibrarianRequest;
 import capstone.library.dtos.request.UpdatePatronRequest;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.LibrarianAccountResponse;
 import capstone.library.dtos.response.PatronAccountResponse;
 import capstone.library.entities.Account;
@@ -12,6 +13,7 @@ import capstone.library.entities.Profile;
 import capstone.library.entities.Role;
 import capstone.library.enums.RoleIdEnum;
 import capstone.library.exceptions.ChangePasswordException;
+import capstone.library.exceptions.ImportFileException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.AccountRepository;
@@ -20,6 +22,7 @@ import capstone.library.repositories.RoleRepository;
 import capstone.library.security.JwtTokenProvider;
 import capstone.library.services.AccountService;
 import capstone.library.services.MailService;
+import capstone.library.util.tools.ExcelUtil;
 import capstone.library.util.tools.PasswordUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +34,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+
+import java.io.IOException;
+import java.util.List;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
@@ -293,6 +300,44 @@ public class AccountServiceImpl  implements AccountService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.generateToken(authentication);
         return jwt;
+    }
+
+    @Override
+    @Transactional
+    public ImportPatronResponse importPatron(MultipartFile file, int patronTypeId, int auditorId) {
+        //check file;
+        ImportPatronResponse rs = new ImportPatronResponse();
+        if(!ExcelUtil.hasExcelFormat(file)){
+            throw new ImportFileException("Must be excel file format");
+        }
+        PatronType patronType = patronTypeRepo.findById(patronTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patron Type",
+                        "Cannot find patron type with id: " + patronTypeId));
+        Account auditor = accountRepo.findById(auditorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account",
+                        "Cannot find account with id: " + auditorId));
+        Role role = roleRepo.findByName(RoleIdEnum.ROLE_PATRON.name())
+                .orElseThrow(() -> new ResourceNotFoundException("Role",
+                        "Cannot find role Patron"));
+        try {
+            List<Account> accounts = ExcelUtil.excelToAccounts(file.getInputStream());
+            for(Account account : accounts){
+                account.setPatronType(patronType);
+                account.setActive(true);
+                account.setCreator(auditor);
+                account.setUpdater(auditor);
+                account.setRole(role);
+                String rawPassword = PasswordUtil.generatePassword();
+                String encodedPassword = encoder.encode(rawPassword);
+                account.setPassword(encodedPassword);
+                ImportPatronResponse.ImportPatron patron = new ImportPatronResponse.ImportPatron(account.getEmail(), rawPassword);
+                rs.getImportPatronList().add(patron);
+            }
+            accountRepo.saveAll(accounts);
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot open file");
+        }
+        return rs;
     }
 
     private Account findAccountById(int id){

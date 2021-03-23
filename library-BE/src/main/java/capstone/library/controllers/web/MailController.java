@@ -3,6 +3,7 @@ package capstone.library.controllers.web;
 import capstone.library.dtos.email.EmailCheckOutBookDto;
 import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
+import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.ReturnBookResponseDto;
 import capstone.library.dtos.response.ReturnBooksResponse;
 import capstone.library.services.MailService;
@@ -34,6 +35,12 @@ public class MailController {
     @PostMapping("/return")
     void sendReturnEmail (@RequestBody @Valid ReturnBooksResponse books){
         mailService.sendReturnMail(books.getReturnedBooks());
+    }
+
+    @Secured({LIBRARIAN, ADMIN})
+    @PostMapping("/account")
+    void sendEmailPassword ( @RequestBody @Valid ImportPatronResponse request){
+        mailService.sendAccountBatch(request);
     }
 
     @GetMapping("/wishlist")

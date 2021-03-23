@@ -3,6 +3,7 @@ package capstone.library.services.impl;
 import capstone.library.dtos.common.BookCopyTypeDto;
 import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
+import capstone.library.dtos.common.PositionDto;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
 import capstone.library.dtos.request.TagCopyRequestDto;
 import capstone.library.dtos.request.UpdateCopyRequest;
@@ -23,17 +24,16 @@ import capstone.library.mappers.BookCopyMapper;
 import capstone.library.repositories.*;
 import capstone.library.services.BookCopyService;
 import capstone.library.util.tools.DateTimeUtils;
+import capstone.library.util.tools.DoubleFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.Barcode39;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,7 +128,8 @@ public class BookCopyServiceImpl implements BookCopyService {
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
-        printBarcodesToPDF(request.getBarcodes(), request.getPrice(), book, bookCopyType);
+        String header = book.getIsbn() + "-" + bookCopyType.getName() + "-" + DoubleFormatter.formatToDecimal(request.getPrice());
+        printBarcodesToPDF(request.getBarcodes(), header, false);
         InputStreamResource resource;
         try {
             resource = new InputStreamResource(new FileInputStream(PDF_LOCATION));
@@ -349,6 +351,38 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     @Override
+    public Resource generateBarcodesByBatch(List<Integer> bookCopyIdList) {
+        List<BookCopy> bookCopyList = bookCopyRepository.findAllById(bookCopyIdList);
+        Map<String, Set<String>> barcodesMap = new HashMap<>();
+        for (BookCopy copy : bookCopyList) {
+            String key = copy.generateStringBarcode();
+            Set<String> barcodes = new HashSet<>();
+            if (barcodesMap.containsKey(key)) {
+                Set<String> tmp = barcodesMap.get(key);
+                tmp.add(copy.getBarcode());
+                barcodes = tmp;
+            } else {
+                barcodes.add(copy.getBarcode());
+            }
+            barcodesMap.put(key, barcodes);
+        }
+
+        barcodesMap.forEach(
+                (header, barcodes) ->
+                {
+                    printBarcodesToPDF(barcodes, header, true);
+                }
+        );
+        InputStreamResource resource;
+        try {
+            resource = new InputStreamResource(new FileInputStream(PDF_LOCATION));
+        } catch (FileNotFoundException e) {
+            throw new PrintBarcodeException(e.getMessage());
+        }
+        return resource;
+    }
+
+    @Override
     public CopyResponseDto getCopyByBarcode(String barcode) {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
         return getCopyResponseDto(bookCopyOptional);
@@ -423,6 +457,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
                     toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
+            dto.setPosition(objectMapper.convertValue(copy.getBookCopyPosition(), PositionDto.class));
             if (copy.getStatus().equals(BookCopyStatus.BORROWED)) {
                 Optional<BookBorrowing> bookBorrowingOptional =
                         bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(copy.getId());
@@ -601,15 +636,19 @@ public class BookCopyServiceImpl implements BookCopyService {
     /**
      * print new copies' barcode to pdf with printer's label format
      */
-    private void printBarcodesToPDF(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType) {
+    private void printBarcodesToPDF(Set<String> barcodes, String header, boolean isAppend) {
         Document document = new Document(new Rectangle(LABEL_LENGTH, LABEL_WIDTH));
         document.setMargins(7, 7, 20, 20);
         PdfWriter writer = null;
         File pdf = null;
         try {
             pdf = new File(PDF_LOCATION);
-            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf));
+            writer = PdfWriter.getInstance(document, new FileOutputStream(pdf, isAppend));
             document.open();
+            Font f = new Font(Font.FontFamily.TIMES_ROMAN, 9.0f, Font.NORMAL, BaseColor.BLACK);
+            Paragraph paragraph = new Paragraph(header, f);
+            document.add(paragraph);
+            document.newPage();
             PdfContentByte cb = writer.getDirectContent();
             for (String bar : barcodes) {
                 Barcode39 code39 = new Barcode39();
