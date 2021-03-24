@@ -16,7 +16,9 @@ public interface SecurityGateLogRepository extends JpaRepository<SecurityGateLog
             "FROM security_gate_log " +
             "where logged_at between ?1 and ?2 " +
             "GROUP BY FLOOR(UNIX_TIMESTAMP(logged_at) DIV ?3), book_copy_id",
-            countQuery = "SELECT count(*) from security_gate_log",
+            countQuery = "SELECT count(*) from security_gate_log " +
+                    "where logged_at between ?1 and ?2 " +
+                    "GROUP BY FLOOR(UNIX_TIMESTAMP(logged_at) DIV ?3), book_copy_id",
             nativeQuery = true)
     Page<SecurityGateLog> findAllByLoggedAtBetween(LocalDateTime fromDate, LocalDateTime toDate, int interval, Pageable page);
 
