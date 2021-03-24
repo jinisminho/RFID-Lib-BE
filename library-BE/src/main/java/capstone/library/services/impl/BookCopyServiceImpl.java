@@ -3,6 +3,7 @@ package capstone.library.services.impl;
 import capstone.library.dtos.common.BookCopyTypeDto;
 import capstone.library.dtos.common.MyAccountDto;
 import capstone.library.dtos.common.MyBookDto;
+import capstone.library.dtos.common.PositionDto;
 import capstone.library.dtos.request.CreateCopiesRequestDto;
 import capstone.library.dtos.request.TagCopyRequestDto;
 import capstone.library.dtos.request.UpdateCopyRequest;
@@ -46,8 +47,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static capstone.library.util.constants.BarcodeLabelConstant.LABEL_LENGTH;
@@ -329,6 +330,7 @@ public class BookCopyServiceImpl implements BookCopyService {
 
         /*Prepare response*/
         MyBookDto myBookDto = objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class);
+        myBookDto.setId(bookCopy.getId());
         myBookDto.setRfid(bookCopy.getRfid());
         myBookDto.setCopyType(bookCopy.getBookCopyType().getName());
         response.setCopy(myBookDto);
@@ -489,6 +491,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             dto.getBook().setAuthors(copy.getBook().getBookAuthors().
                     toString().replace("]", "").replace("[", ""));
             dto.setCopyType(copy.getBookCopyType().getName());
+            dto.setPosition(objectMapper.convertValue(copy.getBookCopyPosition(), PositionDto.class));
             if (copy.getStatus().equals(BookCopyStatus.BORROWED)) {
                 Optional<BookBorrowing> bookBorrowingOptional =
                         bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(copy.getId());
