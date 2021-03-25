@@ -11,6 +11,7 @@ import capstone.library.services.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import java.awt.*;
 
 import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.SecurityConstant.*;
@@ -115,7 +118,7 @@ public class AccountController {
         return newJWT;
     }
 
-    @PostMapping("/importPatron")
+    @RequestMapping(value = "/importPatron", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, method = RequestMethod.POST)
     public ImportPatronResponse importPatron(@RequestParam("file") MultipartFile file,
                                              @RequestParam("patronTypeId") int patronTypeId,
                                              @RequestParam("auditorId") int auditorId){

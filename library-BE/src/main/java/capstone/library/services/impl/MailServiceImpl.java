@@ -47,7 +47,7 @@ public class MailServiceImpl implements MailService {
 
     private  static  final  String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
 
-    private  static  final  String BOOK_LOST_EMAIL_SUBJECT = "[no-reply] BOOK LOST FINE";
+    private  static  final  String BOOK_LOST_EMAIL_SUBJECT = "[no-reply] LOST BOOK BILLING";
 
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
