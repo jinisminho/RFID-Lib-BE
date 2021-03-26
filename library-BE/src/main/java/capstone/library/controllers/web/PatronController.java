@@ -6,6 +6,7 @@ import capstone.library.dtos.response.BookBorrowingResDto;
 import capstone.library.dtos.response.ExtendHistoryResDto;
 import capstone.library.dtos.response.PatronCheckoutInfoResponseDto;
 import capstone.library.dtos.response.ProfileAccountResDto;
+import capstone.library.dtos.response.policiesForPatronView.PoliciesForPatronViewResDto;
 import capstone.library.enums.BorrowingStatus;
 import capstone.library.services.PatronService;
 import capstone.library.util.ApiPageable;
@@ -114,6 +115,13 @@ public class PatronController {
     @Secured({ADMIN, LIBRARIAN})
     public ProfileAccountResDto findProfileByRfidOrEmail(@RequestParam String searchValue) {
         return patronService.findProfileByRfidOrEmail(searchValue);
+    }
+
+    @ApiOperation(value = "This API get policy to show for patron")
+    @GetMapping("/policy")
+//    @Secured({PATRON})
+    public PoliciesForPatronViewResDto getPolicies() {
+        return patronService.getAllPolicy();
     }
 
 }

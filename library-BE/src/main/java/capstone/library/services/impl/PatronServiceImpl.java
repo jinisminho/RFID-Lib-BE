@@ -3,15 +3,16 @@ package capstone.library.services.impl;
 import capstone.library.dtos.common.MyBookDto;
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.*;
+import capstone.library.dtos.response.policiesForPatronView.FeePolicyForPatronViewResDto;
+import capstone.library.dtos.response.policiesForPatronView.PatronPoliciesForPatronViewResDto;
+import capstone.library.dtos.response.policiesForPatronView.PatronPolicyForPatronViewResDto;
+import capstone.library.dtos.response.policiesForPatronView.PoliciesForPatronViewResDto;
 import capstone.library.entities.*;
 import capstone.library.enums.BorrowingStatus;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
-import capstone.library.mappers.BookBorrowingMapper;
-import capstone.library.mappers.BorrowPolicyMapper;
-import capstone.library.mappers.ExtendHistoryMapper;
-import capstone.library.mappers.ProfileMapper;
+import capstone.library.mappers.*;
 import capstone.library.repositories.*;
 import capstone.library.services.PatronService;
 import capstone.library.util.tools.CommonUtil;
@@ -62,6 +63,11 @@ public class PatronServiceImpl implements PatronService {
     FeePolicyRepository feePolicyRepository;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    private PoliciesForPatronViewMapper policiesForPatronViewMapper;
+    @Autowired
+    PatronTypeRepository patronTypeRepository;
+
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
     private static final String EMAIL_DEFAULT = "test@test.com";
@@ -326,6 +332,40 @@ public class PatronServiceImpl implements PatronService {
     public ProfileAccountResDto findProfileByRfidOrEmail(String searchValue) {
         return profileMapper.toResDto(profileRepository.findByAccount_EmailOrAccount_Rfid(searchValue, searchValue)
                 .orElseThrow(() -> new ResourceNotFoundException("Profile", "Profile with RFID/EMAIL[" + searchValue + "] not found")));
+    }
+
+    @Override
+    public PoliciesForPatronViewResDto getAllPolicy() {
+        PoliciesForPatronViewResDto res = new PoliciesForPatronViewResDto();
+
+        //get fee policy
+        FeePolicy feePolicy = feePolicyRepository
+                .findAllByOrderByCreatedAtDesc()
+                .stream().findFirst().orElse(new FeePolicy());
+        FeePolicyForPatronViewResDto feeDto = policiesForPatronViewMapper.toFeeDto(feePolicy);
+
+        //get patron types
+        List<PatronType> patronTypes = patronTypeRepository.findAll();
+        PatronPoliciesForPatronViewResDto patronDto = new PatronPoliciesForPatronViewResDto();
+        List<PatronPolicyForPatronViewResDto> patronDtos = new ArrayList<>();
+        int count = patronTypes.size();
+        if (count > 0) {
+            patronDtos = patronTypes.stream().map(patronType -> policiesForPatronViewMapper.toPatronDto(patronType)).collect(Collectors.toList());
+        }
+        patronDto.setData(patronDtos);
+        patronDto.setCount(count);
+
+        //get borrow policies
+        for (PatronPolicyForPatronViewResDto e : patronDtos) {
+            List<BorrowPolicy> borrowPolicies = borrowPolicyRepository.findByPatronTypeId(e.getId());
+            e.setBorrowPolicies(borrowPolicies.stream().map(borrowPolicy -> policiesForPatronViewMapper.toBorrowDto(borrowPolicy)).collect(Collectors.toList()));
+        }
+
+        //set results to dto:res
+        res.setFeePolicy(feeDto);
+        res.setPatronTypes(patronDto);
+
+        return res;
     }
 
 }

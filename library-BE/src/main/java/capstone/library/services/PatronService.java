@@ -2,6 +2,7 @@ package capstone.library.services;
 
 import capstone.library.dtos.request.ProfileUpdateReqDto;
 import capstone.library.dtos.response.*;
+import capstone.library.dtos.response.policiesForPatronView.PoliciesForPatronViewResDto;
 import capstone.library.enums.BorrowingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,4 +25,6 @@ public interface PatronService {
     PatronCheckoutInfoResponseDto getCheckoutAccountByRfidOrEmail(String key);
 
     ProfileAccountResDto findProfileByRfidOrEmail(String searchValue);
+
+    PoliciesForPatronViewResDto getAllPolicy();
 }
