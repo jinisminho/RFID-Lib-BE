@@ -119,7 +119,7 @@ public class PatronController {
 
     @ApiOperation(value = "This API get policy to show for patron")
     @GetMapping("/policy")
-//    @Secured({PATRON})
+    @Secured({PATRON})
     public PoliciesForPatronViewResDto getPolicies() {
         return patronService.getAllPolicy();
     }
