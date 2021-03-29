@@ -125,4 +125,19 @@ public class BookCopyController {
     public List<Integer> getIds(@RequestParam(required = false, value = "searchValue") String searchValue, @RequestParam(required = false, value = "status") List<String> status) {
         return bookCopyService.getIds(searchValue, status);
     }
+
+    @ApiOperation("Print barcodes by batch by click on print all button")
+    @PostMapping("/printAllBarcodes")
+    @Secured({ADMIN, LIBRARIAN})
+    public ResponseEntity<Resource> printAllBarcodes(@RequestParam(required = false, value = "searchValue") String searchValue,
+                                                     @RequestParam(required = false, value = "status") List<String> status)  {
+        List<Integer> bookCopyIds = bookCopyService.getIds(searchValue, status);
+        Resource res = bookCopyService.generateBarcodesByBatch(bookCopyIds);
+        String returnFileName = "Barcodes.pdf";
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=" + returnFileName)
+                .header("Access-Control-Expose-Headers", "Content-Disposition")
+                .body(res);
+    }
 }

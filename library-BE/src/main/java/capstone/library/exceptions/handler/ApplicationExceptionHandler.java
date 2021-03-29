@@ -49,7 +49,7 @@ public class ApplicationExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = AccessDeniedException.class)
     public ResponseEntity<ErrorDto> handleException(AccessDeniedException exception) {
-        logger.error(exception);
+        logger.error(exception.getMessage());
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 ErrorStatus.ACCESS_DENIED.getCode(),
                 ErrorStatus.ACCESS_DENIED.getReason(),
