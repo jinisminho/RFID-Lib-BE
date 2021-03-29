@@ -109,7 +109,7 @@ public class BookCopyController {
     @ApiOperation("Print barcodes by batch by select row")
     @PostMapping("/printBarcodes")
     @Secured({ADMIN, LIBRARIAN})
-    public ResponseEntity<Resource> printBarcodesByBatch (@RequestBody @Valid PrintBarcodesBatchRequest request) {
+    public ResponseEntity<Resource> printBarcodesByBatch(@RequestBody @Valid PrintBarcodesBatchRequest request) {
         Resource res = bookCopyService.generateBarcodesByBatch(request.getBookCopyIdList());
         String returnFileName = "Barcodes.pdf";
         return ResponseEntity.ok()
@@ -119,4 +119,10 @@ public class BookCopyController {
                 .body(res);
     }
 
+    @ApiOperation(value = "This API use to get book copies' ids by like title-subtitle and exact ISBN, barcode, RFID. Filter by status. e.g. [http://localhost:8091/copy/getIds?searchValue=hobbit&status=IN_PROCESS,AVAILABLE]")
+    @GetMapping("/getIds")
+    @Secured({ADMIN, LIBRARIAN})
+    public List<Integer> getIds(@RequestParam(required = false, value = "searchValue") String searchValue, @RequestParam(required = false, value = "status") List<String> status) {
+        return bookCopyService.getIds(searchValue, status);
+    }
 }
