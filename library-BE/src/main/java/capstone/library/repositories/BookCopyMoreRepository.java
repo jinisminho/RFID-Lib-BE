@@ -14,5 +14,9 @@ public interface BookCopyMoreRepository {
 
     Page<BookCopy> findBookCopiesWithStatus(String searchValue, List<BookCopyStatus> status, Pageable pageable);
 
+    List<BookCopy> findBookCopies(String searchValue);
+
+    List<BookCopy> findBookCopiesWithStatus(String searchValue, List<BookCopyStatus> status);
+
     void reindexAll();
 }
