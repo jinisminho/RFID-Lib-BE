@@ -1,6 +1,7 @@
 package capstone.library.demo.controllers;
 
 import capstone.library.demo.dtos.response.ScannedBookResponse;
+import capstone.library.demo.dtos.response.ScannedReturnBookResponse;
 import capstone.library.demo.services.BookCopyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,5 +19,10 @@ public class BookCopyController {
     @GetMapping("/{rfid}")
     public ScannedBookResponse getBookCopyByRfid(@PathVariable("rfid")String rfid){
         return bookCopyService.searchBookByRfid(rfid);
+    }
+
+    @GetMapping("/Returning/{rfid}")
+    public ScannedReturnBookResponse getReturnBook (@PathVariable("rfid")String rfid){
+        return bookCopyService.searchReturnBook(rfid);
     }
 }
