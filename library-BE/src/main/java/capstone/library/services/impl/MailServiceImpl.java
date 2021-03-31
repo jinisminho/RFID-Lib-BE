@@ -16,6 +16,7 @@ import capstone.library.repositories.BookCopyRepository;
 import capstone.library.repositories.WishlistRepository;
 import capstone.library.services.MailService;
 import capstone.library.util.tools.DateTimeUtils;
+import capstone.library.util.tools.DoubleFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -37,17 +39,17 @@ public class MailServiceImpl implements MailService {
 
     private static final String NOREPLY_ADDRESS = "noreply@rfidlib.com";
 
-    private  static  final  String CHECKOUT_EMAIL_SUBJECT = "[no-reply] BOOK CHECK OUT RECEIPT";
+    private static final String CHECKOUT_EMAIL_SUBJECT = "[no-reply] BOOK CHECK OUT RECEIPT";
 
-    private  static  final  String RETURN_EMAIL_SUBJECT = "[no-reply] BOOK RETURN RECEIPT";
+    private static final String RETURN_EMAIL_SUBJECT = "[no-reply] BOOK RETURN RECEIPT";
 
-    private  static  final  String WISHLIST_EMAIL_SUBJECT = "[no-reply] WISHLIST BOOK IS AVAILABLE";
+    private static final String WISHLIST_EMAIL_SUBJECT = "[no-reply] WISHLIST BOOK IS AVAILABLE";
 
-    private  static  final  String DUE_DATE_EMAIL_SUBJECT = "[no-reply] REMIND BORROWING BOOK WILL BE DUE ON";
+    private static final String DUE_DATE_EMAIL_SUBJECT = "[no-reply] REMIND BORROWING BOOK WILL BE DUE ON";
 
-    private  static  final  String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
+    private static final String CREATE_ACCOUNT_EMAIL_SUBJECT = "[no-reply] CREATE SMART LIBRARY ACCOUNT";
 
-    private  static  final  String BOOK_LOST_EMAIL_SUBJECT = "[no-reply] LOST BOOK BILLING";
+    private static final String BOOK_LOST_EMAIL_SUBJECT = "[no-reply] LOST BOOK BILLING";
 
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
@@ -71,14 +73,16 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendCheckoutMail(String patronEmail, CheckoutResponseDto request) {
-        System.out.println(("---------------------"+request.getCheckoutCopyDto()));
-        if(request == null || request.getCheckoutCopyDto() == null){
+        System.out.println(("---------------------" + request.getCheckoutCopyDto()));
+        if (request == null || request.getCheckoutCopyDto() == null) {
             throw new MissingInputException("books is missing");
         }
-        List<CheckoutCopyDto> books = request.getCheckoutCopyDto();
-        if(!books.isEmpty()){
+        List<CheckoutCopyDto> books = request.getCheckoutCopyDto()
+                .stream()
+                .filter(CheckoutCopyDto::isAbleToBorrow).collect(Collectors.toList());
+        if (!books.isEmpty()) {
             Optional<Account> receiverOpt = accountRepo.findByEmail(patronEmail);
-            if(receiverOpt.isPresent()){
+            if (receiverOpt.isPresent()) {
                 Account receiver = receiverOpt.get();
                 Map<String, Object> templateModel = new HashMap<>();
                 templateModel.put("patron", receiver.getProfile().getFullName());
@@ -88,10 +92,10 @@ public class MailServiceImpl implements MailService {
                 String htmlBody = thymeleafTemplateEngine.process("checkoutEmailTemplate.html", thymeleafContext);
                 try {
                     sendHtmlMessage(receiver.getEmail(), CHECKOUT_EMAIL_SUBJECT, htmlBody);
-                }catch(MessagingException e){
+                } catch (MessagingException e) {
                     logger.error("Cannot send chek-out email for patron: " + receiver.getEmail());
                 }
-            }else{
+            } else {
                 logger.error("Cannot send chek-out email for patron");
             }
         }
@@ -101,17 +105,17 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendReturnMail(List<ReturnBookResponseDto> books) {
 
-        if(books == null){
-            throw  new MissingInputException("books is missing");
+        if (books == null) {
+            throw new MissingInputException("books is missing");
         }
         Map<String, List<ReturnBookResponseDto>> patronMap = new HashMap<>();
-        for(ReturnBookResponseDto book : books){
+        for (ReturnBookResponseDto book : books) {
             String patronEmail = book.getBorrower().getEmail();
             List<ReturnBookResponseDto> tmp = new ArrayList<>();
-            if(patronMap.containsKey(patronEmail)){
+            if (patronMap.containsKey(patronEmail)) {
                 tmp.addAll(patronMap.get(patronEmail));
                 tmp.add(book);
-            }else{
+            } else {
                 tmp.add(book);
             }
             patronMap.put(patronEmail, tmp);
@@ -127,7 +131,7 @@ public class MailServiceImpl implements MailService {
     public void sendRemindOverdueBook() {
         LocalDate dueDate = LocalDate.now().plusDays(DAY_NUMBER_REMIND_BEFORE_DUE);
         List<BookBorrowing> bookBorrowings = borrowingRepo.findByDueAtAndReturnedAtIsNullAndLostAtIsNull(dueDate);
-        for(BookBorrowing borrowing : bookBorrowings){
+        for (BookBorrowing borrowing : bookBorrowings) {
             sendOneDueDayReminderEmail(borrowing);
         }
     }
@@ -136,15 +140,15 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendNotifyWishlistAvailable() {
         List<WishlistBook> curWishlistBooks = wishlistRepo.findByStatus(WishListStatus.NOT_EMAIL_YET);
-        if(!curWishlistBooks.isEmpty()){
+        if (!curWishlistBooks.isEmpty()) {
             Set<BookCopyStatus> availableCopyStatus = new HashSet<>();
             availableCopyStatus.add(BookCopyStatus.AVAILABLE);
             availableCopyStatus.add(BookCopyStatus.LIB_USE_ONLY);
-            for(WishlistBook wish : curWishlistBooks){
-                List<BookCopy> copies = copyRepo.findByBookIdAndStatusIn(wish.getBook().getId(),availableCopyStatus);
+            for (WishlistBook wish : curWishlistBooks) {
+                List<BookCopy> copies = copyRepo.findByBookIdAndStatusIn(wish.getBook().getId(), availableCopyStatus);
                 //if book is available / lib_use_only
-                if(!copies.isEmpty()){
-                    if(sendOneWishList(wish.getBorrower(), wish.getBook())){
+                if (!copies.isEmpty()) {
+                    if (sendOneWishList(wish.getBorrower(), wish.getBook())) {
                         wish.setStatus(WishListStatus.EMAILED);
                         wishlistRepo.save(wish);
                     }
@@ -169,7 +173,7 @@ public class MailServiceImpl implements MailService {
         String htmlBody = thymeleafTemplateEngine.process("createAccount.html", thymeleafContext);
         try {
             sendHtmlMessage(email, CREATE_ACCOUNT_EMAIL_SUBJECT, htmlBody);
-        }catch(MessagingException e){
+        } catch (MessagingException e) {
             throw new EmailException(e.getMessage());
         }
 
@@ -182,14 +186,14 @@ public class MailServiceImpl implements MailService {
         Map<String, Object> templateModel = new HashMap<>();
         templateModel.put("patron", bookLostReport.getBookBorrowing().getBorrowing().getBorrower().getProfile().getFullName());
         templateModel.put("book", bookLostReport.getBookBorrowing().getBookCopy().getBook());
-        templateModel.put("reportedAt", dateTimeUtils.convertDateTimeToString(bookLostReport.getLostAt()) );
-        templateModel.put("fine", bookLostReport.getFine());
+        templateModel.put("reportedAt", dateTimeUtils.convertDateTimeToString(bookLostReport.getLostAt()));
+        templateModel.put("fine", DoubleFormatter.formatToDecimal(bookLostReport.getFine()));
         Context thymeleafContext = new Context();
         thymeleafContext.setVariables(templateModel);
         String htmlBody = thymeleafTemplateEngine.process("bookLostFineTemplate.html", thymeleafContext);
         try {
             sendHtmlMessage(email, BOOK_LOST_EMAIL_SUBJECT, htmlBody);
-        }catch(MessagingException e){
+        } catch (MessagingException e) {
             throw new EmailException(e.getMessage());
         }
     }
@@ -210,14 +214,14 @@ public class MailServiceImpl implements MailService {
         emailSender.send(message);
     }
 
-    private void sendReturnEmailForOnePatron(String patronEmail,List<ReturnBookResponseDto> books ){
-        if(books == null){
+    private void sendReturnEmailForOnePatron(String patronEmail, List<ReturnBookResponseDto> books) {
+        if (books == null) {
             throw new MissingInputException("books is missing");
         }
         Optional<Account> accountOpt = accountRepo.findByEmail(patronEmail);
-        if(accountOpt.isPresent()){
+        if (accountOpt.isPresent()) {
             Account receiver = accountOpt.get();
-            if(!books.isEmpty()){
+            if (!books.isEmpty()) {
                 Map<String, Object> templateModel = new HashMap<>();
                 templateModel.put("patron", receiver.getProfile().getFullName());
                 templateModel.put("books", books);
@@ -226,18 +230,18 @@ public class MailServiceImpl implements MailService {
                 String htmlBody = thymeleafTemplateEngine.process("returnEmailTemplate.html", thymeleafContext);
                 try {
                     sendHtmlMessage(receiver.getEmail(), RETURN_EMAIL_SUBJECT, htmlBody);
-                }catch(MessagingException e){
+                } catch (MessagingException e) {
                     logger.error("Cannot send return email for patron: " + receiver.getEmail());
                 }
             }
-        }else{
+        } else {
             logger.error("Cannot send return email for patron with email:" + patronEmail);
 
         }
     }
 
-    private boolean sendOneWishList(Account patron, Book book){
-        if(patron == null || book == null){
+    private boolean sendOneWishList(Account patron, Book book) {
+        if (patron == null || book == null) {
             logger.error("Cannot find patron or books in wish list");
             return false;
         }
@@ -256,9 +260,9 @@ public class MailServiceImpl implements MailService {
         }
     }
 
-    private void sendOneDueDayReminderEmail(BookBorrowing borrowing){
-        if(borrowing == null){
-            throw  new MissingInputException("cannot find borrowing transaction");
+    private void sendOneDueDayReminderEmail(BookBorrowing borrowing) {
+        if (borrowing == null) {
+            throw new MissingInputException("cannot find borrowing transaction");
         }
         Account patron = borrowing.getBorrowing().getBorrower();
         double fineRate = borrowing.getFeePolicy().getOverdueFinePerDay();
@@ -266,12 +270,12 @@ public class MailServiceImpl implements MailService {
         templateModel.put("patron", patron.getProfile().getFullName());
         templateModel.put("book", borrowing.getBookCopy().getBook());
         templateModel.put("dueDate", borrowing.getDueAt());
-        templateModel.put("fineRate", fineRate);
+        templateModel.put("fineRate",DoubleFormatter.formatToDecimal( fineRate));
         Context thymeleafContext = new Context();
         thymeleafContext.setVariables(templateModel);
         String htmlBody = thymeleafTemplateEngine.process("dueRemind.html", thymeleafContext);
         try {
-            sendHtmlMessage(patron.getEmail(), DUE_DATE_EMAIL_SUBJECT+ " " + borrowing.getDueAt(), htmlBody);
+            sendHtmlMessage(patron.getEmail(), DUE_DATE_EMAIL_SUBJECT + " " + borrowing.getDueAt(), htmlBody);
         } catch (MessagingException e) {
             logger.error("Cannot send return email for patron: " + patron.getEmail());
         }
