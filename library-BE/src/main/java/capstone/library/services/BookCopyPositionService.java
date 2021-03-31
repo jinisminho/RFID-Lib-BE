@@ -22,4 +22,6 @@ public interface BookCopyPositionService {
     String saveSampledPosition(SaveSamplePositionRequestDto request);
 
     List<CopyResponseDto> getBooksOnARow(int positionId);
+
+    List<CopyResponseDto> getBooksOnARowByRFID(String rfid);
 }

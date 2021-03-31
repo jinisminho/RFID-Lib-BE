@@ -26,6 +26,6 @@ public class BookCopyPosition {
     @Column(name = "line", nullable = false)
     private Integer line;
 
-    @Column(name = "rfid", nullable = false)
-    private Integer rfid;
+    @Column(name = "rfid", nullable = true)
+    private String rfid;
 }

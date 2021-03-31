@@ -158,6 +158,16 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
     @Override
     public List<CopyResponseDto> getBooksOnARow(int positionId) {
         List<BookCopy> bookCopies = bookCopyRepository.findAllByBookCopyPositionId(positionId);
+        return convertBookCopyToDto(bookCopies);
+    }
+
+    @Override
+    public List<CopyResponseDto> getBooksOnARowByRFID(String rfid) {
+        List<BookCopy> bookCopies = bookCopyRepository.findAllByBookCopyPositionRfid(rfid);
+        return convertBookCopyToDto(bookCopies);
+    }
+
+    private List<CopyResponseDto> convertBookCopyToDto(List<BookCopy> bookCopies) {
         List<CopyResponseDto> response = new ArrayList<>();
         for (BookCopy bookCopy : bookCopies) {
             if (bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) ||
