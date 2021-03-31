@@ -29,6 +29,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -75,7 +76,9 @@ public class MailServiceImpl implements MailService {
         if(request == null || request.getCheckoutCopyDto() == null){
             throw new MissingInputException("books is missing");
         }
-        List<CheckoutCopyDto> books = request.getCheckoutCopyDto();
+        List<CheckoutCopyDto> books = request.getCheckoutCopyDto()
+                .stream()
+                .filter(CheckoutCopyDto::isAbleToBorrow).collect(Collectors.toList());
         if(!books.isEmpty()){
             Optional<Account> receiverOpt = accountRepo.findByEmail(patronEmail);
             if(receiverOpt.isPresent()){
