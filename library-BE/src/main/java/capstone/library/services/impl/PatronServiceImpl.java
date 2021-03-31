@@ -171,85 +171,85 @@ public class PatronServiceImpl implements PatronService {
         dto.setFine(fine > 0 ? fine : 0);
     }
 
-    @Override
-    public PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid) {
-        PatronCheckoutInfoResponseDto response = new PatronCheckoutInfoResponseDto();
-
-        /*Get patron*/
-        Optional<Account> patronOptional = accountRepository.findByRfid(rfid);
-        if (patronOptional.isEmpty()) {
-            throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
-        }
-        Account patron = patronOptional.get();
-        if (patron.getPatronType() == null) {
-            throw new ResourceNotFoundException("Patron", NOT_PATRON);
-        }
-        /*=========*/
-
-        /*Hoang: Check if patron is active*/
-        if (!patron.isActive()) {
-            throw new InvalidRequestException(PATRON_INACTIVE);
-        }
-        /*=======================*/
-
-        /*Get overdue books*/
-        LocalDate now = LocalDate.now();
-        List<BookCopy> overdueBooks = overdueBooksFinder.findOverdueBookCopiesByPatronId(patron.getId());
-        List<ReturnBookResponseDto> dtos = new ArrayList<>();
-        for (BookCopy bookCopy : overdueBooks) {
-            ReturnBookResponseDto dto = new ReturnBookResponseDto();
-            dto.setRfid(bookCopy.getRfid());
-            dto.setBook(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class));
-            dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().toString().
-                    replace("]", "").replace("[", ""));
-
-            //Tram added ----
-            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
-            String genres = GenreUtil.getGenreFormCallNumber(bookCopy.getBook().getCallNumber(), genreList);
-            // -----------
-            dto.getBook().setGenres(genres);
-            Optional<BookBorrowing> bookBorrowingOptional =
-                    bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
-            if (bookBorrowingOptional.isPresent()) {
-                BookBorrowing bookBorrowing = bookBorrowingOptional.get();
-                int overdueDays = (int) dateTimeUtils.getOverdueDays(now, bookBorrowing.getDueAt());
-                if (overdueDays > 0) {
-                    dto.setOverdueDays(overdueDays);
-                    dto.setOverdue(true);
-                    //Calculate fine
-                    Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());
-                    if (feePolicyOptional.isPresent()) {
-                        double fineRate;
-                        double fine = 0;
-                        double bookCopyPrice = bookCopy.getPrice();
-                        fineRate = feePolicyOptional.get().getOverdueFinePerDay();
-                        fine = fineRate * overdueDays;
-                        int maxOverdueFinePercentage = feePolicyOptional.get().getMaxPercentageOverdueFine();
-                        double maxOverdueFine = bookCopyPrice * ((double) maxOverdueFinePercentage / 100);
-                        if (fine >= maxOverdueFine) {
-                            fine = maxOverdueFine;
-                        }
-                        dto.setFine(fine);
-                        dto.setReason("Return late: " + overdueDays + " (days)");
-                    }
-                }
-                /*Hoang*/
-                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowing().getBorrowedAt()));
-                /*========*/
-                dto.setDueDate(bookBorrowing.getDueAt().toString());
-            }
-            dto.setBookPrice(bookCopy.getPrice());
-            dtos.add(dto);
-        }
-        /*================*/
-
-        /*Prepare response*/
-        response.setPatronAccountInfo(objectMapper.convertValue(patron, AccountDetailResponseDto.class));
-        response.setOverdueBooks(dtos);
-        /*================*/
-        return response;
-
-    }
+//    @Override
+//    public PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid) {
+//        PatronCheckoutInfoResponseDto response = new PatronCheckoutInfoResponseDto();
+//
+//        /*Get patron*/
+//        Optional<Account> patronOptional = accountRepository.findByRfid(rfid);
+//        if (patronOptional.isEmpty()) {
+//            throw new ResourceNotFoundException("Patron", PATRON_NOT_FOUND);
+//        }
+//        Account patron = patronOptional.get();
+//        if (patron.getPatronType() == null) {
+//            throw new ResourceNotFoundException("Patron", NOT_PATRON);
+//        }
+//        /*=========*/
+//
+//        /*Hoang: Check if patron is active*/
+//        if (!patron.isActive()) {
+//            throw new InvalidRequestException(PATRON_INACTIVE);
+//        }
+//        /*=======================*/
+//
+//        /*Get overdue books*/
+//        LocalDate now = LocalDate.now();
+//        List<BookCopy> overdueBooks = overdueBooksFinder.findOverdueBookCopiesByPatronId(patron.getId());
+//        List<ReturnBookResponseDto> dtos = new ArrayList<>();
+//        for (BookCopy bookCopy : overdueBooks) {
+//            ReturnBookResponseDto dto = new ReturnBookResponseDto();
+//            dto.setRfid(bookCopy.getRfid());
+//            dto.setBook(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class));
+//            dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().toString().
+//                    replace("]", "").replace("[", ""));
+//
+//            //Tram added ----
+//            List<Genre> genreList = genreRepository.findByOrderByDdcAsc();
+//            String genres = GenreUtil.getGenreFormCallNumber(bookCopy.getBook().getCallNumber(), genreList);
+//            // -----------
+//            dto.getBook().setGenres(genres);
+//            Optional<BookBorrowing> bookBorrowingOptional =
+//                    bookBorrowingRepository.findByBookCopyIdAndReturnedAtIsNullAndLostAtIsNull(bookCopy.getId());
+//            if (bookBorrowingOptional.isPresent()) {
+//                BookBorrowing bookBorrowing = bookBorrowingOptional.get();
+//                int overdueDays = (int) dateTimeUtils.getOverdueDays(now, bookBorrowing.getDueAt());
+//                if (overdueDays > 0) {
+//                    dto.setOverdueDays(overdueDays);
+//                    dto.setOverdue(true);
+//                    //Calculate fine
+//                    Optional<FeePolicy> feePolicyOptional = feePolicyRepository.findById(bookBorrowing.getFeePolicy().getId());
+//                    if (feePolicyOptional.isPresent()) {
+//                        double fineRate;
+//                        double fine = 0;
+//                        double bookCopyPrice = bookCopy.getPrice();
+//                        fineRate = feePolicyOptional.get().getOverdueFinePerDay();
+//                        fine = fineRate * overdueDays;
+//                        int maxOverdueFinePercentage = feePolicyOptional.get().getMaxPercentageOverdueFine();
+//                        double maxOverdueFine = bookCopyPrice * ((double) maxOverdueFinePercentage / 100);
+//                        if (fine >= maxOverdueFine) {
+//                            fine = maxOverdueFine;
+//                        }
+//                        dto.setFine(fine);
+//                        dto.setReason("Return late: " + overdueDays + " (days)");
+//                    }
+//                }
+//                /*Hoang*/
+//                dto.setBorrowedAt(dateTimeUtils.convertDateTimeToString(bookBorrowing.getBorrowing().getBorrowedAt()));
+//                /*========*/
+//                dto.setDueDate(bookBorrowing.getDueAt().toString());
+//            }
+//            dto.setBookPrice(bookCopy.getPrice());
+//            dtos.add(dto);
+//        }
+//        /*================*/
+//
+//        /*Prepare response*/
+//        response.setPatronAccountInfo(objectMapper.convertValue(patron, AccountDetailResponseDto.class));
+//        response.setOverdueBooks(dtos);
+//        /*================*/
+//        return response;
+//
+//    }
 
     @Override
     public PatronCheckoutInfoResponseDto getCheckoutAccountByRfidOrEmail(String key) {
