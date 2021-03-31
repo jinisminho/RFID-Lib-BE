@@ -20,7 +20,7 @@ public interface PatronService {
 
     Page<BookBorrowingResDto> getBorrowingHistoriesWithStatus(Integer patronId, Pageable pageable, BorrowingStatus status);
 
-    PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid);
+//    PatronCheckoutInfoResponseDto getCheckoutAccountByRfid(String rfid);
 
     PatronCheckoutInfoResponseDto getCheckoutAccountByRfidOrEmail(String key);
 
