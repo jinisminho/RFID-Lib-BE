@@ -69,4 +69,11 @@ public class BookPositionController {
     public List<CopyResponseDto> getBooksOnARow(@PathVariable String rfid) {
         return bookCopyPositionService.getBooksOnARowByRFID(rfid);
     }
+
+    @ApiOperation("Get a position (shelf + row) by RFID")
+    @Secured({LIBRARIAN, ADMIN})
+    @GetMapping("/rfid/getPosition/{rfid}")
+    public BookCopyPositionResponse getPositionByRFID(@PathVariable String rfid) {
+        return bookCopyPositionService.getPositionByRFID(rfid);
+    }
 }

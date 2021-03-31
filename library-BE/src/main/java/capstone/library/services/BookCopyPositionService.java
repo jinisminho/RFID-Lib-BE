@@ -24,4 +24,7 @@ public interface BookCopyPositionService {
     List<CopyResponseDto> getBooksOnARow(int positionId);
 
     List<CopyResponseDto> getBooksOnARowByRFID(String rfid);
+
+    BookCopyPositionResponse getPositionByRFID(String rfid);
+
 }

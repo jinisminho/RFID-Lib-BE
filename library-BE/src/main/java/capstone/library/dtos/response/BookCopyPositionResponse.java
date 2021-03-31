@@ -11,11 +11,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BookCopyPositionResponse {
 
+    private int id;
+
     private String callNumber;
 
     private String line;
 
     private String shelf;
+
+    public BookCopyPositionResponse(String callNumber, String line, String shelf) {
+        this.callNumber = callNumber;
+        this.line = line;
+        this.shelf = shelf;
+    }
 
     @Override
     public String toString() {
