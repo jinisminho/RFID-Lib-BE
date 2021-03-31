@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookCopyPositionRepository extends JpaRepository<BookCopyPosition, Integer> {
@@ -14,4 +15,6 @@ public interface BookCopyPositionRepository extends JpaRepository<BookCopyPositi
     List<BookCopyPosition> findAllGroupsByShelf();
 
     List<BookCopyPosition> findByShelf(String shelf);
+
+    Optional<BookCopyPosition> findByRfid(String rfid);
 }

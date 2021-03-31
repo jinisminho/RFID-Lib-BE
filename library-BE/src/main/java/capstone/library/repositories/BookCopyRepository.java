@@ -40,4 +40,6 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Integer> {
     Optional<BookCopy> getTopByBookCopyType_Id(int id);
 
     List<BookCopy> findAllByBookCopyPositionId(int bookCopyPositionId);
+
+    List<BookCopy> findAllByBookCopyPositionRfid(String bookCopyPositionRfid);
 }

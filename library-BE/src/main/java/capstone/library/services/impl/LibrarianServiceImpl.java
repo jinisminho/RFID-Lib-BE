@@ -531,6 +531,7 @@ public class LibrarianServiceImpl implements LibrarianService {
                 reasons.add(COPY_NOT_AVAILABLE + bookCopy.getBarcode());
             }
         }
+        //check for if patron is borrowing exceeding allowance for each copy_type
         for (BookCopyType type : copyTypeIdHashSet) {
             BorrowPolicy tmp = getBorrowPolicy(patron.getPatronType().getId(), type.getId());
             int max = tmp.getMaxNumberCopyBorrow();
