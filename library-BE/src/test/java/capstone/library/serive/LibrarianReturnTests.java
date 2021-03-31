@@ -14,6 +14,7 @@ import capstone.library.repositories.FeePolicyRepository;
 import capstone.library.services.LibrarianService;
 import capstone.library.services.SecurityGateService;
 import capstone.library.services.impl.LibrarianServiceImpl;
+import capstone.library.util.tools.DateTimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,8 +75,8 @@ public class LibrarianReturnTests {
     private static final double BOOK_PRICE_HIGH = 75000;
     private static final double BOOK_PRICE_LOW = 1000;
     private static final int MAX_OVERDUE_FINE_PERCENTAGE = 100;
-    private static final int OVERDUE_DAYS = 3;
-    private static final LocalDate OVERDUE_DATE = LocalDate.now().minusDays(OVERDUE_DAYS);
+    private static final int LATE_DAYS = 3;
+    private static final LocalDate OVERDUE_DATE = LocalDate.now().minusDays(LATE_DAYS);
     private static final String NOT_FOUND = " not found";
 
     ScannedRFIDCopiesRequestDto request;
@@ -90,9 +91,12 @@ public class LibrarianReturnTests {
     FeePolicy feePolicy;
     Borrowing borrowing;
     BookCopyType bookCopyType;
+    DateTimeUtils dateTimeUtils;
 
     @Before
     public void init() {
+        dateTimeUtils = new DateTimeUtils();
+
         request = new ScannedRFIDCopiesRequestDto();
 
         responseDto = new ReturnBookResponseDto();
@@ -287,7 +291,8 @@ public class LibrarianReturnTests {
         //Mock object mapper
         when(objectMapper.convertValue(bookCopy.getBook(), MyBookDto.class)).thenReturn(new MyBookDto());
         //assert results
-        responseDto.setFine(OVERDUE_DAYS * FINE_RATE);
+        int overdueDays = (int) dateTimeUtils.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
+        responseDto.setFine(overdueDays * FINE_RATE);
         List<ReturnBookResponseDto> response = new ArrayList<>();
         response.add(responseDto);
         assertEquals(response.get(0).getFine(), librarianService.returnBookCopies(request).get(0).getFine(), MAX_DELTA);

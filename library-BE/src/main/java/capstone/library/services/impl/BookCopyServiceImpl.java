@@ -417,6 +417,38 @@ public class BookCopyServiceImpl implements BookCopyService {
     }
 
     @Override
+    public List<Integer> getIds(String searchValue, List<String> status) {
+        List<Integer> res = new ArrayList<>();
+        searchValue = searchValue == null ? "" : searchValue;
+        searchValue = searchValue.trim();
+
+        List<BookCopyStatus> statusEnums = new ArrayList<>();
+        if (status != null)
+            status.forEach(s -> {
+                if (s != null ? EnumUtils.isValidEnumIgnoreCase(BookCopyStatus.class, s.trim()) : false)
+                    statusEnums.add(BookCopyStatus.valueOf(s.trim()));
+                else
+                    throw new InvalidRequestException(" Param [status:" + s + "] is not a valid book copy status enum.");
+            });
+
+        List<BookCopy> books = doFindBookCopies(searchValue, statusEnums);
+
+        res = books.stream().map(BookCopy::getId).collect(Collectors.toList());
+
+        return res;
+    }
+
+    private List<BookCopy> doFindBookCopies(String searchValue, List<BookCopyStatus> statusEnums) {
+        List<BookCopy> books;
+        if (searchValue.isEmpty()) {
+            books = statusEnums == null || statusEnums.isEmpty() ? bookCopyRepository.findAll() : bookCopyRepository.findAllByStatusIn(statusEnums);
+        } else {
+            books = statusEnums == null || statusEnums.isEmpty() ? bookCopyMoreRepository.findBookCopies(searchValue) : bookCopyMoreRepository.findBookCopiesWithStatus(searchValue, statusEnums);
+        }
+        return books;
+    }
+
+    @Override
     public CopyResponseDto getCopyByBarcode(String barcode) {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByBarcode(barcode);
         return getCopyResponseDto(bookCopyOptional);

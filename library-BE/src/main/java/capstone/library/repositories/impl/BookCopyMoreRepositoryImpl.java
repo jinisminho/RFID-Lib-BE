@@ -137,6 +137,97 @@ public class BookCopyMoreRepositoryImpl implements BookCopyMoreRepository {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public List<BookCopy> findBookCopies(String searchValue) {
+        SearchSession searchSession = Search.session(entityManager);
+
+        SearchResult<BookCopy> result1, result2;
+
+        SearchQuery<BookCopy> query = searchSession.search(BookCopy.class)
+                .where(f -> f.match()
+                        .fields("book.title", "book.title_2", "book.sub", "book.sub_2")
+                        .matching(searchValue)
+                        .analyzer("default")
+                )
+                .toQuery();
+        result1 = query.fetchAll();
+
+        SearchQuery<BookCopy> query2 = searchSession.search(BookCopy.class)
+                .where(f -> f.match()
+                        .fields("book.isbn", "barcode", "rfid")
+                        .matching(searchValue)
+                        .analyzer("keyword")
+                )
+                .toQuery();
+        result2 = query2.fetchAll();
+
+        List<BookCopy> res = new ArrayList<>();
+        if (result1.total().hitCount() > 0) res.addAll(result1.hits());
+        if (result2.total().hitCount() > 0) {
+            res = result2.hits();
+        }
+
+        List<BookCopy> resWithoutDuplicates = new ArrayList<>(
+                new LinkedHashSet<>(res));
+        return resWithoutDuplicates;
+    }
+
+    @Override
+    public List<BookCopy> findBookCopiesWithStatus(String searchValue, List<BookCopyStatus> status) {
+        SearchSession searchSession = Search.session(entityManager);
+
+        List<BookCopy> res = new ArrayList<>();
+
+        List<SearchQuery> queries = new ArrayList<>();
+
+        status.forEach(s -> {
+                    SearchQuery<BookCopy> query = searchSession.search(BookCopy.class)
+                            .where(f -> f.bool()
+                                    .must(f.match()
+                                            .fields("book.isbn", "barcode", "rfid")
+                                            .matching(searchValue)
+                                            .analyzer("keyword"))
+                                    .must(f.match()
+                                            .fields("status")
+                                            .matching(s)
+                                            .analyzer("keyword"))
+                            )
+                            .toQuery();
+                    queries.add(query);
+                }
+        );
+        queries.forEach(searchQuery -> {
+            res.addAll(searchQuery.fetchAll().hits());
+        });
+        if (!res.isEmpty()) return new ArrayList<>(
+                new LinkedHashSet<>(res));
+
+        queries.clear();
+        res.clear();
+        status.forEach(s -> {
+                    SearchQuery<BookCopy> query = searchSession.search(BookCopy.class)
+                            .where(f -> f.bool()
+                                    .must(f.match()
+                                            .fields("book.title", "book.title_2", "book.sub", "book.sub_2")
+                                            .matching(searchValue)
+                                            .analyzer("default"))
+                                    .must(f.match()
+                                            .fields("status")
+                                            .matching(s)
+                                            .analyzer("keyword"))
+                            )
+                            .toQuery();
+                    queries.add(query);
+                }
+        );
+        queries.forEach(searchQuery -> {
+            res.addAll(searchQuery.fetchAll().hits());
+        });
+
+        return new ArrayList<>(new LinkedHashSet<>(res));
+    }
+
+    @Override
     public void reindexAll() {
         SearchSession searchSession = Search.session(entityManager);
 

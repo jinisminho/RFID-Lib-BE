@@ -40,4 +40,6 @@ public interface BookCopyService {
 
     Resource generateBarcodesByBatch(List<Integer> bookCopyIdList);
 
+    List<Integer> getIds(String searchValue, List<String> status);
+
 }
