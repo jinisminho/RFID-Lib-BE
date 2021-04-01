@@ -1,5 +1,6 @@
 package capstone.library.util.tools;
 
+import capstone.library.dtos.others.ValidateExcelObject;
 import capstone.library.entities.Account;
 import capstone.library.entities.Profile;
 import capstone.library.enums.Gender;
@@ -33,7 +34,8 @@ public class ExcelUtil {
         return TYPE.equals(file.getContentType());
     }
 
-    public static List<Account> excelToAccounts(InputStream is) {
+    public static ValidateExcelObject excelToAccounts(InputStream is) {
+        StringBuilder msg = new StringBuilder();
         List<Account> accounts = new ArrayList<Account>();
         XSSFWorkbook workbook;
         try {
@@ -43,6 +45,7 @@ public class ExcelUtil {
             if (sheet != null) {
                 Iterator<Row> rows = sheet.iterator();
                 int rowNumber = 0;
+                //get each row
                 while (rows.hasNext()) {
 
                     Row currentRow = rows.next();
@@ -70,75 +73,124 @@ public class ExcelUtil {
                     String gender;
                     String avatar;
                     int cellIdx = 0;
+                    StringBuilder rowMsg = new StringBuilder();
+                    //get each cell in 1 row
                     while (cellsInRow.hasNext()) {
                         Cell currentCell = cellsInRow.next();
                         switch (cellIdx) {
                             case 0:
-                                email = currentCell.getStringCellValue().trim();
-                                System.out.println(email);
-                                if (email.isEmpty() || email.length() > 100 || !email.matches(EMAIL_PATTERN)) {
-                                    throw new ImportFileException("email at row " + (currentRow.getRowNum() + 1) + " is invalid: required; max: 100; email pattern");
+                                if (currentCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    email = currentCell.getStringCellValue().trim();
+                                    System.out.println(email);
+                                    if (email.isEmpty() || email.length() > 100 || !email.matches(EMAIL_PATTERN)) {
+                                        rowMsg.append(" Email is invalid: required, max: 100, email pattern;");
+                                    } else {
+                                        account.setEmail(email);
+                                    }
+                                } else {
+                                    rowMsg.append(" Email must be text");
                                 }
-                                account.setEmail(email);
                                 break;
 
                             case 1:
-                                rfid = currentCell.getStringCellValue().trim();
-                                if (rfid.isEmpty() || rfid.length() > 80) {
-                                    throw new ImportFileException("rfid at row " + (currentRow.getRowNum() + 1) + " is invalid: required, max: 80");
+                                if (currentCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    rfid = currentCell.getStringCellValue().trim();
+                                    if (rfid.isEmpty() || rfid.length() > 80) {
+                                        rowMsg.append(" Rfid is invalid: required, max: 80;");
+                                    } else {
+                                        account.setRfid(currentCell.getStringCellValue());
+                                    }
+                                } else {
+                                    rowMsg.append(" Rfid must be text");
                                 }
-                                account.setRfid(currentCell.getStringCellValue());
                                 break;
 
                             case 2:
-                                fullName = currentCell.getStringCellValue().trim();
-                                if (fullName.isEmpty() || fullName.length() > 100) {
-                                    throw new ImportFileException("full name at row " + (currentRow.getRowNum() + 1) + " is invalid: required, max: 100");
+                                if (currentCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    fullName = currentCell.getStringCellValue().trim();
+                                    if (fullName.isEmpty() || fullName.length() > 100) {
+                                        rowMsg.append(" Full name is invalid: required, max: 100;");
+                                    } else {
+                                        account.getProfile().setFullName(currentCell.getStringCellValue());
+                                    }
+                                } else {
+                                    rowMsg.append(" Full name must be text");
                                 }
-                                account.getProfile().setFullName(currentCell.getStringCellValue());
                                 break;
 
                             case 3:
-                                if(currentCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
-                                    phone = DoubleFormatter.formatToDecimal(currentCell.getNumericCellValue());
-                                }else{
-                                    phone = currentCell.getStringCellValue().trim();
+                                if (currentCell.getCellType() == Cell.CELL_TYPE_STRING || currentCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                    if (currentCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                        phone = DoubleFormatter.formatToDecimal(currentCell.getNumericCellValue());
+                                    } else {
+                                        phone = currentCell.getStringCellValue().trim();
+                                    }
+                                    if (!phone.matches(PHONE_PATTERN)) {
+                                        rowMsg.append(" Phone is invalid: required, 10 digits;");
+                                    } else {
+                                        account.getProfile().setPhone(currentCell.getStringCellValue());
+                                    }
+                                } else {
+                                    rowMsg.append(" Phone must be text or number");
                                 }
-                                if (!phone.matches(PHONE_PATTERN)) {
-                                    throw new ImportFileException("phone at row " + (currentRow.getRowNum() + 1) + " is invalid: required; 10 digits");
-                                }
-                                account.getProfile().setPhone(currentCell.getStringCellValue());
                                 break;
 
                             case 4:
-                                gender = currentCell.getStringCellValue().trim();
-                                if (!gender.matches(GENDER_PATTERN)) {
-                                    throw new ImportFileException("Gender at row " + (currentRow.getRowNum() + 1) + " is invalid: F or M");
+                                if (currentCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    gender = currentCell.getStringCellValue().trim();
+                                    if (!gender.matches(GENDER_PATTERN)) {
+                                        rowMsg.append(" Gender is invalid: F or M;");
+                                    } else {
+                                        account.getProfile().setGender(gender.equals("F") ? Gender.F : Gender.M);
+                                    }
+                                } else {
+                                    rowMsg.append(" Gender must be text");
                                 }
-                                account.getProfile().setGender(gender.equals("F") ? Gender.F : Gender.M);
+
                                 break;
 
                             case 5:
-                                avatar = currentCell.getStringCellValue().trim();
-                                if (avatar.isEmpty() || avatar.length() > 500) {
-                                    throw new ImportFileException("Avatar at row " + (currentRow.getRowNum() + 1) + " is invalid: required; max: 500");
+                                if (currentCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    avatar = currentCell.getStringCellValue().trim();
+                                    if (avatar.isEmpty() || avatar.length() > 500) {
+                                        rowMsg.append(" Avatar is invalid: required, max: 500;");
+                                    } else {
+                                        account.setAvatar(currentCell.getStringCellValue());
+                                    }
+                                } else {
+                                    rowMsg.append(" Gender must be text");
                                 }
-                                account.setAvatar(currentCell.getStringCellValue());
                                 break;
-
                             default:
-                                throw new ImportFileException("Number of column at row: " + (currentRow.getRowNum() + 1) + " must be 6");
+                                rowMsg.append(" Total column must be 6;");
                         }
 
                         cellIdx++;
-                    }
 
+                    }
                     accounts.add(account);
+                    if (!rowMsg.toString().isEmpty()) {
+                        String tmp = rowMsg.toString();
+                        if (tmp.endsWith(";")) {
+                            tmp = tmp.substring(0, tmp.length() - 1);
+                        }
+                        msg.append(" Row ").append((currentRow.getRowNum() + 1)).append(": ").append(tmp).append(" -- ");
+                    }
                 }
-            }else{
-                System.out.println("SHEET is null");
+            } else {
+                msg.append("Cannot find any sheet");
             }
-            return accounts;
+            if(msg.toString().isEmpty()){
+                return new ValidateExcelObject(true, "", accounts);
+            }else {
+                String tmp = msg.toString().trim();
+               // System.out.println("test" + tmp.substring( tmp.length() - 2, tmp.length()));
+
+                if(tmp.substring( tmp.length() - 2, tmp.length()).equals("--")){
+                    tmp = tmp.substring(0, tmp.length() - 3);
+                }
+                return new ValidateExcelObject(false, tmp, accounts);
+            }
         } catch (IOException e) {
             throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
         }
