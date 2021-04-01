@@ -38,6 +38,10 @@ public class BookCopy extends Audit {
     @Column(name = "price", nullable = false)
     private Double price;
 
+    @KeywordField
+    @Column(name = "price_note", length = 500)
+    private String priceNote;
+
     @Column(name = "status", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
     @KeywordField

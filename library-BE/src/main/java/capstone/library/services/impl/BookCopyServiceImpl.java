@@ -124,7 +124,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             throw new ResourceNotFoundException("Book", ErrorStatus.RESOURCE_NOT_FOUND.getReason());
         }
 
-        insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
+        insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator, request.getPriceNote());
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
@@ -636,7 +636,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         return books;
     }
 
-    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) {
+    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator, String priceNote) {
         List<BookCopy> bookCopies = new ArrayList<>();
         List<String> sortedBarcodes = new ArrayList<>(barcodes);
         Collections.sort(sortedBarcodes);
@@ -648,6 +648,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             bookCopy.setStatus(NEW_COPY_STATUS);
             bookCopy.setCreator(creator);
             bookCopy.setBarcode(barcode.toUpperCase().replace(" ", ""));
+            bookCopy.setPriceNote(priceNote);
             bookCopies.add(bookCopy);
         }
         bookCopyRepository.saveAll(bookCopies);
