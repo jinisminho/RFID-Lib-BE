@@ -21,11 +21,6 @@ class LibraryApplicationTests {
     }
 
     @Test
-    void test() {
-    }
-
-
-    @Test
     void testGenerateRawPassword() {
         System.out.println(PasswordUtil.generatePassword());
     }

@@ -54,7 +54,7 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
         BookCopy bookCopy = bookCopyRepository.findById(bookCopyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book Copy",
                         "Cannot find copy with id:" + bookCopyId));
-        String searchCallNumber = bookCopy.getBook().getCallNumber();
+//        String searchCallNumber = bookCopy.getBook().getCallNumber();
         BookCopyPosition position = bookCopy.getBookCopyPosition();
         if (position == null) {
             return new BookCopyPositionResponse(
@@ -158,6 +158,23 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
     @Override
     public List<CopyResponseDto> getBooksOnARow(int positionId) {
         List<BookCopy> bookCopies = bookCopyRepository.findAllByBookCopyPositionId(positionId);
+        return convertBookCopyToDto(bookCopies);
+    }
+
+    @Override
+    public List<CopyResponseDto> getBooksOnARowByRFID(String rfid) {
+        List<BookCopy> bookCopies = bookCopyRepository.findAllByBookCopyPositionRfid(rfid);
+        return convertBookCopyToDto(bookCopies);
+    }
+
+    @Override
+    public BookCopyPositionResponse getPositionByRFID(String rfid) {
+        return objectMapper.convertValue(positionRepository.findByRfid(rfid).orElseThrow(
+                () -> new ResourceNotFoundException(POSITION, POSITION_NOT_FOUND_ERROR)),
+                BookCopyPositionResponse.class);
+    }
+
+    private List<CopyResponseDto> convertBookCopyToDto(List<BookCopy> bookCopies) {
         List<CopyResponseDto> response = new ArrayList<>();
         for (BookCopy bookCopy : bookCopies) {
             if (bookCopy.getStatus().equals(BookCopyStatus.LIB_USE_ONLY) ||
