@@ -210,8 +210,8 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendRenewMail(BorrowPolicy borrowPolicy, ExtendHistory oldBorrowing, BookBorrowing newBorrowing) {
-        if(borrowPolicy == null || oldBorrowing == null || newBorrowing == null){
+    public void sendRenewMail(ExtendHistory oldBorrowing, BookBorrowing newBorrowing) {
+        if( oldBorrowing == null || newBorrowing == null){
             throw new MissingInputException("missing input");
         }
         DateTimeUtils dateTimeUtils = new DateTimeUtils();
@@ -223,10 +223,6 @@ public class MailServiceImpl implements MailService {
         LocalDate newDue = newBorrowing.getDueAt();
         String renewAt = dateTimeUtils.convertDateTimeToString(newBorrowing.getExtendedAt());
         FeePolicy feePolicy = newBorrowing.getFeePolicy();
-        String patronType = borrowPolicy.getPatronType().getName();
-        String copyType = borrowPolicy.getBookCopyType().getName();
-        int maxExtendTime = borrowPolicy.getMaxExtendTime();
-        int maxExtendDuration = borrowPolicy.getExtendDueDuration();
         Map<String, Object> templateModel = new HashMap<>();
         templateModel.put("patron", patron);
         templateModel.put("book", bookTitle);
@@ -235,10 +231,6 @@ public class MailServiceImpl implements MailService {
         templateModel.put("renewAt", renewAt);
         templateModel.put("renewTime", newBorrowing.getExtendIndex());
         templateModel.put("feePolicy", feePolicy);
-        templateModel.put("copyType", copyType);
-        templateModel.put("patronType", patronType);
-        templateModel.put("maxExtendTime", maxExtendTime);
-        templateModel.put("maxExtendDuration", maxExtendDuration);
         Context thymeleafContext = new Context();
         thymeleafContext.setVariables(templateModel);
         String htmlBody = thymeleafTemplateEngine.process("renewTemplate.html", thymeleafContext);

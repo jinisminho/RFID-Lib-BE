@@ -203,7 +203,7 @@ public class RenewServiceImpl implements RenewService {
                 extendHistoryRepository.save(newExtendHistory);
                 bookBorrowingRepository.save(bookBorrowing);
                 //Tram add mail
-                //mailService.sendRenewMail;
+                mailService.sendRenewMail(newExtendHistory, bookBorrowing);
                 return true;
             }
         }

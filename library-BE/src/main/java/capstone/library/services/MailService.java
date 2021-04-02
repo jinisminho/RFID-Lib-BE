@@ -25,5 +25,5 @@ public interface MailService {
 
     void sendAccountBatch(ImportPatronResponse request);
 
-    void sendRenewMail(BorrowPolicy borrowPolicy, ExtendHistory extendHistory, BookBorrowing newBorrowing);
+    void sendRenewMail(ExtendHistory extendHistory, BookBorrowing newBorrowing);
 }
