@@ -16,14 +16,14 @@
             <th>Book</th>
             <th>Returned At</th>
             <th>Overdue day(s)</th>
-            <th>Fine</th>
+            <th>Fine (VND)</th>
         </tr>
         <tr th:each="book : ${books}">
             <td th:text="${bookStat.index + 1}"></td>
             <td th:text="${book.book.title +  ' - ' +  book.book.edition +  ' edt'}"></td>
             <td th:text="${book.returnedAt}"></td>
             <td th:text="${book.overdueDays}"></td>
-            <td th:text="${book.fine + ' VND'}"></td>
+            <td th:text="${book.fine}"></td>
         </tr>
     </table>
 </div>
