@@ -1,6 +1,7 @@
 package capstone.library.dtos.response;
 
 import capstone.library.dtos.common.CheckoutCopyDto;
+import capstone.library.entities.FeePolicy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,5 @@ public class CheckoutResponseDto implements Serializable
 {
     private List<CheckoutCopyDto> checkoutCopyDto;
 
+    private FeePolicy feePolicy;
 }

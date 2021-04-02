@@ -6,22 +6,24 @@
 <body>
 <p th:text="#{greetings(${patron})}"></p>
 <div>
-    <h2>Checkout Information</h2>
+    <h2>Renew Information</h2>
     <p>
-        You have borrowed the following books:
+        You have renew the following book:
     </p>
     <table border="1">
         <tr>
-            <th>No.</th>
             <th>Book</th>
-            <th>Borrowed At</th>
-            <th>Due Date</th>
+            <th>Renewed At</th>
+            <th>Old Due Date</th>
+            <th>New Due Date</th>
+            <th>Renew Time</th>
         </tr>
-        <tr th:each="book : ${books}">
-            <td th:text="${bookStat.index + 1}"></td>
-            <td th:text="${book.title +  ' - ' +book.edition +  ' edt'}"></td>
-            <td th:text="${book.borrowedAt}"></td>
-            <td th:text="${book.dueDate}"></td>
+        <tr>
+            <td th:text="${book}"></td>
+            <td th:text="${renewAt}"></td>
+            <td th:text="${oldDue}"></td>
+            <td th:text="${newDue}"></td>
+            <td th:text="${renewTime}"></td>
         </tr>
     </table>
 </div>
@@ -43,7 +45,6 @@
     <p>*Does not include Saturdays and Sundays.</p>
     <p>**Lost book’s price is based on what the library recorded when the book is added to the library multiplied by <span th:text="${feePolicy.maxPercentageOverdueFine}"></span>%.</p>
 </div>
-<br/>
 <br/>
 <p th:text="#{regards}"></p>
 <p>
