@@ -79,6 +79,8 @@ public class BookCopyServiceImpl implements BookCopyService {
     BookCopyMapper bookCopyMapper;
     @Autowired
     private GenreRepository genreRepository;
+    @Autowired
+    private BookCopyPositionRepository positionRepository;
 
     DateTimeUtils dateTimeUtils;
 
@@ -124,7 +126,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             throw new ResourceNotFoundException("Book", ErrorStatus.RESOURCE_NOT_FOUND.getReason());
         }
 
-        insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator);
+        insertCopies(request.getBarcodes(), request.getPrice(), book, bookCopyType, creator, request.getPriceNote());
         updateBookNumberOfCopy(book);
 
         //Tram added to send pdf back
@@ -457,6 +459,13 @@ public class BookCopyServiceImpl implements BookCopyService {
     @Override
     public CopyResponseDto getCopyByRfid(String rfid) {
         Optional<BookCopy> bookCopyOptional = bookCopyRepository.findByRfid(rfid);
+        if (bookCopyOptional.isEmpty()) {
+            Optional<BookCopyPosition> bookCopyPosition = positionRepository.findByRfid(rfid);
+            if (bookCopyPosition.isPresent()) {
+                throw new ResourceNotFoundException(BOOK_COPY, "This is a shelf RFID tag not a book RFID tag");
+            }
+
+        }
         return getCopyResponseDto(bookCopyOptional);
     }
 
@@ -496,7 +505,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             if (bookCopyTypeOptional.isPresent()) {
                 bookCopy.setBookCopyType(bookCopyTypeOptional.get());
             } else {
-                throw new ResourceNotFoundException("Copy type", BOOK_COPY_TYPE_NOT_FOUND);
+                throw new ResourceNotFoundException(BOOK_COPY, BOOK_COPY_TYPE_NOT_FOUND);
             }
             Optional<Account> updaterOptional = accountRepository.findById(request.getUpdater());
             if (updaterOptional.isPresent()) {
@@ -512,7 +521,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                         HttpStatus.BAD_REQUEST, ErrorStatus.COMMON_DATABSE_ERROR.getReason(), e.getLocalizedMessage());
             }
         } else {
-            throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
+            throw new ResourceNotFoundException(BOOK_COPY, BOOK_COPY_NOT_FOUND);
         }
     }
 
@@ -557,7 +566,7 @@ public class BookCopyServiceImpl implements BookCopyService {
 
             return dto;
         }
-        throw new ResourceNotFoundException("Book Copy", BOOK_COPY_NOT_FOUND);
+        throw new ResourceNotFoundException(BOOK_COPY, BOOK_COPY_NOT_FOUND);
     }
 
     @Override
@@ -636,7 +645,7 @@ public class BookCopyServiceImpl implements BookCopyService {
         return books;
     }
 
-    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator) {
+    private void insertCopies(Set<String> barcodes, double price, Book book, BookCopyType bookCopyType, Account creator, String priceNote) {
         List<BookCopy> bookCopies = new ArrayList<>();
         List<String> sortedBarcodes = new ArrayList<>(barcodes);
         Collections.sort(sortedBarcodes);
@@ -648,6 +657,7 @@ public class BookCopyServiceImpl implements BookCopyService {
             bookCopy.setStatus(NEW_COPY_STATUS);
             bookCopy.setCreator(creator);
             bookCopy.setBarcode(barcode.toUpperCase().replace(" ", ""));
+            bookCopy.setPriceNote(priceNote);
             bookCopies.add(bookCopy);
         }
         bookCopyRepository.saveAll(bookCopies);
