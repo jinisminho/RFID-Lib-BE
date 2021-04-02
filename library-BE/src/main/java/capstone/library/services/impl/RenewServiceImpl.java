@@ -7,6 +7,7 @@ import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
 import capstone.library.repositories.*;
+import capstone.library.services.MailService;
 import capstone.library.services.RenewService;
 import capstone.library.util.constants.ConstantUtil;
 import capstone.library.util.tools.DateTimeUtils;
@@ -36,7 +37,8 @@ public class RenewServiceImpl implements RenewService {
     private ExtendHistoryRepository extendHistoryRepository;
     @Autowired
     private AccountRepository accountRepository;
-
+    @Autowired
+    private MailService mailService;
 
     DateTimeUtils dateTimeUtils;
 
@@ -200,6 +202,8 @@ public class RenewServiceImpl implements RenewService {
 
                 extendHistoryRepository.save(newExtendHistory);
                 bookBorrowingRepository.save(bookBorrowing);
+                //Tram add mail
+                //mailService.sendRenewMail;
                 return true;
             }
         }

@@ -1,5 +1,6 @@
 package capstone.library.dtos.common;
 
+import capstone.library.entities.BookCopyType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -5,7 +5,7 @@ import capstone.library.dtos.email.EmailReturnBookDto;
 import capstone.library.dtos.response.CheckoutResponseDto;
 import capstone.library.dtos.response.ImportPatronResponse;
 import capstone.library.dtos.response.ReturnBookResponseDto;
-import capstone.library.entities.BookLostReport;
+import capstone.library.entities.*;
 
 import java.util.List;
 
@@ -24,4 +24,6 @@ public interface MailService {
     void sendLostBookFine(BookLostReport bookLostReport);
 
     void sendAccountBatch(ImportPatronResponse request);
+
+    void sendRenewMail(BorrowPolicy borrowPolicy, ExtendHistory extendHistory, BookBorrowing newBorrowing);
 }

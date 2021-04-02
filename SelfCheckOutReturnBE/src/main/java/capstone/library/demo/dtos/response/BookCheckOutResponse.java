@@ -1,12 +1,9 @@
 package capstone.library.demo.dtos.response;
 
-import capstone.library.demo.enums.BookReturnStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -35,5 +32,7 @@ public class BookCheckOutResponse {
     private String borrowedAt;
 
     private  String genres;
+
+    private int feePolicyId = 0;
 
 }

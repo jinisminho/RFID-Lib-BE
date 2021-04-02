@@ -3,9 +3,14 @@ package capstone.library.demo.services.impl;
 import capstone.library.demo.dtos.response.BookCheckOutResponse;
 import capstone.library.demo.dtos.response.BookReturnResponse;
 import capstone.library.demo.entities.Account;
+import capstone.library.demo.entities.BorrowPolicy;
+import capstone.library.demo.entities.FeePolicy;
 import capstone.library.demo.enums.BookReturnStatus;
 import capstone.library.demo.exceptions.MissingInputException;
+import capstone.library.demo.exceptions.ResourceNotFoundException;
 import capstone.library.demo.repositories.AccountRepository;
+import capstone.library.demo.repositories.BorrowPolicyRepository;
+import capstone.library.demo.repositories.FeePolicyRepository;
 import capstone.library.demo.services.EmailService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +46,12 @@ public class EmailServiceImpl  implements EmailService {
     @Autowired
     private AccountRepository accountRepo;
 
+    @Autowired
+    private FeePolicyRepository feePolicyRepo;
+
+    @Autowired
+    private BorrowPolicyRepository borrowPolicyRepo;
+
     @Override
     public void sendEmailAfterCheckOut(List<BookCheckOutResponse> books, int patronId) {
         if(books == null){
@@ -51,10 +62,13 @@ public class EmailServiceImpl  implements EmailService {
         if(!successCheckOutBook.isEmpty()){
             Optional<Account> receiverOpt = accountRepo.findById(patronId);
             if(receiverOpt.isPresent()){
+                FeePolicy feePolicy = feePolicyRepo.findById(successCheckOutBook.get(0).getFeePolicyId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Fee Policy Not Found"));
                 Account receiver = receiverOpt.get();
                 Map<String, Object> templateModel = new HashMap<>();
                 templateModel.put("patron", receiver.getProfile().getFullName());
                 templateModel.put("books", successCheckOutBook);
+                templateModel.put("feePolicy", feePolicy);
                 Context thymeleafContext = new Context();
                 thymeleafContext.setVariables(templateModel);
                 String htmlBody = thymeleafTemplateEngine.process("checkoutEmailTemplate.html", thymeleafContext);

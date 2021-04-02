@@ -96,6 +96,7 @@ public class LibrarianServiceImpl implements LibrarianService {
 
         /*Get the borrowing patron to add to borrowed_by in book_borrowing table*/
         Optional<Account> patronOptional = accountRepository.findByIdAndRoleId(request.getPatronId(), RoleIdEnum.ROLE_PATRON.getRoleId());
+
         //Return 404 if no patron with 'patronId' is found
         if (patronOptional.isEmpty()) {
             throw new ResourceNotFoundException(
@@ -207,6 +208,7 @@ public class LibrarianServiceImpl implements LibrarianService {
             dtos.add(dto);
         }
         response.setCheckoutCopyDto(dtos);
+        response.setFeePolicy(feePolicy);
         return response;
     }
 

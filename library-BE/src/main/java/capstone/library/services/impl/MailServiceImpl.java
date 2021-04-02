@@ -10,10 +10,7 @@ import capstone.library.enums.WishListStatus;
 import capstone.library.exceptions.EmailException;
 import capstone.library.exceptions.MissingInputException;
 import capstone.library.exceptions.ResourceNotFoundException;
-import capstone.library.repositories.AccountRepository;
-import capstone.library.repositories.BookBorrowingRepository;
-import capstone.library.repositories.BookCopyRepository;
-import capstone.library.repositories.WishlistRepository;
+import capstone.library.repositories.*;
 import capstone.library.services.MailService;
 import capstone.library.util.tools.DateTimeUtils;
 import capstone.library.util.tools.DoubleFormatter;
@@ -29,6 +26,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,6 +49,8 @@ public class MailServiceImpl implements MailService {
 
     private static final String BOOK_LOST_EMAIL_SUBJECT = "[no-reply] LOST BOOK BILLING";
 
+    private static final String RENEW_EMAIL_SUBJECT = "[no-reply] RENEW RECEIPT";
+
     private static final int DAY_NUMBER_REMIND_BEFORE_DUE = 1;
 
     @Autowired
@@ -71,6 +71,9 @@ public class MailServiceImpl implements MailService {
     @Autowired
     BookBorrowingRepository borrowingRepo;
 
+    @Autowired
+    BorrowPolicyRepository borrowPolicyRepo;
+
     @Override
     public void sendCheckoutMail(String patronEmail, CheckoutResponseDto request) {
         System.out.println(("---------------------" + request.getCheckoutCopyDto()));
@@ -81,12 +84,14 @@ public class MailServiceImpl implements MailService {
                 .stream()
                 .filter(CheckoutCopyDto::isAbleToBorrow).collect(Collectors.toList());
         if (!books.isEmpty()) {
+            FeePolicy feePolicy = request.getFeePolicy();
             Optional<Account> receiverOpt = accountRepo.findByEmail(patronEmail);
             if (receiverOpt.isPresent()) {
                 Account receiver = receiverOpt.get();
                 Map<String, Object> templateModel = new HashMap<>();
                 templateModel.put("patron", receiver.getProfile().getFullName());
                 templateModel.put("books", books);
+                templateModel.put("feePolicy", feePolicy);
                 Context thymeleafContext = new Context();
                 thymeleafContext.setVariables(templateModel);
                 String htmlBody = thymeleafTemplateEngine.process("checkoutEmailTemplate.html", thymeleafContext);
@@ -202,6 +207,46 @@ public class MailServiceImpl implements MailService {
     public void sendAccountBatch(ImportPatronResponse request) {
         request.getImportPatronList()
                 .forEach(account -> sendAccountPassword(account.getEmail(), account.getRawPassword()));
+    }
+
+    @Override
+    public void sendRenewMail(BorrowPolicy borrowPolicy, ExtendHistory oldBorrowing, BookBorrowing newBorrowing) {
+        if(borrowPolicy == null || oldBorrowing == null || newBorrowing == null){
+            throw new MissingInputException("missing input");
+        }
+        DateTimeUtils dateTimeUtils = new DateTimeUtils();
+        String email =  newBorrowing.getBorrowing().getBorrower().getEmail();
+        String patron = newBorrowing.getBorrowing().getBorrower().getProfile().getFullName();
+        Book book = newBorrowing.getBookCopy().getBook();
+        String bookTitle = book.getTitle() + " - " + book.getEdition() + " edt";
+        LocalDate oldDue = oldBorrowing.getDueAt();
+        LocalDate newDue = newBorrowing.getDueAt();
+        String renewAt = dateTimeUtils.convertDateTimeToString(newBorrowing.getExtendedAt());
+        FeePolicy feePolicy = newBorrowing.getFeePolicy();
+        String patronType = borrowPolicy.getPatronType().getName();
+        String copyType = borrowPolicy.getBookCopyType().getName();
+        int maxExtendTime = borrowPolicy.getMaxExtendTime();
+        int maxExtendDuration = borrowPolicy.getExtendDueDuration();
+        Map<String, Object> templateModel = new HashMap<>();
+        templateModel.put("patron", patron);
+        templateModel.put("book", bookTitle);
+        templateModel.put("oldDue", oldDue);
+        templateModel.put("newDue", newDue);
+        templateModel.put("renewAt", renewAt);
+        templateModel.put("renewTime", newBorrowing.getExtendIndex());
+        templateModel.put("feePolicy", feePolicy);
+        templateModel.put("copyType", copyType);
+        templateModel.put("patronType", patronType);
+        templateModel.put("maxExtendTime", maxExtendTime);
+        templateModel.put("maxExtendDuration", maxExtendDuration);
+        Context thymeleafContext = new Context();
+        thymeleafContext.setVariables(templateModel);
+        String htmlBody = thymeleafTemplateEngine.process("renewTemplate.html", thymeleafContext);
+        try {
+            sendHtmlMessage(email, RENEW_EMAIL_SUBJECT, htmlBody);
+        } catch (MessagingException e) {
+            throw new EmailException(e.getMessage());
+        }
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
