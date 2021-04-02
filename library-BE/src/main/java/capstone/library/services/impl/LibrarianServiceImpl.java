@@ -413,6 +413,8 @@ public class LibrarianServiceImpl implements LibrarianService {
                         dto.setReason("Return late: " + overdueDays + " (days)");
                         dto.setOverdue(true);
                     }
+                } else {
+                    overdueDays = 0;
                 }
                 /*Update borrowing_book table
                  * Add return date and fine
