@@ -44,7 +44,7 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
     private static final String POSITION = "Book copy position";
     private static final String UPDATER = "Account";
     private static final String BOOK_COPY_NOT_FOUND_ERROR = "Book copy not found: ";
-    private static final String POSITION_NOT_FOUND_ERROR = "Book copy position not found";
+    private static final String POSITION_NOT_FOUND_ERROR = "Location is not found";
     private static final String UPDATER_NOT_FOUND_ERROR = "Updater account not found: ";
     private static final String BOOK_COPY_STATUS_ERROR = "Book copy status error. Barcode: ";
 
