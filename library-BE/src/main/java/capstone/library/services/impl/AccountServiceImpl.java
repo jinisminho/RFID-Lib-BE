@@ -1,5 +1,6 @@
 package capstone.library.services.impl;
 
+import capstone.library.dtos.others.ValidateExcelObject;
 import capstone.library.dtos.request.CreateLibrarianRequest;
 import capstone.library.dtos.request.CreatePatronRequest;
 import capstone.library.dtos.request.UpdateLibrarianRequest;
@@ -320,20 +321,25 @@ public class AccountServiceImpl  implements AccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role",
                         "Cannot find role Patron"));
         try {
-            List<Account> accounts = ExcelUtil.excelToAccounts(file.getInputStream());
-            for(Account account : accounts){
-                account.setPatronType(patronType);
-                account.setActive(true);
-                account.setCreator(auditor);
-                account.setUpdater(auditor);
-                account.setRole(role);
-                String rawPassword = PasswordUtil.generatePassword();
-                String encodedPassword = encoder.encode(rawPassword);
-                account.setPassword(encodedPassword);
-                ImportPatronResponse.ImportPatron patron = new ImportPatronResponse.ImportPatron(account.getEmail(), rawPassword);
-                rs.getImportPatronList().add(patron);
+            ValidateExcelObject validateObj =  ExcelUtil.excelToAccounts(file.getInputStream());
+            if(validateObj.isValid()){
+                List<Account> accounts = validateObj.getAccountList();
+                for(Account account : accounts){
+                    account.setPatronType(patronType);
+                    account.setActive(true);
+                    account.setCreator(auditor);
+                    account.setUpdater(auditor);
+                    account.setRole(role);
+                    String rawPassword = PasswordUtil.generatePassword();
+                    String encodedPassword = encoder.encode(rawPassword);
+                    account.setPassword(encodedPassword);
+                    ImportPatronResponse.ImportPatron patron = new ImportPatronResponse.ImportPatron(account.getEmail(), rawPassword);
+                    rs.getImportPatronList().add(patron);
+                }
+                accountRepo.saveAll(accounts);
+            }else {
+                throw new ImportFileException(validateObj.getMessage());
             }
-            accountRepo.saveAll(accounts);
         } catch (IOException e) {
             throw new RuntimeException("Cannot open file");
         }
