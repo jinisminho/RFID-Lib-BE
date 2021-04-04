@@ -131,7 +131,7 @@ public class RenewServiceImpl implements RenewService {
 
         //If bookBorrowing exists
         if (bookBorrowing != null) {
-
+            String oldDue = bookBorrowing.getDueAt().toString();
             //Check if borrower is inactive
             if (!bookBorrowing.getBorrowing().getBorrower().isActive()) {
                 throw new InvalidRequestException(PATRON_INACTIVE);
@@ -203,7 +203,7 @@ public class RenewServiceImpl implements RenewService {
                 extendHistoryRepository.save(newExtendHistory);
                 bookBorrowingRepository.save(bookBorrowing);
                 //Tram add mail
-                mailService.sendRenewMail(newExtendHistory, bookBorrowing);
+                mailService.sendRenewMail(oldDue, bookBorrowing);
                 return true;
             }
         }

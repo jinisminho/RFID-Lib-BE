@@ -210,8 +210,8 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendRenewMail(ExtendHistory oldBorrowing, BookBorrowing newBorrowing) {
-        if( oldBorrowing == null || newBorrowing == null){
+    public void sendRenewMail(String oldDue, BookBorrowing newBorrowing) {
+        if( oldDue == null || newBorrowing == null){
             throw new MissingInputException("missing input");
         }
         DateTimeUtils dateTimeUtils = new DateTimeUtils();
@@ -219,7 +219,6 @@ public class MailServiceImpl implements MailService {
         String patron = newBorrowing.getBorrowing().getBorrower().getProfile().getFullName();
         Book book = newBorrowing.getBookCopy().getBook();
         String bookTitle = book.getTitle() + " - " + book.getEdition() + " edt";
-        LocalDate oldDue = oldBorrowing.getDueAt();
         LocalDate newDue = newBorrowing.getDueAt();
         String renewAt = dateTimeUtils.convertDateTimeToString(newBorrowing.getExtendedAt());
         FeePolicy feePolicy = newBorrowing.getFeePolicy();
