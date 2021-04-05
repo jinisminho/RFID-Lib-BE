@@ -5,26 +5,28 @@
 </head>
 <body>
 <p th:text="#{greetings(${patron})}"></p>
-
-<p>
-    You have returned the following books:
-</p>
-<table border="1">
-    <tr>
-        <th>No.</th>
-        <th>Book</th>
-        <th>Returned At</th>
-        <th>Overdue day(s)</th>
-        <th>Fine</th>
-    </tr>
-    <tr th:each="book : ${books}">
-        <td th:text="${bookStat.index + 1}"></td>
-        <td th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></td>
-        <td th:text="${book.returnedAt}"></td>
-        <td th:text="${book.overdueDay}"></td>
-        <td th:text="${book.fine + ' VND'}"></td>
-    </tr>
-</table>
+<div>
+    <h2>Return Information</h2>
+    <p>
+        You have returned the following books:
+    </p>
+    <table border="1">
+        <tr>
+            <th>No.</th>
+            <th>Book</th>
+            <th>Returned At</th>
+            <th>Overdue day(s)</th>
+            <th>Fine</th>
+        </tr>
+        <tr th:each="book : ${books}">
+            <td th:text="${bookStat.index + 1}"></td>
+            <td th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></td>
+            <td th:text="${book.returnedAt}"></td>
+            <td th:text="${book.overdueDay}"></td>
+            <td th:text="${book.fine + ' VND'}"></td>
+        </tr>
+    </table>
+</div>
 <br/>
 <p th:text="#{regards}"></p>
 <p>

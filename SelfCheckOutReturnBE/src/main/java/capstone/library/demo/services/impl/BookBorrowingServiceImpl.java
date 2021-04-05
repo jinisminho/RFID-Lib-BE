@@ -106,6 +106,7 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
                             .findFirst()
                             .orElseThrow(() -> new InvalidPolicyException("Fee policy not fount"));
 
+                    dto.setFeePolicyId(feePolicy.getId());
                     BookBorrowing borrowingDetail = new BookBorrowing();
                     borrowingDetail.setDueAt(dueDate);
                     borrowingDetail.setIssued_by(patron);
@@ -163,9 +164,8 @@ public class BookBorrowingServiceImpl implements BookBorrowingService {
             dto.setPatron(bookBorrowing.getBorrowing().getBorrower().getEmail());
             long overdueDays = (int) DateTimeUtil.getOverdueDays(LocalDate.now(), bookBorrowing.getDueAt());
             //check if overdue : not allow to return
+            FeePolicy feePolicy = bookBorrowing.getFeePolicy();
             if(overdueDays > 0){
-                FeePolicy feePolicy = bookBorrowing.getFeePolicy();
-
                 double fine = overdueDays * feePolicy.getOverdueFinePerDay();
                 double maxFine = copy.getPrice() * feePolicy.getMaxPercentageOverdueFine() / 100;
                 if(fine >= maxFine){

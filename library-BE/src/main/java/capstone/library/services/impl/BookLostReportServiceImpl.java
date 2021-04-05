@@ -4,10 +4,7 @@ import capstone.library.dtos.common.BookBorrowingDto;
 import capstone.library.dtos.request.ConfirmLostBookRequest;
 import capstone.library.dtos.response.BookLostResponse;
 import capstone.library.dtos.response.LostBookFineResponseDto;
-import capstone.library.entities.Account;
-import capstone.library.entities.BookBorrowing;
-import capstone.library.entities.BookCopy;
-import capstone.library.entities.BookLostReport;
+import capstone.library.entities.*;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.enums.LostBookStatus;
 import capstone.library.exceptions.MissingInputException;
@@ -49,6 +46,9 @@ public class BookLostReportServiceImpl implements BookLostReportService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private  MyBookRepository bookRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -137,6 +137,12 @@ public class BookLostReportServiceImpl implements BookLostReportService {
         BookCopy copy = borrowing.getBookCopy();
         copy.setStatus(BookCopyStatus.LOST);
         bookCopyRepository.save(copy);
+        Book book = copy.getBook();
+        int oldNumberOfCopy = book.getNumberOfCopy();
+        if(oldNumberOfCopy > 0){
+            book.setNumberOfCopy(oldNumberOfCopy - 1);
+        }
+        bookRepository.save(book);
         return CREATE_SUCCESS;
     }
 
