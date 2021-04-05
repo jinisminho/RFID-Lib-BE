@@ -9,8 +9,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import static capstone.library.util.constants.PolicyConstant.MAX_NUMBER_BORROW;
-import static capstone.library.util.constants.PolicyConstant.MIN_NUMBER_BORROW;
+import static capstone.library.util.constants.PolicyConstant.*;
 
 @Getter
 @Setter
@@ -22,7 +21,7 @@ public class PatronTypeReqDto {
     private String name;
 
     //    @NotNull(message = "{patronType.maxBorrowNumber.notNull}")
-    @Max(MAX_NUMBER_BORROW)
-    @Min(MIN_NUMBER_BORROW)
+    @Max(MAX_PATRON_NUMBER_BORROW)
+    @Min(MIN_PATRON_NUMBER_BORROW)
     private Integer maxBorrowNumber;
 }
