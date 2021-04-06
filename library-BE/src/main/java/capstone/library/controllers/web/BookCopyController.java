@@ -39,7 +39,7 @@ public class BookCopyController {
     @Secured({ADMIN, LIBRARIAN, PATRON})
     public ResponseEntity<Resource> addCopies(@RequestBody @Valid CreateCopiesRequestDto request) {
         DownloadPDFResponse res = bookCopyService.createCopies(request);
-        String returnFileName = "Barcodes-" + res.getIsbn() + "-" + res.getType() + "-" + DoubleFormatter.formatToDecimal(res.getPrice()) + ".pdf";
+        String returnFileName = "Barcodes-" + res.getIsbn() + "-" + res.getType() + "-" + DoubleFormatter.formatToDecimal(res.getPrice());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=" + returnFileName)

@@ -355,11 +355,15 @@ public class PatronServiceImpl implements PatronService {
         patronDto.setData(patronDtos);
         patronDto.setCount(count);
 
-        //get borrow policies
+        //get borrow policies -> remove patrons without borrow policies
+        List<PatronPolicyForPatronViewResDto> toDel = new ArrayList<>();
         for (PatronPolicyForPatronViewResDto e : patronDtos) {
             List<BorrowPolicy> borrowPolicies = borrowPolicyRepository.findByPatronTypeId(e.getId());
-            e.setBorrowPolicies(borrowPolicies.stream().map(borrowPolicy -> policiesForPatronViewMapper.toBorrowDto(borrowPolicy)).collect(Collectors.toList()));
+            if (borrowPolicies != null && !borrowPolicies.isEmpty())
+                e.setBorrowPolicies(borrowPolicies.stream().map(borrowPolicy -> policiesForPatronViewMapper.toBorrowDto(borrowPolicy)).collect(Collectors.toList()));
+            else toDel.add(e);
         }
+        patronDtos.removeAll(toDel);
 
         //set results to dto:res
         res.setFeePolicy(feeDto);

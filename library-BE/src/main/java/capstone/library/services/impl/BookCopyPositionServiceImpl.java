@@ -181,6 +181,8 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
                     bookCopy.getStatus().equals(BookCopyStatus.AVAILABLE)) {
                 CopyResponseDto dto = objectMapper.convertValue(bookCopy, CopyResponseDto.class);
                 dto.setPosition(objectMapper.convertValue(bookCopy.getBookCopyPosition(), PositionDto.class));
+                dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().
+                toString().replace("]", "").replace("[", ""));
                 response.add(dto);
             }
         }
