@@ -3,7 +3,10 @@ package capstone.library.util.constants;
 public class PolicyConstant {
 
     public static final int MAX_NUMBER_BORROW = 100;
-    public static final int MIN_NUMBER_BORROW = 0;
+    public static final int MIN_NUMBER_BORROW = 1;
+
+    public static final int MAX_PATRON_NUMBER_BORROW = 100;
+    public static final int MIN_PATRON_NUMBER_BORROW = 0;
 
     public static final int MAX_EXTEND_TIME = 100;
     public static final int MIN_EXTEND_TIME = 0;
