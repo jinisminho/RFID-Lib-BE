@@ -264,7 +264,7 @@ alter table book_lost_report
 
     
 alter table book_copy
-	add constraint FK_copy_book
+	add constraint FK_copy_bookbook
 	foreign key (book_id) references book (id)
 	ON DELETE RESTRICT ON UPDATE CASCADE; 
     
@@ -463,10 +463,10 @@ insert into profile (fullname, phone, gender, account_id) values
 
 insert into author(id, name, country, birth_year) values
 (1, 'J.R.R Tolkien', 'US', 1980),
-(2, 'Cline', 'US', 1970),
-(3, 'Ernest', 'US', 1970),
-(4, 'Boudreau', 'US', 1970),
-(5, 'Amy', 'US', 1970),
+(2, 'René Goscinny', 'French', 1926 ),
+(3, 'Andrew Matthews', 'Australia', 1957),
+(4, 'Hoàng Oanh', 'VN', 1980),
+(5, 'Fujiko Fujio', 'JP', 1933),
 (6, 'Wilson', 'US', 1970),
 (7, 'G. Willow', 'US', 1970),
 (8, 'Thomas Piketty', 'US', 1970),
