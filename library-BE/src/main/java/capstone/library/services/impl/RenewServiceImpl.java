@@ -153,7 +153,7 @@ public class RenewServiceImpl implements RenewService {
                 throw new InvalidRequestException(PATRON_TYPE_COPY_TYPE_ERROR);
             }
 
-            if (validateRenewDto.isViolatePolicy() || librarianId != null) {
+            if (validateRenewDto.isAbleToRenew() && (!validateRenewDto.isViolatePolicy() || librarianId != null)) {
                 //if issued by Librarian get the librarian account, if not get the patron one
                 /*Hoang*/
                 Account isssuedBy =
