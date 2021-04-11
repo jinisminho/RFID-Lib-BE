@@ -4,8 +4,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-<img src="https://firebasestorage.googleapis.com/v0/b/rfid-ae39e.appspot.com/o/images%2Flogo%2Flogo_trans.PNG?alt=media&token=c5652e07-ba59-494c-ba23-46f3f60acad0" width="200" height="100">
-
 <p th:text="#{greetings(${patron})}"></p>
 <div>
     <h2>Return Information</h2>
@@ -25,7 +23,8 @@
             <td th:text="${book.book.title +  ' - ' +  book.book.edition +  ' edt'}"></td>
             <td th:text="${book.returnedAt}"></td>
             <td th:text="${book.overdueDays}"></td>
-            <td th:text="${book.fine}"></td>
+            <td th:text="${T(capstone.library.util.tools.DoubleFormatter).formatToDecimal(book.fine)}"></td>
+
         </tr>
     </table>
 </div>

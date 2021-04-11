@@ -23,7 +23,7 @@
             <td th:text="${book.title +  ' - ' + book.subtitle + ' - ' + book.edition +  ' edt'}"></td>
             <td th:text="${book.returnedAt}"></td>
             <td th:text="${book.overdueDay}"></td>
-            <td th:text="${book.fine + ' VND'}"></td>
+            <td th:text="${T(capstone.library.demo.util.DoubleFormatter).formatToDecimal(book.fine) + ' VND'}"></td>
         </tr>
     </table>
 </div>

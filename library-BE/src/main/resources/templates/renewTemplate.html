@@ -33,12 +33,12 @@
     <h2>Fine Policy</h2>
     <p>Patrons should return all borrowing books before the due date. Patrons who return after the due date will be fined an amount of money.
     </p>
-    <p><b>Overdue fine: </b> <span th:text="${feePolicy.overdueFinePerDay}"></span> VND/overdue day*/book </p>
+    <p><b>Overdue fine: </b> <span th:text="${T(capstone.library.util.tools.DoubleFormatter).formatToDecimal(feePolicy.overdueFinePerDay)}"></span> VND/overdue day*/book </p>
     <p>If the borrowed book is lost, the patron will also be fined</p>
     <ul>
         <li><b>Lost book fine</b></li>
         <ul>
-            <li>If the book is still available in the market: Fine (VND) = Lost book’s price** + <span th:text="${feePolicy.documentProcessing_Fee}"></span> (Document processing fee)</li>
+            <li>If the book is still available in the market: Fine (VND) = Lost book’s price** + <span th:text="${T(capstone.library.util.tools.DoubleFormatter).formatToDecimal(feePolicy.documentProcessing_Fee)}"></span> (Document processing fee)</li>
             <li>If the book is no longer available to buy: Fine (VND) = Lost book’s price x <span th:text="${feePolicy.missingDocMultiplier}"></span> times</li>
         </ul>
     </ul>
