@@ -101,6 +101,7 @@ public class BookCopyServiceImpl implements BookCopyService {
     private static final String UPDATE_COPY_LOST_ERROR = "Cannot update Lost copies";
     private static final String UPDATE_COPY_BORROWED_ERROR = "Cannot update borrowed copies";
     private static final String UPDATE_COPY_DISCARD_ERROR = "Cannot update Discarded copies";
+    private static final String UPDATE_COPY_RFID_REQUIRED_ERROR = "Copy RFID must be specified";
     private static final BookCopyStatus NEW_COPY_STATUS = BookCopyStatus.IN_PROCESS;
 
     public static final String PDF_LOCATION = "src/main/java/capstone/library/files/barcodes.pdf";
@@ -491,14 +492,18 @@ public class BookCopyServiceImpl implements BookCopyService {
 
             /*If book copy is updated while in process then tag RFID instead of update RFID
              * If book is tagged in the past then proceed to update normally*/
-            if (bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS)) {
+            if (bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) && request.getRfid() != null && !request.getRfid().isEmpty()) {
                 TagCopyRequestDto dto = new TagCopyRequestDto();
                 dto.setRfid(request.getRfid());
                 dto.setUpdater(request.getUpdater());
                 dto.setBarcode(bookCopy.getBarcode());
                 tagCopy(dto);
-            } else {
+            } else if (bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) && (request.getRfid() == null || request.getRfid().isEmpty())) {
+                //Do nothing if in process without new rfid
+            } else if (request.getRfid() != null && !request.getRfid().isEmpty()) {
                 bookCopy.setRfid(request.getRfid());
+            } else {
+                throw new InvalidRequestException(UPDATE_COPY_RFID_REQUIRED_ERROR);
             }
 
             Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
