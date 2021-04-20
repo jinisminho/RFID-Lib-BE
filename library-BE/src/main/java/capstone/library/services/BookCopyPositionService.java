@@ -1,6 +1,7 @@
 package capstone.library.services;
 
 
+import capstone.library.dtos.request.CreateCopyPostionReqDto;
 import capstone.library.dtos.request.SaveSamplePositionRequestDto;
 import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
@@ -26,5 +27,11 @@ public interface BookCopyPositionService {
     List<CopyResponseDto> getBooksOnARowByRFID(String rfid);
 
     BookCopyPositionResponse getPositionByRFID(String rfid);
+
+    boolean addPos(CreateCopyPostionReqDto reqDto);
+
+    boolean updatePos(int id, CreateCopyPostionReqDto reqDto);
+
+    boolean deletePos(int id);
 
 }
