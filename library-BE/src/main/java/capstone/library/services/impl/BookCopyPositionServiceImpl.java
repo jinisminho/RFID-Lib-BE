@@ -225,6 +225,11 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
     @Override
     @Transactional
     public boolean addPos(CreateCopyPostionReqDto reqDto) {
+        Optional<BookCopy> cpyOpt = bookCopyRepository.findByRfid(reqDto.getRfid());
+        if (cpyOpt.isPresent()) {
+            throw new InvalidRequestException("Rfid is duplicated with a rfid of a book copy");
+        }
+
         BookCopyPosition newPos = bookCopyPositionMapper.toEntity(reqDto);
 
         positionRepository.save(newPos);
@@ -240,8 +245,13 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
         if (posOpt.isPresent()) {
             PositionDto updatePos = bookCopyPositionMapper.toDto(posOpt.get());
             updatePos.setId(id);
-            if (reqDto.getRfid() != null && !reqDto.getRfid().isEmpty())
+            if (reqDto.getRfid() != null && !reqDto.getRfid().isEmpty()) {
+                Optional<BookCopy> cpyOpt = bookCopyRepository.findByRfid(reqDto.getRfid());
+                if (cpyOpt.isPresent()) {
+                    throw new InvalidRequestException("Rfid is duplicated with a rfid of a book copy");
+                }
                 updatePos.setRfid(reqDto.getRfid());
+            }
             if (reqDto.getShelf() != null && !reqDto.getShelf().isEmpty())
                 updatePos.setShelf(reqDto.getShelf());
             if (reqDto.getLine() != null)
