@@ -7,6 +7,7 @@ import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.entities.BookCopyPosition;
 import capstone.library.services.BookCopyPositionService;
+import capstone.library.util.ApiPageable;
 import capstone.library.util.constants.ConstantUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,8 +105,8 @@ public class BookPositionController {
 
     @PostMapping("/update")
     @Secured({ADMIN, LIBRARIAN})
-    public ResponseEntity<Resource> addPos(@RequestParam(required = true, value = "authorId") Integer authorId, @RequestBody CreateCopyPostionReqDto request) {
-        boolean bool = bookCopyPositionService.updatePos(authorId, request);
+    public ResponseEntity<Resource> addPos(@RequestParam(required = true, value = "posId") Integer posId, @RequestBody CreateCopyPostionReqDto request) {
+        boolean bool = bookCopyPositionService.updatePos(posId, request);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -118,8 +119,8 @@ public class BookPositionController {
 
     @PostMapping("/delete")
     @Secured({ADMIN, LIBRARIAN})
-    public ResponseEntity<Resource> deletePos(@RequestParam(required = true, value = "authorId") Integer authorId) {
-        boolean bool = bookCopyPositionService.deletePos(authorId);
+    public ResponseEntity<Resource> deletePos(@RequestParam(required = true, value = "posId") Integer posId) {
+        boolean bool = bookCopyPositionService.deletePos(posId);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -132,6 +133,7 @@ public class BookPositionController {
 
     @ApiOperation("Get a page of all position (shelf + line)")
     @Secured({LIBRARIAN, ADMIN})
+    @ApiPageable
     @GetMapping("/all")
     public Page<BookCopyPositionResponse> getAll(@RequestParam(required = false, value = "shelf") String shelf, @RequestParam(required = false, value = "line") Integer line, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
         return bookCopyPositionService.getAll(shelf, line, pageable);

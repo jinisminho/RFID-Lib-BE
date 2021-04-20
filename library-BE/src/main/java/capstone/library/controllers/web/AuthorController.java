@@ -4,6 +4,7 @@ import capstone.library.dtos.common.ErrorDto;
 import capstone.library.dtos.request.CreateAuthorReqDto;
 import capstone.library.dtos.response.AuthorResponseDto;
 import capstone.library.services.AuthorService;
+import capstone.library.util.ApiPageable;
 import capstone.library.util.constants.ConstantUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,7 @@ public class AuthorController {
 
     @ApiOperation("Get a page of all authors, search by like name and filter by country or birth year")
     @Secured({LIBRARIAN, ADMIN})
+    @ApiPageable
     @GetMapping("/search")
     public Page<AuthorResponseDto> searchAuthor(@RequestParam(required = false, value = "name") String name, @RequestParam(required = false, value = "country") String country, @RequestParam(required = false, value = "birthYear") Integer birthYear, @ApiIgnore("Ignored because swagger ui shows the wrong params") Pageable pageable) {
         return authorService.search(name, country, birthYear, pageable);

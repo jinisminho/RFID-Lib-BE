@@ -19,6 +19,8 @@ public class BookCopyPositionResponse {
 
     private String shelf;
 
+    private String rfid;
+
     public BookCopyPositionResponse(String callNumber, String line, String shelf) {
         this.callNumber = callNumber;
         this.line = line;
