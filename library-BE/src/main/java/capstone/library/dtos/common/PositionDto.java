@@ -13,4 +13,5 @@ public class PositionDto {
     private int line;
     private String shelf;
     private int id;
+    private String rfid;
 }

@@ -1,15 +1,23 @@
 package capstone.library.controllers.web;
 
+import capstone.library.dtos.common.ErrorDto;
+import capstone.library.dtos.request.CreateCopyPostionReqDto;
 import capstone.library.dtos.request.SaveSamplePositionRequestDto;
 import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.entities.BookCopyPosition;
 import capstone.library.services.BookCopyPositionService;
+import capstone.library.util.constants.ConstantUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -75,5 +83,47 @@ public class BookPositionController {
     @GetMapping("/rfid/getPosition/{rfid}")
     public BookCopyPositionResponse getPositionByRFID(@PathVariable String rfid) {
         return bookCopyPositionService.getPositionByRFID(rfid);
+    }
+
+    @PostMapping("/create")
+    @Secured({ADMIN, LIBRARIAN})
+    public ResponseEntity<Resource> createPos(@RequestBody @Valid CreateCopyPostionReqDto request) {
+        boolean bool = bookCopyPositionService.addPos(request);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                "BAD REQUEST",
+                "Failed to created new position");
+
+        return new ResponseEntity(bool ? ConstantUtil.CREATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/update")
+    @Secured({ADMIN, LIBRARIAN})
+    public ResponseEntity<Resource> addPos(@RequestParam(required = true, value = "authorId") Integer authorId, @RequestBody CreateCopyPostionReqDto request) {
+        boolean bool = bookCopyPositionService.updatePos(authorId, request);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                "BAD REQUEST",
+                "Failed to update position");
+
+        return new ResponseEntity(bool ? ConstantUtil.UPDATE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/delete")
+    @Secured({ADMIN, LIBRARIAN})
+    public ResponseEntity<Resource> deletePos(@RequestParam(required = true, value = "authorId") Integer authorId) {
+        boolean bool = bookCopyPositionService.deletePos(authorId);
+
+        ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
+                HttpStatus.BAD_REQUEST.value(),
+                "BAD REQUEST",
+                "Failed to delete position");
+
+        return new ResponseEntity(bool ? ConstantUtil.DELETE_SUCCESS : error,
+                bool ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }
