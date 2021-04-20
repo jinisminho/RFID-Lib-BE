@@ -1,6 +1,8 @@
 package capstone.library.repositories;
 
 import capstone.library.entities.BookCopyPosition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,4 +19,10 @@ public interface BookCopyPositionRepository extends JpaRepository<BookCopyPositi
     List<BookCopyPosition> findByShelf(String shelf);
 
     Optional<BookCopyPosition> findByRfid(String rfid);
+
+    Page<BookCopyPosition> findAllByShelfAndLine(String shelf, int line, Pageable pageable);
+
+    Page<BookCopyPosition> findAllByShelf(String shelf, Pageable pageable);
+
+    Page<BookCopyPosition> findAllByLine(int line, Pageable pageable);
 }

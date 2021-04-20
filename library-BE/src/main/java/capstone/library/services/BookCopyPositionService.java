@@ -6,6 +6,8 @@ import capstone.library.dtos.request.SaveSamplePositionRequestDto;
 import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
 import capstone.library.entities.BookCopyPosition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Set;
@@ -33,5 +35,7 @@ public interface BookCopyPositionService {
     boolean updatePos(int id, CreateCopyPostionReqDto reqDto);
 
     boolean deletePos(int id);
+
+    Page<BookCopyPositionResponse> getAll(String shelf, Integer line, Pageable pageable);
 
 }

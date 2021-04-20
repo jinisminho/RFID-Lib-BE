@@ -18,6 +18,9 @@ import capstone.library.repositories.BookCopyTypeRepository;
 import capstone.library.services.BookCopyPositionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -265,6 +268,23 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
             }
         } else {
             throw new ResourceNotFoundException("BookCopyPosition", "BookCopyPosition [" + id + "] is not found");
+        }
+    }
+
+    @Override
+    public Page<BookCopyPositionResponse> getAll(String shelf, Integer line, Pageable pageable) {
+        if (shelf != null && !shelf.isEmpty() && line != null) {
+            Page<BookCopyPosition> page = positionRepository.findAllByShelfAndLine(shelf, line, pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        } else if ((shelf != null && !shelf.isEmpty())) {
+            Page<BookCopyPosition> page = positionRepository.findAllByShelf(shelf, pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        } else if (line != null) {
+            Page<BookCopyPosition> page = positionRepository.findAllByLine(line, pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        } else {
+            Page<BookCopyPosition> page = positionRepository.findAll(pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
         }
     }
 }
