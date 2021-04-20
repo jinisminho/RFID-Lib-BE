@@ -52,7 +52,7 @@ public class AuthorController {
 
     @PostMapping("/update")
     @Secured({ADMIN, LIBRARIAN})
-    public ResponseEntity<Resource> addAuthor(@RequestParam(required = true, value = "authorId") Integer authorId, @RequestBody CreateAuthorReqDto request) {
+    public ResponseEntity<Resource> updateAuthor(@RequestParam(required = true, value = "authorId") Integer authorId, @RequestBody CreateAuthorReqDto request) {
         boolean bool = authorService.updateAuthor(authorId, request);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),

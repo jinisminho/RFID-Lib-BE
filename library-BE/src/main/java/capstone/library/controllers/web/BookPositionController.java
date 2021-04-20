@@ -105,7 +105,7 @@ public class BookPositionController {
 
     @PostMapping("/update")
     @Secured({ADMIN, LIBRARIAN})
-    public ResponseEntity<Resource> addPos(@RequestParam(required = true, value = "posId") Integer posId, @RequestBody CreateCopyPostionReqDto request) {
+    public ResponseEntity<Resource> updatePos(@RequestParam(required = true, value = "posId") Integer posId, @RequestBody CreateCopyPostionReqDto request) {
         boolean bool = bookCopyPositionService.updatePos(posId, request);
 
         ErrorDto error = new ErrorDto(LocalDateTime.now().toString(),
