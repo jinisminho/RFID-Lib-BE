@@ -1,6 +1,7 @@
 package capstone.library.services.impl;
 
 import capstone.library.dtos.common.PositionDto;
+import capstone.library.dtos.request.CreateCopyPostionReqDto;
 import capstone.library.dtos.request.SaveSamplePositionRequestDto;
 import capstone.library.dtos.response.BookCopyPositionResponse;
 import capstone.library.dtos.response.CopyResponseDto;
@@ -9,6 +10,7 @@ import capstone.library.entities.BookCopyPosition;
 import capstone.library.enums.BookCopyStatus;
 import capstone.library.exceptions.InvalidRequestException;
 import capstone.library.exceptions.ResourceNotFoundException;
+import capstone.library.mappers.BookCopyPositionMapper;
 import capstone.library.repositories.AccountRepository;
 import capstone.library.repositories.BookCopyPositionRepository;
 import capstone.library.repositories.BookCopyRepository;
@@ -16,6 +18,9 @@ import capstone.library.repositories.BookCopyTypeRepository;
 import capstone.library.services.BookCopyPositionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -38,6 +43,8 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
     AccountRepository accountRepository;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    BookCopyPositionMapper bookCopyPositionMapper;
 
     private static final String SUCCESS_MESSAGE = "Success";
     private static final String BOOK_COPY = "Book copy";
@@ -182,7 +189,7 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
                 CopyResponseDto dto = objectMapper.convertValue(bookCopy, CopyResponseDto.class);
                 dto.setPosition(objectMapper.convertValue(bookCopy.getBookCopyPosition(), PositionDto.class));
                 dto.getBook().setAuthors(bookCopy.getBook().getBookAuthors().
-                toString().replace("]", "").replace("[", ""));
+                        toString().replace("]", "").replace("[", ""));
                 response.add(dto);
             }
         }
@@ -215,4 +222,79 @@ public class BookCopyPositionServiceImpl implements BookCopyPositionService {
 //        }
 //    }
 
+    @Override
+    @Transactional
+    public boolean addPos(CreateCopyPostionReqDto reqDto) {
+        Optional<BookCopy> cpyOpt = bookCopyRepository.findByRfid(reqDto.getRfid());
+        if (cpyOpt.isPresent()) {
+            throw new InvalidRequestException("Rfid is duplicated with a rfid of a book copy");
+        }
+
+        BookCopyPosition newPos = bookCopyPositionMapper.toEntity(reqDto);
+
+        positionRepository.save(newPos);
+
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean updatePos(int id, CreateCopyPostionReqDto reqDto) {
+        Optional<BookCopyPosition> posOpt = positionRepository.findById(id);
+
+        if (posOpt.isPresent()) {
+            PositionDto updatePos = bookCopyPositionMapper.toDto(posOpt.get());
+            updatePos.setId(id);
+            if (reqDto.getRfid() != null && !reqDto.getRfid().isEmpty()) {
+                Optional<BookCopy> cpyOpt = bookCopyRepository.findByRfid(reqDto.getRfid());
+                if (cpyOpt.isPresent()) {
+                    throw new InvalidRequestException("Rfid is duplicated with a rfid of a book copy");
+                }
+                updatePos.setRfid(reqDto.getRfid());
+            }
+            if (reqDto.getShelf() != null && !reqDto.getShelf().isEmpty())
+                updatePos.setShelf(reqDto.getShelf());
+            if (reqDto.getLine() != null)
+                updatePos.setLine(reqDto.getLine());
+            positionRepository.save(bookCopyPositionMapper.toEntity(updatePos));
+            return true;
+        } else {
+            throw new ResourceNotFoundException("BookCopyPosition", "BookCopyPosition [" + id + "] is not found");
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public boolean deletePos(int id) {
+        Optional<BookCopyPosition> posOpt = positionRepository.findById(id);
+        List<BookCopy> bookCopyList = bookCopyRepository.findAllByBookCopyPositionId(id);
+        if (posOpt.isPresent()) {
+            if (bookCopyList.isEmpty()) {
+                positionRepository.delete(posOpt.get());
+                return true;
+            } else {
+                throw new InvalidRequestException("Can not delete a in-use position");
+            }
+        } else {
+            throw new ResourceNotFoundException("BookCopyPosition", "BookCopyPosition [" + id + "] is not found");
+        }
+    }
+
+    @Override
+    public Page<BookCopyPositionResponse> getAll(String shelf, Integer line, Pageable pageable) {
+        if (shelf != null && !shelf.isEmpty() && line != null) {
+            Page<BookCopyPosition> page = positionRepository.findAllByShelfAndLine(shelf, line, pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        } else if ((shelf != null && !shelf.isEmpty())) {
+            Page<BookCopyPosition> page = positionRepository.findAllByShelf(shelf, pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        } else if (line != null) {
+            Page<BookCopyPosition> page = positionRepository.findAllByLine(line, pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        } else {
+            Page<BookCopyPosition> page = positionRepository.findAll(pageable);
+            return new PageImpl<BookCopyPositionResponse>(page.map(bookCopyPosition -> objectMapper.convertValue(bookCopyPosition, BookCopyPositionResponse.class)).stream().collect(Collectors.toList()), pageable, page.getTotalElements());
+        }
+    }
 }

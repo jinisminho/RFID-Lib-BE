@@ -16,4 +16,5 @@ public interface BookJpaRepository extends JpaRepository<Book, Integer> {
     Page<Book> findAll(Pageable pageable);
 
     Page<Book> findAllByStatusIn(List<BookStatus> status, Pageable pageable);
+
 }

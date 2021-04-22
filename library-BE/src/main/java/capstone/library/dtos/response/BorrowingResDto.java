@@ -1,6 +1,6 @@
 package capstone.library.dtos.response;
 
-import capstone.library.entities.BookBorrowing;
+import capstone.library.dtos.common.BookBorrowingDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +25,6 @@ public class BorrowingResDto {
 
     private ProfileAccountResDto borrower;
 
-    private Set<BookBorrowing> bookBorrowings;
+    private Set<BookBorrowingDto> bookBorrowings;
 
 }
