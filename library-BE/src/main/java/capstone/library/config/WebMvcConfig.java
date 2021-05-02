@@ -12,18 +12,17 @@ import org.springframework.web.servlet.config.annotation.*;
 
 @Configuration
 @EnableWebMvc
-public class WebMvcConfig implements WebMvcConfigurer
-{
+public class WebMvcConfig implements WebMvcConfigurer {
     private final long MAX_AGE_SECS = 3600;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-           .allowedOrigins("http://localhost:3000")
-          //      .allowedOrigins("http://10.1.75.42:3000")
-                .allowedMethods("GET","POST")
+                .allowedOrigins("http://localhost:3000")
+                //      .allowedOrigins("http://10.1.75.42:3000")
+                .allowedMethods("GET", "POST")
                 .allowCredentials(true)
-                .allowedHeaders("Content-Type","x-xsrf-token","Authorization", "Access-Control-Allow-Headers","Origin", "Accept", "X-Requested-With", "Access-Control-Request-Method", "Access-Control-Request-Headers")
+                .allowedHeaders("Content-Type", "x-xsrf-token", "Authorization", "Access-Control-Allow-Headers", "Origin", "Accept", "X-Requested-With", "Access-Control-Request-Method", "Access-Control-Request-Headers")
                 .maxAge(MAX_AGE_SECS);
     }
 
@@ -44,7 +43,7 @@ public class WebMvcConfig implements WebMvcConfigurer
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames("classpath:messages","classpath:mailMessages");
+        messageSource.setBasenames("classpath:messages", "classpath:mailMessages");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

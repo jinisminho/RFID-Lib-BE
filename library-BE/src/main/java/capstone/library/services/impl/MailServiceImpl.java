@@ -185,6 +185,7 @@ public class MailServiceImpl implements MailService {
         try {
             sendHtmlMessage(email, CREATE_ACCOUNT_EMAIL_SUBJECT, htmlBody);
         } catch (MessagingException e) {
+            logger.error("Cannot send email: " + email);
             throw new EmailException(e.getMessage());
         }
 
@@ -205,6 +206,7 @@ public class MailServiceImpl implements MailService {
         try {
             sendHtmlMessage(email, BOOK_LOST_EMAIL_SUBJECT, htmlBody);
         } catch (MessagingException e) {
+            logger.error("Cannot send email: " + email);
             throw new EmailException(e.getMessage());
         }
     }
@@ -242,6 +244,7 @@ public class MailServiceImpl implements MailService {
         try {
             sendHtmlMessage(email, RENEW_EMAIL_SUBJECT, htmlBody);
         } catch (MessagingException e) {
+            logger.error("Cannot send email: " + email);
             throw new EmailException(e.getMessage());
         }
     }
