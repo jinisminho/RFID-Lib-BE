@@ -68,6 +68,7 @@ public class BookServiceImpl implements BookService {
     private static final String CALL_NUMBER_INVALID_ERROR = "This call number is invalid (eg: ###.ABC)";
     private static final String UPDATE_DISCARD_BOOK_ERROR = "Cannot update DISCARD book";
     private static final String UPDATE_DUPLICATE_BOOK_STATUS_ERROR = "This book is already: ";
+    private static final String CALL_NUMBER_NOT_UNIQUE_ERROR = "Call number must be unique";
 
     @Override
     public Page<BookResDto> findBooks(String searchValue, List<String> status, Pageable pageable) {
@@ -202,7 +203,14 @@ public class BookServiceImpl implements BookService {
 
 //            book.setCallNumber(callNumberUtil.
 //                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
-            book.setCallNumber(request.getCallNumber());
+            //(Hoang) 2-May-2021 Update: call number must be unique
+            String callNumber = request.getCallNumber();
+            List<Book> booksWithSameCallNumber = myBookRepository.findByCallNumber(callNumber);
+            if (booksWithSameCallNumber.isEmpty()) {
+                book.setCallNumber(callNumber);
+            } else {
+                throw new InvalidRequestException(CALL_NUMBER_NOT_UNIQUE_ERROR);
+            }
 
             /*Get account to add to updateBy*/
             Account updateBy = accountRepository.findById(request.getUpdateBy()).
@@ -380,7 +388,14 @@ public class BookServiceImpl implements BookService {
 
         transformCreateBookStringInput(book, request);
 
-        book.setCallNumber(request.getCallNumber());
+        //(Hoang) 2-May-2021 Update: call number must be unique
+        String callNumber = request.getCallNumber();
+        List<Book> booksWithSameCallNumber = myBookRepository.findByCallNumber(callNumber);
+        if (booksWithSameCallNumber.isEmpty()) {
+            book.setCallNumber(callNumber);
+        } else {
+            throw new InvalidRequestException(CALL_NUMBER_NOT_UNIQUE_ERROR);
+        }
 
         Set<BookAuthor> bookAuthorSet = new HashSet<>();
         setBookAuthor(book, bookAuthorSet, request.getAuthorIds());
