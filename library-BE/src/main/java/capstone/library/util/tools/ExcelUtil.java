@@ -28,7 +28,7 @@ public class ExcelUtil {
     private static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+(\\.[A-Za-z]{2,4}){1,2}$";
     private static final String PHONE_PATTERN = "^(0)[0-9]{9}$";
     private static final String GENDER_PATTERN = "^F|M$";
-    private static final String FULL_NAME_PATTERN = "^[A-Za-z ]{1,100}$";
+    private static final String FULL_NAME_PATTERN = "^[\\p{L} ]{1,50}$";
 
 
     public static boolean hasExcelFormat(MultipartFile file) {
@@ -110,7 +110,7 @@ public class ExcelUtil {
                                 if (currentCell.getCellType() == Cell.CELL_TYPE_STRING) {
                                     fullName = currentCell.getStringCellValue().trim();
                                     if (fullName.isEmpty() || !fullName.matches(FULL_NAME_PATTERN)) {
-                                        rowMsg.append(" Full name is invalid: required, max: 100;");
+                                        rowMsg.append(" Full name is invalid: required, max: 50;");
                                     } else {
                                         account.getProfile().setFullName(currentCell.getStringCellValue());
                                     }
