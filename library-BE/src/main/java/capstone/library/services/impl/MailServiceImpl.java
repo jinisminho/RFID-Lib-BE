@@ -19,12 +19,14 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -133,6 +135,8 @@ public class MailServiceImpl implements MailService {
 
     /*Function to send remind overdue email*/
     @Override
+    //@Async
+    @Transactional
     public void sendRemindOverdueBook() {
         LocalDate dueDate = LocalDate.now().plusDays(DAY_NUMBER_REMIND_BEFORE_DUE);
         List<BookBorrowing> bookBorrowings = borrowingRepo.findByDueAtAndReturnedAtIsNullAndLostAtIsNull(dueDate);
@@ -142,7 +146,9 @@ public class MailServiceImpl implements MailService {
     }
 
     /*Function to notify wishlisted book is available*/
+    //@Async
     @Override
+    @Transactional
     public void sendNotifyWishlistAvailable() {
         List<WishlistBook> curWishlistBooks = wishlistRepo.findByStatus(WishListStatus.NOT_EMAIL_YET);
         if (!curWishlistBooks.isEmpty()) {
