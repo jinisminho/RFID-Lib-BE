@@ -46,7 +46,7 @@ import static capstone.library.util.constants.ConstantUtil.CREATE_SUCCESS;
 import static capstone.library.util.constants.ConstantUtil.UPDATE_SUCCESS;
 
 @Service
-public class AccountServiceImpl  implements AccountService {
+public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository accountRepo;
@@ -73,12 +73,11 @@ public class AccountServiceImpl  implements AccountService {
     private JwtTokenProvider tokenProvider;
 
 
-
     @Override
     public Account findAccountByEmail(String email) {
         return accountRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Account","cannot find account with email: " +email));
+                        new ResourceNotFoundException("Account", "cannot find account with email: " + email));
     }
 
     @Override
@@ -140,7 +139,7 @@ public class AccountServiceImpl  implements AccountService {
     @Override
     @Transactional
     public String createPatronAccount(CreatePatronRequest request) {
-        if(request == null){
+        if (request == null) {
             throw new MissingInputException("missing create patron account request");
         }
         Role role = roleRepo.findByName(RoleIdEnum.ROLE_PATRON.name())
@@ -184,7 +183,7 @@ public class AccountServiceImpl  implements AccountService {
     @Override
     @Transactional
     public String createLibrarianAccount(CreateLibrarianRequest request) {
-        if(request == null){
+        if (request == null) {
             throw new MissingInputException("missing create patron account request");
         }
         Role role = roleRepo.findByName(RoleIdEnum.ROLE_LIBRARIAN.name())
@@ -225,7 +224,7 @@ public class AccountServiceImpl  implements AccountService {
 
     @Override
     public String updatePatronAccount(UpdatePatronRequest request) {
-        if(request == null){
+        if (request == null) {
             throw new MissingInputException("missing create patron account request");
         }
         Account updater = accountRepo.findById(request.getUpdaterId())
@@ -235,32 +234,32 @@ public class AccountServiceImpl  implements AccountService {
         PatronType patronType = patronTypeRepo.findById(request.getPatronTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patron Type",
                         "Cannot find patron type with id: " + request.getPatronTypeId()));
-         Account editingPatron = accountRepo
+        Account editingPatron = accountRepo
                 .findById(request.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
                         "Cannot find account with id: " + request.getId()));
 
-         editingPatron.setUpdater(updater);
-         editingPatron.setPatronType(patronType);
-         editingPatron.setRfid(request.getRfid());
-         editingPatron.setAvatar(request.getAvatar());
-         editingPatron.getProfile().setFullName(request.getFullName());
-         editingPatron.getProfile().setPhone(request.getPhone());
-         editingPatron.getProfile().setGender(request.getGender());
-         accountRepo.save(editingPatron);
-         return UPDATE_SUCCESS;
+        editingPatron.setUpdater(updater);
+        editingPatron.setPatronType(patronType);
+        editingPatron.setRfid(request.getRfid());
+        editingPatron.setAvatar(request.getAvatar());
+        editingPatron.getProfile().setFullName(request.getFullName());
+        editingPatron.getProfile().setPhone(request.getPhone());
+        editingPatron.getProfile().setGender(request.getGender());
+        accountRepo.save(editingPatron);
+        return UPDATE_SUCCESS;
     }
 
     @Override
     public String updateLibrarianAccount(UpdateLibrarianRequest request) {
-        if(request == null){
+        if (request == null) {
             throw new MissingInputException("missing create patron account request");
         }
         Account updater = accountRepo.findById(request.getUpdaterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
                         "Cannot find account with id: " + request.getUpdaterId()));
 
-      Account editingPatron = accountRepo
+        Account editingPatron = accountRepo
                 .findById(request.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
                         "Cannot find account with id: " + request.getId()));
@@ -279,14 +278,14 @@ public class AccountServiceImpl  implements AccountService {
     @Override
     @Transactional
     public String changePassword(int accountId, String oldPass, String newPass) {
-        if(oldPass == null || newPass == null){
+        if (oldPass == null || newPass == null) {
             throw new MissingInputException("missing oldPass or newPass");
         }
         Account account = findAccountById(accountId);
-        if(!encoder.matches(oldPass, account.getPassword())){
+        if (!encoder.matches(oldPass, account.getPassword())) {
             throw new ChangePasswordException("Your current password is wrong");
         }
-        if(oldPass.equals(newPass)){
+        if (oldPass.equals(newPass)) {
             throw new ChangePasswordException("The new password you entered is the same as your old password");
         }
         account.setPassword(encoder.encode(newPass));
@@ -308,7 +307,7 @@ public class AccountServiceImpl  implements AccountService {
     public ImportPatronResponse importPatron(MultipartFile file, int patronTypeId, int auditorId) {
         //check file;
         ImportPatronResponse rs = new ImportPatronResponse();
-        if(!ExcelUtil.hasExcelFormat(file)){
+        if (!ExcelUtil.hasExcelFormat(file)) {
             throw new ImportFileException("Must be excel file format");
         }
         PatronType patronType = patronTypeRepo.findById(patronTypeId)
@@ -321,23 +320,28 @@ public class AccountServiceImpl  implements AccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role",
                         "Cannot find role Patron"));
         try {
-            ValidateExcelObject validateObj =  ExcelUtil.excelToAccounts(file.getInputStream());
-            if(validateObj.isValid()){
+            ValidateExcelObject validateObj = ExcelUtil.excelToAccounts(file.getInputStream());
+            if (validateObj.isValid()) {
                 List<Account> accounts = validateObj.getAccountList();
-                for(Account account : accounts){
-                    account.setPatronType(patronType);
-                    account.setActive(true);
-                    account.setCreator(auditor);
-                    account.setUpdater(auditor);
-                    account.setRole(role);
-                    String rawPassword = PasswordUtil.generatePassword();
-                    String encodedPassword = encoder.encode(rawPassword);
-                    account.setPassword(encodedPassword);
-                    ImportPatronResponse.ImportPatron patron = new ImportPatronResponse.ImportPatron(account.getEmail(), rawPassword);
-                    rs.getImportPatronList().add(patron);
+                if (checkDuplicateImportPatron(accounts).equals("") || checkDuplicateImportPatron(accounts).isEmpty()) {
+                    for (Account account : accounts) {
+                        account.setPatronType(patronType);
+                        account.setActive(true);
+                        account.setCreator(auditor);
+                        account.setUpdater(auditor);
+                        account.setRole(role);
+                        String rawPassword = PasswordUtil.generatePassword();
+                        String encodedPassword = encoder.encode(rawPassword);
+                        account.setPassword(encodedPassword);
+                        ImportPatronResponse.ImportPatron patron = new ImportPatronResponse.ImportPatron(account.getEmail(), rawPassword);
+                        rs.getImportPatronList().add(patron);
+                    }
+                    accountRepo.saveAll(accounts);
+                } else {
+                    throw new ImportFileException(checkDuplicateImportPatron(accounts));
                 }
-                accountRepo.saveAll(accounts);
-            }else {
+
+            } else {
                 throw new ImportFileException(validateObj.getMessage());
             }
         } catch (IOException e) {
@@ -346,10 +350,25 @@ public class AccountServiceImpl  implements AccountService {
         return rs;
     }
 
-    private Account findAccountById(int id){
-        return  accountRepo.findById(id)
+    private Account findAccountById(int id) {
+        return accountRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account",
-                        "Cannot find account with id: " + id ));
+                        "Cannot find account with id: " + id));
+    }
+
+    private String checkDuplicateImportPatron(List<Account> accounts) {
+        StringBuilder msg = new StringBuilder();
+        for (Account a : accounts) {
+            if (accountRepo.findByEmail(a.getEmail()).isPresent()) {
+                msg.append("Patron : ").append(a.getEmail()).append(" already exists; ");
+            }
+        }
+        for (Account a : accounts) {
+            if (accountRepo.findByRfid(a.getRfid()).isPresent()) {
+                msg.append("Patron : ").append(a.getRfid()).append(" already exists; ");
+            }
+        }
+        return msg.toString();
     }
 
 
