@@ -84,6 +84,9 @@ public class BookCopyServiceImpl implements BookCopyService {
 
     DateTimeUtils dateTimeUtils;
 
+    //Digit of the barcode after the book copy type Id
+    private static final int BARCODE_FIRST_DIGIT = 2;
+
     private static final String PATRON_NOT_FOUND = "Cannot find this patron in database";
     private static final String ACCOUNT_NOT_FOUND = "Cannot find this account in database";
     private static final String COPY_NOT_FOUND = "Cannot find this book copy in database";
@@ -500,6 +503,7 @@ public class BookCopyServiceImpl implements BookCopyService {
                 tagCopy(dto);
             } else if (bookCopy.getStatus().equals(BookCopyStatus.IN_PROCESS) && (request.getRfid() == null || request.getRfid().isEmpty())) {
                 //Do nothing if in process without new rfid
+
             } else if (request.getRfid() != null && !request.getRfid().isEmpty()) {
                 bookCopy.setRfid(request.getRfid());
             } else {
@@ -509,6 +513,10 @@ public class BookCopyServiceImpl implements BookCopyService {
             Optional<BookCopyType> bookCopyTypeOptional = bookCopyTypeRepository.findById(request.getCopyTypeId());
             if (bookCopyTypeOptional.isPresent()) {
                 bookCopy.setBookCopyType(bookCopyTypeOptional.get());
+                String oldBarcode = bookCopy.getBarcode();
+                String newBarcode = String.format("%02d", request.getCopyTypeId()) +
+                        oldBarcode.substring(BARCODE_FIRST_DIGIT);
+                bookCopy.setBarcode(newBarcode);
             } else {
                 throw new ResourceNotFoundException(BOOK_COPY, BOOK_COPY_TYPE_NOT_FOUND);
             }
