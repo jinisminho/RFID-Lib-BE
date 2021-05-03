@@ -27,6 +27,8 @@ public class CopyResponseDto implements Serializable {
 
     private Double price;
 
+    private String priceNote;
+
     private BookCopyStatus status;
 
     private MyBookDto book;
