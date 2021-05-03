@@ -196,20 +196,23 @@ public class BookServiceImpl implements BookService {
             setBasicBookInfo(book, request);
 
             //Create call number from the request
-            StringBuilder authorName = new StringBuilder();
-            for (int id : request.getAuthorIds()) {
-                authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
-            }
+//            StringBuilder authorName = new StringBuilder();
+//            for (int id : request.getAuthorIds()) {
+//                authorName.append(authorRepository.findById(id).orElse(new Author()).getName()).append(", ");
+//            }
 
 //            book.setCallNumber(callNumberUtil.
 //                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
             //(Hoang) 2-May-2021 Update: call number must be unique
+
             String callNumber = request.getCallNumber();
-            List<Book> booksWithSameCallNumber = myBookRepository.findByCallNumber(callNumber);
-            if (booksWithSameCallNumber.isEmpty()) {
-                book.setCallNumber(callNumber);
-            } else {
-                throw new InvalidRequestException(CALL_NUMBER_NOT_UNIQUE_ERROR);
+            if (book.getCallNumber().equals(callNumber)) {
+                List<Book> booksWithSameCallNumber = myBookRepository.findByCallNumber(callNumber);
+                if (booksWithSameCallNumber.isEmpty()) {
+                    book.setCallNumber(callNumber);
+                } else {
+                    throw new InvalidRequestException(CALL_NUMBER_NOT_UNIQUE_ERROR);
+                }
             }
 
             /*Get account to add to updateBy*/
