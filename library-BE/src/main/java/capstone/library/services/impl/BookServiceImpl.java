@@ -203,10 +203,10 @@ public class BookServiceImpl implements BookService {
 
 //            book.setCallNumber(callNumberUtil.
 //                    createCallNumber(request.getDdc(), authorName.toString(), request.getPublishYear()));
-            //(Hoang) 2-May-2021 Update: call number must be unique
 
+            //(Hoang) 2-May-2021 Update: call number must be unique
             String callNumber = request.getCallNumber();
-            if (book.getCallNumber().equals(callNumber)) {
+            if (!book.getCallNumber().equals(callNumber)) {
                 List<Book> booksWithSameCallNumber = myBookRepository.findByCallNumber(callNumber);
                 if (booksWithSameCallNumber.isEmpty()) {
                     book.setCallNumber(callNumber);
