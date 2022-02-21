@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p th:text="#{greetings(${patron})}"></p>
+<div>
+    <h2>Checkout Information</h2>
+    <p>
+        You have borrowed the following books:
+    </p>
+    <table border="1">
+        <tr>
+            <th>No.</th>
+            <th>Book</th>
+            <th>Borrowed At</th>
+            <th>Due Date</th>
+        </tr>
+        <tr th:each="book : ${books}">
+            <td th:text="${bookStat.index + 1}"></td>
+            <td th:text="${book.title +  ' - ' +book.edition +  ' edt'}"></td>
+            <td th:text="${book.borrowedAt}"></td>
+            <td th:text="${book.dueDate}"></td>
+        </tr>
+    </table>
+</div>
+<p>We applied the following policies</p>
+<div>
+    <h2>Fine Policy</h2>
+    <p>Patrons should return all borrowing books before the due date. Patrons who return after the due date will be fined an amount of money.
+    </p>
+    <p><b>Overdue fine: </b> <span th:text="${T(capstone.library.demo.util.DoubleFormatter).formatToDecimal(feePolicy.overdueFinePerDay)}"></span> VND/overdue day*/book </p>
+    <p>If the borrowed book is lost, the patron will also be fined</p>
+    <ul>
+        <li><b>Lost book fine</b></li>
+        <ul>
+            <li>If the book is still available in the market: Fine (VND) = Lost book’s price** + <span th:text="${T(capstone.library.demo.util.DoubleFormatter).formatToDecimal(feePolicy.documentProcessing_Fee)}"></span> (Document processing fee)</li>
+            <li>If the book is no longer available to buy: Fine (VND) = Lost book’s price x <span th:text="${feePolicy.missingDocMultiplier}"></span> times</li>
+        </ul>
+    </ul>
+    <p>*Does not include Saturdays and Sundays.</p>
+    <p>**Lost book’s price is based on what the library recorded when the book is added to the library multiplied by <span th:text="${feePolicy.maxPercentageOverdueFine}"></span>%.</p>
+</div>
+<br/>
+<br/>
+<p th:text="#{regards}"></p>
+<img src="https://firebasestorage.googleapis.com/v0/b/rfid-ae39e.appspot.com/o/images%2Flogo%2Flogo_trans.PNG?alt=media&token=c5652e07-ba59-494c-ba23-46f3f60acad0" width="200" height="100">
+
+</body>
+</html>
